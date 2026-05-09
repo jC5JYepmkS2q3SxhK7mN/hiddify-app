@@ -535,7 +535,8 @@
           }
         },
         "profile": {
-          "selectProfile": "Выберите профиль"
+          "selectProfile": "Выберите профиль",
+          "conduitPairingId": "ID сопряжения Conduit"
         }
       }
     }

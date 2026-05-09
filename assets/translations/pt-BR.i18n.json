@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "Selecionar perfil"
+          "selectProfile": "Selecionar perfil",
+          "conduitPairingId": "ID de emparelhamento Conduit"
         }
       }
     }

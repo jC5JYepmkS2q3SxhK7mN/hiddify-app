@@ -537,7 +537,8 @@
           }
         },
         "profile": {
-          "selectProfile": "اختر ملف تعريف"
+          "selectProfile": "اختر ملف تعريف",
+          "conduitPairingId": "معرف اقتران Conduit"
         }
       }
     }

@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "انتخاب پروفایل"
+          "selectProfile": "انتخاب پروفایل",
+          "conduitPairingId": "شناسه جفت‌سازی Conduit"
         }
       }
     }

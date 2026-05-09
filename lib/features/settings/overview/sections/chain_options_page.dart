@@ -43,6 +43,13 @@ class ChainOptionsPage extends HookConsumerWidget {
                           await ref.read(ConfigOptions.extraSecurityPsiphonRegion.notifier).update(val);
                         },
                       ),
+                      ValuePreferenceWidget(
+                        value: ref.watch(ConfigOptions.extraSecurityPsiphonConduitPairingId),
+                        preferences: ref.watch(ConfigOptions.extraSecurityPsiphonConduitPairingId.notifier),
+                        title: t.pages.settings.chain.profile.conduitPairingId,
+                        icon: Icons.link_rounded,
+                        presentValue: (value) => value.isEmpty ? t.common.notSet : value,
+                      ),
                     ],
                     ChainMode.warp => [
                       ValuePreferenceWidget(
@@ -102,6 +109,13 @@ class ChainOptionsPage extends HookConsumerWidget {
                         onChanged: (val) async {
                           await ref.read(ConfigOptions.unblockerPsiphonRegion.notifier).update(val);
                         },
+                      ),
+                      ValuePreferenceWidget(
+                        value: ref.watch(ConfigOptions.unblockerPsiphonConduitPairingId),
+                        preferences: ref.watch(ConfigOptions.unblockerPsiphonConduitPairingId.notifier),
+                        title: t.pages.settings.chain.profile.conduitPairingId,
+                        icon: Icons.link_rounded,
+                        presentValue: (value) => value.isEmpty ? t.common.notSet : value,
                       ),
                     ],
                     ChainMode.warp => [

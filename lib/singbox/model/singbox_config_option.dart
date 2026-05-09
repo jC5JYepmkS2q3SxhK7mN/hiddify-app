@@ -117,7 +117,10 @@ class SingboxUnblockerWarpOption with _$SingboxUnblockerWarpOption {
 @freezed
 class SingboxExtraSecurityPsiphonOption with _$SingboxExtraSecurityPsiphonOption {
   @JsonSerializable(fieldRename: FieldRename.kebab)
-  const factory SingboxExtraSecurityPsiphonOption({required PsiphonRegion region}) = _SingboxExtraSecurityPsiphonOption;
+  const factory SingboxExtraSecurityPsiphonOption({
+    required PsiphonRegion region,
+    required String conduitPairingId,
+  }) = _SingboxExtraSecurityPsiphonOption;
 
   factory SingboxExtraSecurityPsiphonOption.fromJson(Map<String, dynamic> json) =>
       _$SingboxExtraSecurityPsiphonOptionFromJson(json);
@@ -126,7 +129,10 @@ class SingboxExtraSecurityPsiphonOption with _$SingboxExtraSecurityPsiphonOption
 @freezed
 class SingboxUnblockerPsiphonOption with _$SingboxUnblockerPsiphonOption {
   @JsonSerializable(fieldRename: FieldRename.kebab)
-  const factory SingboxUnblockerPsiphonOption({required PsiphonRegion region}) = _SingboxUnblockerPsiphonOption;
+  const factory SingboxUnblockerPsiphonOption({
+    required PsiphonRegion region,
+    required String conduitPairingId,
+  }) = _SingboxUnblockerPsiphonOption;
 
   factory SingboxUnblockerPsiphonOption.fromJson(Map<String, dynamic> json) =>
       _$SingboxUnblockerPsiphonOptionFromJson(json);

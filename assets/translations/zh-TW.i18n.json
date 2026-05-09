@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "選擇設定檔"
+          "selectProfile": "選擇設定檔",
+          "conduitPairingId": "Conduit 配對 ID"
         }
       }
     }

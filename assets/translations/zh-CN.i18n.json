@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "选择配置"
+          "selectProfile": "选择配置",
+          "conduitPairingId": "Conduit 配对 ID"
         }
       }
     }

@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "Sélectionner le profil"
+          "selectProfile": "Sélectionner le profil",
+          "conduitPairingId": "ID d'appariement Conduit"
         }
       }
     }

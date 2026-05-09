@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "Pilih profil"
+          "selectProfile": "Pilih profil",
+          "conduitPairingId": "ID pemasangan Conduit"
         }
       }
     }

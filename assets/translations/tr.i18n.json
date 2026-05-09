@@ -531,7 +531,8 @@
           }
         },
         "profile": {
-          "selectProfile": "Profil seçin"
+          "selectProfile": "Profil seçin",
+          "conduitPairingId": "Conduit eşleşme ID'si"
         }
       }
     }

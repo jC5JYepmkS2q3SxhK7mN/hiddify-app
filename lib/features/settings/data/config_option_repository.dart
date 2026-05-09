@@ -243,11 +243,21 @@ abstract class ConfigOptions {
     mapTo: (value) => value.name,
   );
 
+  static final extraSecurityPsiphonConduitPairingId = PreferencesNotifier.create<String, String>(
+    "extra-security-psiphon-conduit-pairing-id",
+    "",
+  );
+
   static final unblockerPsiphonRegion = PreferencesNotifier.create<PsiphonRegion, String>(
     "unblocker-psiphon-region",
     PsiphonRegion.auto,
     mapFrom: PsiphonRegion.values.byName,
     mapTo: (value) => value.name,
+  );
+
+  static final unblockerPsiphonConduitPairingId = PreferencesNotifier.create<String, String>(
+    "unblocker-psiphon-conduit-pairing-id",
+    "",
   );
 
   static final extraSecurityMode = PreferencesNotifier.create<ChainMode, String>(
@@ -265,7 +275,7 @@ abstract class ConfigOptions {
   );
 
   static final extraSecurityProfileId = PreferencesNotifier.create<String?, String?>(
-    "extra-security-profile-is",
+    "extra-security-profile-id",
     null,
     mapFrom: (value) => value,
     mapTo: (value) => value,
@@ -376,6 +386,7 @@ abstract class ConfigOptions {
     "extra-security.warp.license-key": extraSecurityWarpLicenseKey,
     // psiphon
     "extra-security.psiphon.region": extraSecurityPsiphonRegion,
+    "extra-security.psiphon.conduit-pairing-id": extraSecurityPsiphonConduitPairingId,
     // profile
     "extra-security.profile.id": extraSecurityProfileId,
 
@@ -390,6 +401,7 @@ abstract class ConfigOptions {
     "unblocker.warp.noise-delay": unblockerWarpNoiseDelay,
     // psiphon
     "unblocker.psiphon.region": unblockerPsiphonRegion,
+    "unblocker.psiphon.conduit-pairing-id": unblockerPsiphonConduitPairingId,
     // profile
     "unblocker.profile.id": unblockerProfileId,
   };
@@ -489,7 +501,10 @@ abstract class ConfigOptions {
       extraSecurity: SingboxExtraSecurityOption(
         mode: ref.watch(extraSecurityMode),
         warp: SingboxExtraSecurityWarpOption(licenseKey: ref.watch(extraSecurityWarpLicenseKey)),
-        psiphon: SingboxExtraSecurityPsiphonOption(region: ref.watch(extraSecurityPsiphonRegion)),
+        psiphon: SingboxExtraSecurityPsiphonOption(
+          region: ref.watch(extraSecurityPsiphonRegion),
+          conduitPairingId: ref.watch(extraSecurityPsiphonConduitPairingId),
+        ),
         profile: SingboxExtraSecurityProfileOption(id: ref.watch(extraSecurityProfileId)),
       ),
       unblocker: SingboxUnblockerOption(
@@ -503,7 +518,10 @@ abstract class ConfigOptions {
           noiseSize: ref.watch(unblockerWarpNoiseSize),
           noiseDelay: ref.watch(unblockerWarpNoiseDelay),
         ),
-        psiphon: SingboxUnblockerPsiphonOption(region: ref.watch(unblockerPsiphonRegion)),
+        psiphon: SingboxUnblockerPsiphonOption(
+          region: ref.watch(unblockerPsiphonRegion),
+          conduitPairingId: ref.watch(unblockerPsiphonConduitPairingId),
+        ),
         profile: SingboxUnblockerProfileOption(id: ref.watch(unblockerProfileId)),
       ),
       rules: rules,
