@@ -7,10 +7,11 @@ import 'package:hiddify/core/utils/json_converters.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
 import 'package:hiddify/features/log/model/log_level.dart';
 import 'package:hiddify/features/profile/data/profile_parser.dart';
+import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/settings/model/config_option_failure.dart';
+import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
 import 'package:hiddify/singbox/model/singbox_config_option.dart';
-import 'package:hiddify/singbox/model/singbox_rule.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,7 +38,7 @@ abstract class ConfigOptions {
     mapTo: (value) => value.name,
   );
   static final useXrayCoreWhenPossible = PreferencesNotifier.create<bool, bool>("use-xray-core-when-possible", false);
-  static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
+  // static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
   static final logLevel = PreferencesNotifier.create<LogLevel, String>(
     "log-level",
     LogLevel.warn,
@@ -169,7 +170,7 @@ abstract class ConfigOptions {
     validator: (value) => isPort(value.toString()),
   );
 
-  static final bypassLan = PreferencesNotifier.create<bool, bool>("bypass-lan", false);
+  // static final bypassLan = PreferencesNotifier.create<bool, bool>("bypass-lan", false);
 
   static final allowConnectionFromLan = PreferencesNotifier.create<bool, bool>("allow-connection-from-lan", false);
 
@@ -342,7 +343,7 @@ abstract class ConfigOptions {
   static final Map<String, StateNotifierProvider<PreferencesNotifier, dynamic>> preferences = {
     "region": region,
     "balancer-strategy": balancerStrategy,
-    "block-ads": blockAds,
+    // "block-ads": blockAds,
     "use-xray-core-when-possible": useXrayCoreWhenPossible,
     "service-mode": serviceMode,
     "log-level": logLevel,
@@ -362,7 +363,7 @@ abstract class ConfigOptions {
     "connection-test-url": connectionTestUrl,
     "url-test-interval": urlTestInterval,
     "clash-api-port": clashApiPort,
-    "bypass-lan": bypassLan,
+    // "bypass-lan": bypassLan,
     "allow-connection-from-lan": allowConnectionFromLan,
     // "enable-dns-routing": enableDnsRouting,
 
@@ -408,7 +409,7 @@ abstract class ConfigOptions {
 
   static final singboxConfigOptions = Provider<SingboxConfigOption>((ref) {
     // final region = ref.watch(Preferences.region);
-    final rules = <SingboxRule>[];
+    // final rules = <SingboxRule>[];
     // final rules = switch (region) {
     //   Region.ir => [
     //       const SingboxRule(
@@ -450,11 +451,10 @@ abstract class ConfigOptions {
 
     final mode = ref.watch(serviceMode);
     // final reg = ref.watch(Preferences.region.notifier).raw();
-
     return SingboxConfigOption(
       region: ref.watch(region).name,
       balancerStrategy: ref.watch(balancerStrategy),
-      blockAds: ref.watch(blockAds),
+      // blockAds: ref.watch(blockAds),
       useXrayCoreWhenPossible: ref.watch(useXrayCoreWhenPossible),
       executeConfigAsIs: false,
       logLevel: ref.watch(logLevel),
@@ -478,7 +478,7 @@ abstract class ConfigOptions {
       enableTun: mode == ServiceMode.tun,
       // enableTunService: mode == false, //ServiceMode.tunService,
       setSystemProxy: mode == ServiceMode.systemProxy,
-      bypassLan: ref.watch(bypassLan),
+      // bypassLan: ref.watch(bypassLan),
       allowConnectionFromLan: ref.watch(allowConnectionFromLan),
       enableFakeDns: ref.watch(enableFakeDns),
       // enableDnsRouting: ref.watch(enableDnsRouting),
@@ -524,7 +524,7 @@ abstract class ConfigOptions {
         ),
         profile: SingboxUnblockerProfileOption(id: ref.watch(unblockerProfileId)),
       ),
-      rules: rules,
+      routeRule: RouteRule(rules: ref.watch(rulesNotifierProvider)).toProto3Json()! as Map<String, dynamic>,
     );
   });
 }

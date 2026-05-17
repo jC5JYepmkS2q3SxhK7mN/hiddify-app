@@ -5,7 +5,6 @@ import 'package:hiddify/core/model/optional_range.dart';
 import 'package:hiddify/core/utils/json_converters.dart';
 import 'package:hiddify/features/log/model/log_level.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
-import 'package:hiddify/singbox/model/singbox_rule.dart';
 
 part 'singbox_config_option.freezed.dart';
 part 'singbox_config_option.g.dart';
@@ -18,7 +17,7 @@ class SingboxConfigOption with _$SingboxConfigOption {
   const factory SingboxConfigOption({
     required String region,
     required BalancerStrategy balancerStrategy,
-    required bool blockAds,
+    // required bool blockAds,
     required bool useXrayCoreWhenPossible,
     required bool executeConfigAsIs,
     required LogLevel logLevel,
@@ -42,12 +41,12 @@ class SingboxConfigOption with _$SingboxConfigOption {
     required bool enableTun,
     // required bool enableTunService,
     required bool setSystemProxy,
-    required bool bypassLan,
+    // required bool bypassLan,
     required bool allowConnectionFromLan,
     required bool enableFakeDns,
     // required bool enableDnsRouting,
     required bool independentDnsCache,
-    required List<SingboxRule> rules,
+    required Map<String, dynamic> routeRule,
     // required SingboxMuxOption mux,
     required SingboxTlsTricks tlsTricks,
     required ChainStatus chainStatus,
@@ -117,10 +116,8 @@ class SingboxUnblockerWarpOption with _$SingboxUnblockerWarpOption {
 @freezed
 class SingboxExtraSecurityPsiphonOption with _$SingboxExtraSecurityPsiphonOption {
   @JsonSerializable(fieldRename: FieldRename.kebab)
-  const factory SingboxExtraSecurityPsiphonOption({
-    required PsiphonRegion region,
-    required String conduitPairingId,
-  }) = _SingboxExtraSecurityPsiphonOption;
+  const factory SingboxExtraSecurityPsiphonOption({required PsiphonRegion region, required String conduitPairingId}) =
+      _SingboxExtraSecurityPsiphonOption;
 
   factory SingboxExtraSecurityPsiphonOption.fromJson(Map<String, dynamic> json) =>
       _$SingboxExtraSecurityPsiphonOptionFromJson(json);
@@ -129,10 +126,8 @@ class SingboxExtraSecurityPsiphonOption with _$SingboxExtraSecurityPsiphonOption
 @freezed
 class SingboxUnblockerPsiphonOption with _$SingboxUnblockerPsiphonOption {
   @JsonSerializable(fieldRename: FieldRename.kebab)
-  const factory SingboxUnblockerPsiphonOption({
-    required PsiphonRegion region,
-    required String conduitPairingId,
-  }) = _SingboxUnblockerPsiphonOption;
+  const factory SingboxUnblockerPsiphonOption({required PsiphonRegion region, required String conduitPairingId}) =
+      _SingboxUnblockerPsiphonOption;
 
   factory SingboxUnblockerPsiphonOption.fromJson(Map<String, dynamic> json) =>
       _$SingboxUnblockerPsiphonOptionFromJson(json);
