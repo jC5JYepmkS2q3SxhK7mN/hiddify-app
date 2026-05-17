@@ -34,7 +34,7 @@ final _processPathLinuxRegex = RegExp(r'^/([^/]*(?<!/)/)*[^/]+$');
 final _processPathMacOSRegex = RegExp(r'^/([^/:]*(?<!/)/)*[^/:]+$');
 
 final _portOrPortRangeRegex = RegExp(
-  r'^(65000|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})(-(65000|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))?$',
+  r'^(65000|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3})(:(65000|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{0,3}))?$',
 );
 
 final _ipCidrRegex = RegExp(
