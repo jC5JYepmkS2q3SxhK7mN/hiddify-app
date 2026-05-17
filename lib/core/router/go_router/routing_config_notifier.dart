@@ -115,14 +115,14 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                   routes: <GoRoute>[
                     GoRoute(
                       name: 'proxies',
-                      path: '/proxies',
+                      path: 'proxies',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.fade, state.pageKey, const ProxiesOverviewPage()),
                     ),
                     if (isMobileBreakpoint)
                       GoRoute(
                         name: 'profileDetails',
-                        path: '/profile-details/:id',
+                        path: 'profile-details/:id',
                         pageBuilder: (_, state) => customTransition(
                           TransitionType.fade,
                           state.pageKey,
@@ -143,7 +143,7 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                     routes: <GoRoute>[
                       GoRoute(
                         name: 'profileDetails',
-                        path: '/profiles/:id',
+                        path: 'profile-details/:id',
                         pageBuilder: (_, state) => customTransition(
                           TransitionType.fade,
                           state.pageKey,
@@ -170,19 +170,19 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                   routes: <GoRoute>[
                     GoRoute(
                       name: 'general',
-                      path: '/general',
+                      path: 'general',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const GeneralPage()),
                     ),
                     GoRoute(
-                      name: 'routeOptions',
-                      path: '/route-options',
+                      name: 'routingOptions',
+                      path: 'routing-options',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const RouteOptionsPage()),
                       routes: <GoRoute>[
                         GoRoute(
                           name: 'perAppProxy',
-                          path: '/per-app-proxy',
+                          path: 'per-app-proxy',
                           pageBuilder: (_, state) =>
                               customTransition(TransitionType.slide, state.pageKey, const PerAppProxyPage()),
                         ),
@@ -190,38 +190,38 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                     ),
                     GoRoute(
                       name: 'dnsOptions',
-                      path: '/dns-options',
+                      path: 'dns-options',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const DnsOptionsPage()),
                     ),
                     GoRoute(
                       name: 'inboundOptions',
-                      path: '/inbound-options',
+                      path: 'inbound-options',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const InboundOptionsPage()),
                     ),
                     GoRoute(
                       name: 'tlsTricks',
-                      path: '/tls-tricks',
+                      path: 'tls-tricks',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const TlsTricksPage()),
                     ),
                     GoRoute(
                       name: 'chainOptions',
-                      path: '/chain-options',
+                      path: 'chain-options',
                       pageBuilder: (_, state) =>
                           customTransition(TransitionType.slide, state.pageKey, const ChainOptionsPage()),
                     ),
                     if (isMobileBreakpoint) ...[
                       GoRoute(
                         name: 'logs',
-                        path: '/logs',
+                        path: 'logs',
                         pageBuilder: (_, state) =>
                             customTransition(TransitionType.slide, state.pageKey, const LogsPage()),
                       ),
                       GoRoute(
                         name: 'about',
-                        path: '/about',
+                        path: 'about',
                         pageBuilder: (_, state) =>
                             customTransition(TransitionType.slide, state.pageKey, const AboutPage()),
                       ),
