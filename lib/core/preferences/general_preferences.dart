@@ -112,6 +112,8 @@ abstract class Preferences {
   );
 
   static final warpConsentGiven = PreferencesNotifier.create<bool, bool>("warp-consent-given", false);
+
+  static final showRouteGeneralOptions = PreferencesNotifier.create<bool, bool>("show-route-general-options", true);
 }
 
 @Riverpod(keepAlive: true)
