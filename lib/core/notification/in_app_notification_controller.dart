@@ -23,7 +23,8 @@ class InAppNotificationController with AppLogger {
     return toastification.show(
       title: Text(message),
       type: type._toastificationType,
-      alignment: AlignmentDirectional.bottomStart,
+      alignment: AlignmentDirectional.bottomCenter,
+      margin: const EdgeInsets.only(bottom: 64 + 16, right: 16, left: 16),
       autoCloseDuration: duration,
       style: ToastificationStyle.fillColored,
       pauseOnHover: true,
