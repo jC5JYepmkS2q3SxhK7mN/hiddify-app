@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/adaptive_layout/my_adaptive_layout.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
@@ -15,11 +17,14 @@ import 'package:hiddify/features/profile/details/profile_details_page.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_page.dart';
 import 'package:hiddify/features/proxy/overview/proxies_overview_page.dart';
+import 'package:hiddify/features/route_rules/notifier/rule_notifier.dart';
+import 'package:hiddify/features/route_rules/overview/generic_list_page.dart';
+import 'package:hiddify/features/route_rules/overview/rule_page.dart';
 import 'package:hiddify/features/settings/overview/sections/chain_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/dns_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/general_page.dart';
 import 'package:hiddify/features/settings/overview/sections/inbound_options_page.dart';
-import 'package:hiddify/features/settings/overview/sections/route_options_page.dart';
+import 'package:hiddify/features/settings/overview/sections/routing_options_page.dart';
 import 'package:hiddify/features/settings/overview/sections/tls_tricks_page.dart';
 import 'package:hiddify/features/settings/overview/settings_page.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -178,8 +183,47 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                       name: 'routingOptions',
                       path: 'routing-options',
                       pageBuilder: (_, state) =>
-                          customTransition(TransitionType.slide, state.pageKey, const RouteOptionsPage()),
+                          customTransition(TransitionType.slide, state.pageKey, const RoutingOptionsPage()),
                       routes: <GoRoute>[
+                        GoRoute(
+                          name: 'rule',
+                          path: 'rule/:orderId',
+                          pageBuilder: (_, state) {
+                            final orderIdString = state.pathParameters['orderId']!;
+                            return customTransition(
+                              TransitionType.slide,
+                              state.pageKey,
+                              RulePage(ruleListOrder: orderIdString != 'new' ? int.tryParse(orderIdString) : null),
+                            );
+                          },
+                          onExit: (context, state) async {
+                            final t = ref.read(translationsProvider).requireValue;
+                            final orderId = int.tryParse(state.pathParameters['orderId']!);
+                            final isRuleEdited = ref.read(IsRuleEditedProvider(orderId));
+                            if (orderId != null && isRuleEdited) {
+                              await ref.read(ruleNotifierProvider(orderId).notifier).save();
+                              ref
+                                  .read(inAppNotificationControllerProvider)
+                                  .showSuccessToast(t.common.msg.autoSave.success);
+                            }
+                            return true;
+                          },
+                          routes: <GoRoute>[
+                            GoRoute(
+                              name: 'genericList',
+                              path: 'generic-list/:ruleEnum',
+                              pageBuilder: (_, state) {
+                                final orderId = int.tryParse(state.pathParameters['orderId']!);
+                                final ruleEnum = RuleEnum.values.byName(state.pathParameters['ruleEnum']!);
+                                return customTransition(
+                                  TransitionType.slide,
+                                  state.pageKey,
+                                  GenericListPage(ruleListOrder: orderId, ruleEnum: ruleEnum),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                         GoRoute(
                           name: 'perAppProxy',
                           path: 'per-app-proxy',
