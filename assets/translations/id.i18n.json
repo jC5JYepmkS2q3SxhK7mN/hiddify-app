@@ -99,7 +99,7 @@
   "pages": {
     "home": {
       "title": "Beranda",
-      "quickSettings": "Pengaturan cepat"
+      "quickSettings": "Opsi pengaturan cepat"
     },
     "proxies": {
       "title": "Proxy",

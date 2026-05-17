@@ -103,7 +103,7 @@
   "pages": {
     "home": {
       "title": "Главная",
-      "quickSettings": "Быстрые настройки"
+      "quickSettings": "Опции быстрых настроек"
     },
     "proxies": {
       "title": "Прокси",
