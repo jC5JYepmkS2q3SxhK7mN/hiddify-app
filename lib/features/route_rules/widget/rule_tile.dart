@@ -69,7 +69,7 @@ class RuleTile extends HookConsumerWidget {
                   position: RelativeRect.fromLTRB(offset.dx, offset.dy, offset.dx, offset.dy),
                   items: [
                     PopupMenuItem(
-                      child: Text(t.pages.settings.routing.routeRule.deleteRule),
+                      child: Text(t.pages.settings.routing.routeRule.delete),
                       onTap: () async => await handleDelete(context, ref),
                     ),
                   ],

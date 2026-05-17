@@ -63,9 +63,9 @@ enum BalancerStrategy {
   final String key;
 
   String present(TranslationsEn t) => switch (this) {
-    roundRobin => t.pages.settings.routing.balancerStrategy.roundRobin,
-    consistentHash => t.pages.settings.routing.balancerStrategy.consistentHash,
-    stickySession => t.pages.settings.routing.balancerStrategy.stickySession,
+    roundRobin => t.pages.settings.routing.generalOptions.balancerStrategy.roundRobin,
+    consistentHash => t.pages.settings.routing.generalOptions.balancerStrategy.consistentHash,
+    stickySession => t.pages.settings.routing.generalOptions.balancerStrategy.stickySession,
   };
 }
 
@@ -81,10 +81,10 @@ enum IPv6Mode {
   final String key;
 
   String present(TranslationsEn t) => switch (this) {
-    disable => t.pages.settings.routing.ipv6Modes.disable,
-    enable => t.pages.settings.routing.ipv6Modes.enable,
-    prefer => t.pages.settings.routing.ipv6Modes.prefer,
-    only => t.pages.settings.routing.ipv6Modes.only,
+    disable => t.pages.settings.routing.generalOptions.ipv6Modes.disable,
+    enable => t.pages.settings.routing.generalOptions.ipv6Modes.enable,
+    prefer => t.pages.settings.routing.generalOptions.ipv6Modes.prefer,
+    only => t.pages.settings.routing.generalOptions.ipv6Modes.only,
   };
 }
 

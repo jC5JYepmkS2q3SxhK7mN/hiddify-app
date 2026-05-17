@@ -62,13 +62,13 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
       case AutoSelectionResult.failure:
         ref
             .read(inAppNotificationControllerProvider)
-            .showErrorToast(t.pages.settings.routing.perAppProxy.autoSelection.toast.failure);
+            .showErrorToast(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.failure);
         return false;
       case AutoSelectionResult.notFound:
         ref
             .read(inAppNotificationControllerProvider)
             .showInfoToast(
-              t.pages.settings.routing.perAppProxy.autoSelection.toast.regionNotFound(
+              t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.regionNotFound(
                 region: ref.watch(ConfigOptions.region).name,
               ),
               duration: const Duration(seconds: 5),
@@ -207,7 +207,7 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
       ref
           .read(inAppNotificationControllerProvider)
           .showInfoToast(
-            t.pages.settings.routing.perAppProxy.autoSelection.toast.alreadyInAuto,
+            t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.alreadyInAuto,
             duration: const Duration(seconds: 5),
           );
       return false;
