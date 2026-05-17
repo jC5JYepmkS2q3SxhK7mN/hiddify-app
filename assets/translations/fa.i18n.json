@@ -23,7 +23,7 @@
     "addToClipboard": "افزودن به کلیپ‌بورد",
     "scanQr": "اسکن QR",
     "free": "رایگان",
-    "warp": "وارپ",
+    "warp": "WARP",
     "fragment": "Fragment",
     "help": "راهنما",
     "save": "ذخیره",
@@ -42,7 +42,6 @@
     "exit": "خروج",
     "reset": "بازنشانی",
     "done": "انجام شد",
-    "search": "جستجو",
     "decline": "رد کردن",
     "agree": "موافقم",
     "empty": "خالی",
@@ -86,6 +85,9 @@
         "confirm": "تأیید ورود اطلاعات",
         "success": "با موفقیت وارد شد",
         "failure": "وارد کردن ناموفق بود"
+      },
+      "autoSave": {
+        "success": "تغییرات با موفقیت به‌طور خودکار ذخیره شد"
       }
     }
   },
@@ -109,7 +111,8 @@
       "sortOptions": {
         "unsorted": "پیش‌فرض",
         "name": "بر اساس نام",
-        "delay": "بر اساس تأخیر"
+        "delay": "بر اساس تأخیر",
+        "usage": "بر اساس استفاده"
       },
       "ipInfo": {
         "address": "آدرس IP",
@@ -234,76 +237,10 @@
       },
       "routing": {
         "title": "مسیریابی",
-        "perAppProxy": {
-          "title": "پروکسی برای هر برنامه",
-          "hideSysApps": "پنهان کردن برنامه‌های سیستمی",
-          "options": {
-            "import": {
-              "clipboard": "وارد کردن انتخاب‌ها از کلیپ‌بورد",
-              "file": "وارد کردن انتخاب‌ها از فایل",
-              "msg": "وارد کردن، انتخاب‌های فعلی شما را جایگزین خواهد کرد. آیا مطمئن هستید که می‌خواهید ادامه دهید؟"
-            },
-            "export": {
-              "clipboard": "کپی انتخاب‌ها به کلیپ‌بورد",
-              "file": "خروجی انتخاب‌ها به فایل"
-            },
-            "shareToAll": "اشتراک‌گذاری با همه",
-            "clearAllSelections": "پاک کردن تمام انتخاب‌ها"
-          },
-          "modes": {
-            "all": "همه",
-            "proxy": "پروکسی",
-            "bypass": "دور زدن",
-            "allMsg": "پروکسی کردن تمام برنامه‌ها",
-            "proxyMsg": "فقط برنامه‌های انتخاب‌شده پروکسی شوند",
-            "bypassMsg": "برنامه‌های انتخاب‌شده پروکسی نشوند"
-          },
-          "autoSelection": {
-            "title": "انتخاب خودکار",
-            "performNow": "اکنون انجام بده",
-            "resetToDefault": "بازنشانی به پیش‌فرض",
-            "autoUpdateInterval": "فاصله زمانی به‌روزرسانی خودکار",
-            "toast": {
-              "success": "انتخاب خودکار برنامه‌ها با موفقیت انجام شد",
-              "failure": "انتخاب خودکار ناموفق بود",
-              "regionNotFound": "انتخاب خودکار برای منطقه «${region}» یافت نشد",
-              "alreadyInAuto": "انتخاب‌های شما از قبل در لیست خودکار موجود است"
-            },
-            "dialog": {
-              "title": "انتخاب خودکار برنامه‌ها",
-              "msg": "قابلیت انتخاب خودکار برای پروکسی هر برنامه به دلیل تغییر منطقه به «${region}» غیرفعال شد"
-            }
-          }
-        },
-        "region": "منطقه",
-        "regions": {
-          "ir": "ایران (ir)",
-          "cn": "چین (cn)",
-          "ru": "روسیه (ru)",
-          "af": "افغانستان (af)",
-          "id": "اندونزی (id)",
-          "tr": "ترکیه (tr)",
-          "br": "برزیل (br)",
-          "other": "سایر"
-        },
-        "balancerStrategy": {
-          "title": "استراتژی Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "مسدودسازی تبلیغات",
-        "bypassLan": "دور زدن LAN",
-        "resolveDestination": "تحلیل آدرس مقصد",
-        "ipv6Route": "مسیریابی IPv6",
-        "ipv6Modes": {
-          "disable": "غیرفعال",
-          "enable": "فعال",
-          "prefer": "ترجیحی",
-          "only": "انحصاری"
-        },
         "routeRule": {
-          "title": "قوانین مسیریابی",
+          "empty": "هنوز هیچ قانونی اضافه نشده است\n\nبرای ایجاد قانون جدید یا انتخاب از قوانین پیش‌فرض، روی دکمه + ضربه بزنید",
+          "delete": "حذف قانون",
+          "create": "ایجاد قانون جدید",
           "options": {
             "import": {
               "clipboard": "وارد کردن قوانین از کلیپ‌بورد",
@@ -315,29 +252,25 @@
             },
             "reset": "بازنشانی قوانین"
           },
-          "deleteRule": "حذف قانون",
-          "createRule": "ایجاد قانون جدید",
           "rule": {
             "title": "قانون",
-            "ruleChanged": "قانون تغییر کرد",
-            "ruleChangedMsg": "آیا می‌خواهید ویرایش‌های خود را ذخیره کنید؟",
             "onlyTunMode": "فقط در حالت TUN در دسترس است",
             "notAvailabeInThisPlatform": "در این پلتفرم در دسترس نیست",
             "canNotBeEmpty": "نمی‌تواند خالی باشد",
             "validUrlEx": "https://example.com",
-            "validUrl": "«URL» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validUrlEx",
+            "validUrl": "\"URL\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validUrlEx",
             "validProcessNameEx": "Chrome.exe یا google chrome یا chrome",
-            "validProcessName": "«نام فرآیند» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
+            "validProcessName": "\"نام فرآیند\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
             "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
-            "validProcessPath": "«مسیر فرآیند» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
-            "validPortRangeEx": "80 یا 1-65000",
-            "validPortRange": "«پورت» یا «محدوده پورت» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
+            "validProcessPath": "\"مسیر فرآیند\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
+            "validPortRangeEx": "80 یا 1:65000",
+            "validPortRange": "\"پورت\" یا \"محدوده پورت\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
             "validIpCidrEx": "8.8.8.8 یا 10.0.0.0/24",
             "validIpCidr": "IP CIDR معتبر مانند\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com یا dl.google.com",
-            "validDomain": "«دامنه» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validDomainEx",
+            "validDomain": "\"دامنه\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validDomainEx",
             "validDomainSuffixEx": ".com یا .ir",
-            "validDomainSuffix": "«پسوند دامنه» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
+            "validDomainSuffix": "\"پسوند دامنه\" معتبر مانند\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
             "tileTitle(map)": {
               "name": "نام",
               "outbound": "خروجی در صورت تطابق",
@@ -382,13 +315,86 @@
             "update": "به‌روزرسانی مقدار",
             "clearList": "پاک کردن لیست",
             "clearListMsg": "تمام موارد حذف شدند"
+          }
+        },
+        "generalOptions": {
+          "title": "تنظیمات عمومی مسیریابی",
+          "region": "منطقه",
+          "regions": {
+            "ir": "ایران (ir)",
+            "cn": "چین (cn)",
+            "ru": "روسیه (ru)",
+            "af": "افغانستان (af)",
+            "id": "اندونزی (id)",
+            "tr": "ترکیه (tr)",
+            "br": "برزیل (br)",
+            "other": "سایر"
           },
-          "androidApps": {
-            "pageTitle": "برنامه‌های اندروید",
-            "showSystemApps": "نمایش برنامه‌های سیستمی",
-            "hideSystemApps": "پنهان کردن برنامه‌های سیستمی",
-            "clearSelection": "پاک کردن انتخاب‌ها",
-            "uninstalled": "نصب نشده"
+          "balancerStrategy": {
+            "title": "استراتژی Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "تحلیل آدرس مقصد",
+          "ipv6Route": "مسیریابی IPv6",
+          "ipv6Modes": {
+            "disable": "غیرفعال",
+            "enable": "فعال",
+            "prefer": "ترجیحی",
+            "only": "انحصاری"
+          },
+          "perAppProxy": {
+            "title": "پروکسی برای هر برنامه",
+            "hideSysApps": "پنهان کردن برنامه‌های سیستمی",
+            "options": {
+              "import": {
+                "clipboard": "وارد کردن انتخاب‌ها از کلیپ‌بورد",
+                "file": "وارد کردن انتخاب‌ها از فایل",
+                "msg": "وارد کردن، انتخاب‌های فعلی شما را جایگزین خواهد کرد. آیا مطمئن هستید که می‌خواهید ادامه دهید؟"
+              },
+              "export": {
+                "clipboard": "کپی انتخاب‌ها به کلیپ‌بورد",
+                "file": "خروجی انتخاب‌ها به فایل"
+              },
+              "shareToAll": "اشتراک‌گذاری با همه",
+              "clearAllSelections": "پاک کردن تمام انتخاب‌ها"
+            },
+            "modes": {
+              "all": "همه",
+              "proxy": "پروکسی",
+              "bypass": "دور زدن",
+              "allMsg": "پروکسی کردن تمام برنامه‌ها",
+              "proxyMsg": "فقط برنامه‌های انتخاب‌شده پروکسی شوند",
+              "bypassMsg": "برنامه‌های انتخاب‌شده پروکسی نشوند"
+            },
+            "autoSelection": {
+              "title": "انتخاب خودکار",
+              "performNow": "اکنون انجام بده",
+              "resetToDefault": "بازنشانی به پیش‌فرض",
+              "autoUpdateInterval": "فاصله زمانی به‌روزرسانی خودکار",
+              "toast": {
+                "success": "انتخاب خودکار برنامه‌ها با موفقیت انجام شد",
+                "failure": "انتخاب خودکار ناموفق بود",
+                "regionNotFound": "انتخاب خودکار برای منطقه \"${region}\" یافت نشد",
+                "alreadyInAuto": "انتخاب‌های شما از قبل در لیست خودکار موجود است"
+              },
+              "dialog": {
+                "title": "انتخاب خودکار برنامه‌ها",
+                "msg": "قابلیت انتخاب خودکار برای پروکسی هر برنامه به دلیل تغییر منطقه به \"${region}\" غیرفعال شد"
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "قوانین پیش‌فرض",
+          "ads": {
+            "name": "مسدودسازی تبلیغات",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "دور زدن LAN",
+            "description": ""
           }
         }
       },
@@ -398,7 +404,6 @@
         "remoteDnsDomainStrategy": "استراتژی دامنه DNS",
         "directDns": "DNS پروکسی‌ها (مستقیم)",
         "directDnsDomainStrategy": "استراتژی دامنه DNS مستقیم",
-        "enableDnsRouting": "فعال‌سازی مسیریابی DNS",
         "enableFakeDns": "فعال‌سازی DNS جعلی",
         "domainStrategy": {
           "auto": "خودکار",
@@ -414,14 +419,12 @@
         "serviceModes": {
           "proxy": "فقط سرویس پروکسی",
           "systemProxy": "تنظیم پروکسی سیستم",
-          "tun": "VPN",
-          "tunService": "سرویس VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "پروکسی",
           "systemProxy": "پروکسی سیستم",
-          "tun": "VPN",
-          "tunService": "سرویس VPN"
+          "tun": "VPN"
         },
         "strictRoute": "مسیربندی سخت‌گیرانه",
         "tunImplementation": "پیاده‌سازی Tun",
@@ -438,7 +441,7 @@
       },
       "tlsTricks": {
         "title": "ترفندهای TLS",
-        "enable": "فعال‌سازی fragment",
+        "enable": "فعال‌سازی Fragment",
         "packets": "بسته‌های Fragment",
         "packetsTlsHello": "TLS Hello",
         "packets1_1": "1-1",
@@ -446,8 +449,8 @@
         "packets1_3": "1-3",
         "packets1_4": "1-4",
         "packets1_5": "1-5",
-        "size": "اندازه fragment",
-        "sleep": "تأخیر fragment",
+        "size": "اندازه Fragment",
+        "sleep": "تأخیر Fragment",
         "mixedSniCase": {
           "enable": "فعال‌سازی mixed SNI case"
         },
@@ -482,7 +485,7 @@
           }
         },
         "warp": {
-          "missingConfig": "کانفیگ وارپ موجود نیست",
+          "missingConfig": "کانفیگ WARP موجود نیست",
           "licenseKey": "کلید لایسنس",
           "cleanIp": "آی‌پی تمیز",
           "port": "پورت",
@@ -647,7 +650,9 @@
       "asn": "ASN:",
       "organization": "سازمان:",
       "location": "مکان:",
-      "postalCode": "کد پستی:"
+      "postalCode": "کد پستی:",
+      "download": "دانلود:",
+      "upload": "آپلود:"
     },
     "windowClosing": {
       "askEachTime": "هر بار بپرس",
@@ -663,8 +668,7 @@
     "disconnect": "قطع اتصال",
     "disconnecting": "در حال قطع اتصال...",
     "reconnect": "اتصال مجدد",
-    "reconnectMsg": "در حال اتصال مجدد برای اعمال تغییرات...",
-    "secure": "ایمن شده با WARP"
+    "reconnectMsg": "در حال اتصال مجدد برای اعمال تغییرات..."
   },
   "errors": {
     "unexpected": "خطای غیرمنتظره",
@@ -696,8 +700,8 @@
       "invalidConfig": "پیکربندی نامعتبر"
     },
     "warp": {
-      "missingLicense": "لایسنس وارپ",
-      "missingLicenseMsg": "پروفایل انتخاب‌شده از ویژگی وارپ استفاده می‌کند؛ برای استفاده از این قابلیت، باید با لایسنس وارپ موافقت شود."
+      "missingLicense": "لایسنس WARP",
+      "missingLicenseMsg": "پروفایل انتخاب‌شده از ویژگی WARP استفاده می‌کند؛ برای استفاده از این قابلیت، باید با لایسنس WARP موافقت شود."
     }
   }
 }

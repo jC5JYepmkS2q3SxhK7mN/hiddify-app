@@ -42,7 +42,6 @@
     "exit": "Выйти",
     "reset": "Сброс",
     "done": "Готово",
-    "search": "Поиск",
     "decline": "Отклонить",
     "agree": "Согласен",
     "empty": "Пусто",
@@ -90,6 +89,9 @@
         "confirm": "Подтвердить импорт",
         "success": "Успешно импортировано",
         "failure": "Не удалось импортировать"
+      },
+      "autoSave": {
+        "success": "Изменения автоматически сохранены"
       }
     }
   },
@@ -113,7 +115,8 @@
       "sortOptions": {
         "unsorted": "По умолчанию",
         "name": "По алфавиту",
-        "delay": "По задержке"
+        "delay": "По задержке",
+        "usage": "По использованию"
       },
       "ipInfo": {
         "address": "IP-адрес",
@@ -238,76 +241,10 @@
       },
       "routing": {
         "title": "Маршрутизация",
-        "perAppProxy": {
-          "title": "Прокси для приложений",
-          "hideSysApps": "Скрыть системные приложения",
-          "options": {
-            "import": {
-              "clipboard": "Импортировать выбор из буфера обмена",
-              "file": "Импортировать выбор из файла",
-              "msg": "Импорт заменит ваш текущий выбор. Вы уверены, что хотите продолжить?"
-            },
-            "export": {
-              "clipboard": "Копировать выбор в буфер обмена",
-              "file": "Экспортировать выбор в файл"
-            },
-            "shareToAll": "Поделиться со всеми",
-            "clearAllSelections": "Очистить весь выбор"
-          },
-          "modes": {
-            "all": "Все",
-            "proxy": "Прокси",
-            "bypass": "В обход",
-            "allMsg": "Проксировать все приложения",
-            "proxyMsg": "Проксировать только выбранные приложения",
-            "bypassMsg": "Не проксировать выбранные приложения"
-          },
-          "autoSelection": {
-            "title": "Автовыбор",
-            "performNow": "Выполнить сейчас",
-            "resetToDefault": "Сбросить по умолчанию",
-            "autoUpdateInterval": "Интервал автообновления",
-            "toast": {
-              "success": "Автовыбор приложений успешно завершен",
-              "failure": "Ошибка автовыбора",
-              "regionNotFound": "Автовыбор для региона \"${region}\" не найден",
-              "alreadyInAuto": "Ваш выбор уже находится в списке автовыбора"
-            },
-            "dialog": {
-              "title": "Автовыбор приложений",
-              "msg": "Функция автовыбора для прокси приложений была отключена из-за смены региона на \"${region}\""
-            }
-          }
-        },
-        "region": "Регион",
-        "regions": {
-          "ir": "Иран (ir)",
-          "cn": "Китай (cn)",
-          "ru": "Россия (ru)",
-          "af": "Афганистан (af)",
-          "id": "Индонезия (id)",
-          "tr": "Турция (tr)",
-          "br": "Бразилия (br)",
-          "other": "Другой"
-        },
-        "balancerStrategy": {
-          "title": "Стратегия Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "Блокировать рекламу",
-        "bypassLan": "Обход LAN",
-        "resolveDestination": "Определять адрес назначения",
-        "ipv6Route": "Маршрут IPv6",
-        "ipv6Modes": {
-          "disable": "Отключить",
-          "enable": "Включить",
-          "prefer": "Предпочтительно",
-          "only": "Только"
-        },
         "routeRule": {
-          "title": "Правила маршрутизации",
+          "empty": "Пока нет добавленных правил\n\nНажмите кнопку +, чтобы создать новое правило или выбрать из предопределенных",
+          "delete": "Удалить правило",
+          "create": "Создать новое правило",
           "options": {
             "import": {
               "clipboard": "Импортировать правила из буфера обмена",
@@ -319,12 +256,8 @@
             },
             "reset": "Сбросить правила"
           },
-          "deleteRule": "Удалить правило",
-          "createRule": "Создать новое правило",
           "rule": {
             "title": "Правило",
-            "ruleChanged": "Правило изменено",
-            "ruleChangedMsg": "Вы хотите сохранить изменения?",
             "onlyTunMode": "Доступно только в режиме TUN",
             "notAvailabeInThisPlatform": "Недоступно на этой платформе",
             "canNotBeEmpty": "Не может быть пустым",
@@ -386,13 +319,86 @@
             "update": "Обновить значение",
             "clearList": "Очистить список",
             "clearListMsg": "Все элементы удалены"
+          }
+        },
+        "generalOptions": {
+          "title": "Общие параметры маршрутизации",
+          "region": "Регион",
+          "regions": {
+            "ir": "Иран (ir)",
+            "cn": "Китай (cn)",
+            "ru": "Россия (ru)",
+            "af": "Афганистан (af)",
+            "id": "Индонезия (id)",
+            "tr": "Турция (tr)",
+            "br": "Бразилия (br)",
+            "other": "Другой"
           },
-          "androidApps": {
-            "pageTitle": "Приложения Android",
-            "showSystemApps": "Показать системные приложения",
-            "hideSystemApps": "Скрыть системные приложения",
-            "clearSelection": "Очистить выбор",
-            "uninstalled": "Удалено"
+          "balancerStrategy": {
+            "title": "Стратегия Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "Определять адрес назначения",
+          "ipv6Route": "Маршрут IPv6",
+          "ipv6Modes": {
+            "disable": "Отключить",
+            "enable": "Включить",
+            "prefer": "Предпочтительно",
+            "only": "Только"
+          },
+          "perAppProxy": {
+            "title": "Прокси для приложений",
+            "hideSysApps": "Скрыть системные приложения",
+            "options": {
+              "import": {
+                "clipboard": "Импортировать выбор из буфера обмена",
+                "file": "Импортировать выбор из файла",
+                "msg": "Импорт заменит ваш текущий выбор. Вы уверены, что хотите продолжить?"
+              },
+              "export": {
+                "clipboard": "Копировать выбор в буфер обмена",
+                "file": "Экспортировать выбор в файл"
+              },
+              "shareToAll": "Поделиться со всеми",
+              "clearAllSelections": "Очистить весь выбор"
+            },
+            "modes": {
+              "all": "Все",
+              "proxy": "Прокси",
+              "bypass": "В обход",
+              "allMsg": "Проксировать все приложения",
+              "proxyMsg": "Проксировать только выбранные приложения",
+              "bypassMsg": "Не проксировать выбранные приложения"
+            },
+            "autoSelection": {
+              "title": "Автовыбор",
+              "performNow": "Выполнить сейчас",
+              "resetToDefault": "Сбросить по умолчанию",
+              "autoUpdateInterval": "Интервал автообновления",
+              "toast": {
+                "success": "Автовыбор приложений успешно завершен",
+                "failure": "Ошибка автовыбора",
+                "regionNotFound": "Автовыбор для региона \"${region}\" не найден",
+                "alreadyInAuto": "Ваш выбор уже находится в списке автовыбора"
+              },
+              "dialog": {
+                "title": "Автовыбор приложений",
+                "msg": "Функция автовыбора для прокси приложений была отключена из-за смены региона на \"${region}\""
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "Предопределенные правила",
+          "ads": {
+            "name": "Блокировать рекламу",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "Обход LAN",
+            "description": ""
           }
         }
       },
@@ -402,7 +408,6 @@
         "remoteDnsDomainStrategy": "Стратегия домена удаленного DNS",
         "directDns": "Распознаватель исходящего сервера (напрямую)",
         "directDnsDomainStrategy": "Стратегия исходящего домена",
-        "enableDnsRouting": "Включить маршрутизацию DNS",
         "enableFakeDns": "Включить поддельный DNS",
         "domainStrategy": {
           "auto": "Авто",
@@ -418,14 +423,12 @@
         "serviceModes": {
           "proxy": "Только прокси-служба",
           "systemProxy": "Установить системный прокси",
-          "tun": "VPN",
-          "tunService": "Служба VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "Прокси",
           "systemProxy": "Системный прокси",
-          "tun": "VPN",
-          "tunService": "Служба VPN"
+          "tun": "VPN"
         },
         "strictRoute": "Строгая маршрутизация",
         "tunImplementation": "Реализация TUN",
@@ -651,7 +654,9 @@
       "asn": "ASN:",
       "organization": "Организация:",
       "location": "Местоположение:",
-      "postalCode": "Почтовый индекс:"
+      "postalCode": "Почтовый индекс:",
+      "download": "Получено:",
+      "upload": "Отправлено:"
     },
     "windowClosing": {
       "askEachTime": "Спрашивать каждый раз",
@@ -667,8 +672,7 @@
     "disconnect": "Отключить",
     "disconnecting": "Отключение...",
     "reconnect": "Переподключить",
-    "reconnectMsg": "Переподключение для учета изменений...",
-    "secure": "Защищено с помощью WARP"
+    "reconnectMsg": "Переподключение для учета изменений..."
   },
   "errors": {
     "unexpected": "Непредвиденная ошибка",

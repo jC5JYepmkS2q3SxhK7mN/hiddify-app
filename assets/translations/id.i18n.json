@@ -42,7 +42,6 @@
     "exit": "Keluar",
     "reset": "Setel ulang",
     "done": "Selesai",
-    "search": "Cari",
     "decline": "Tolak",
     "agree": "Setuju",
     "empty": "Kosong",
@@ -86,6 +85,9 @@
         "confirm": "Konfirmasi impor",
         "success": "Berhasil diimpor",
         "failure": "Gagal mengimpor"
+      },
+      "autoSave": {
+        "success": "Perubahan berhasil disimpan secara otomatis"
       }
     }
   },
@@ -109,7 +111,8 @@
       "sortOptions": {
         "unsorted": "Default",
         "name": "Berdasarkan abjad",
-        "delay": "Berdasarkan latensi"
+        "delay": "Berdasarkan latensi",
+        "usage": "Berdasarkan penggunaan"
       },
       "ipInfo": {
         "address": "Alamat IP",
@@ -234,76 +237,10 @@
       },
       "routing": {
         "title": "Perutean",
-        "perAppProxy": {
-          "title": "Proxy per aplikasi",
-          "hideSysApps": "Sembunyikan aplikasi sistem",
-          "options": {
-            "import": {
-              "clipboard": "Impor pilihan dari papan klip",
-              "file": "Impor pilihan dari file",
-              "msg": "Mengimpor akan menggantikan pilihan Anda saat ini. Anda yakin ingin melanjutkan?"
-            },
-            "export": {
-              "clipboard": "Salin pilihan ke papan klip",
-              "file": "Ekspor pilihan ke file"
-            },
-            "shareToAll": "Bagikan ke semua",
-            "clearAllSelections": "Hapus semua pilihan"
-          },
-          "modes": {
-            "all": "Semua",
-            "proxy": "Proxy",
-            "bypass": "Lewati",
-            "allMsg": "Proxy semua aplikasi",
-            "proxyMsg": "Proxy hanya aplikasi yang dipilih",
-            "bypassMsg": "Jangan proxy aplikasi yang dipilih"
-          },
-          "autoSelection": {
-            "title": "Pilihan otomatis",
-            "performNow": "Lakukan sekarang",
-            "resetToDefault": "Setel ulang ke default",
-            "autoUpdateInterval": "Interval pembaruan otomatis",
-            "toast": {
-              "success": "Pilihan aplikasi otomatis berhasil diselesaikan",
-              "failure": "Pilihan otomatis gagal",
-              "regionNotFound": "Pilihan otomatis tidak ditemukan untuk wilayah \"${region}\"",
-              "alreadyInAuto": "Pilihan Anda sudah ada dalam daftar otomatis"
-            },
-            "dialog": {
-              "title": "Pilihan aplikasi otomatis",
-              "msg": "Fitur pilihan otomatis untuk proxy per aplikasi dinonaktifkan karena perubahan wilayah menjadi \"${region}\""
-            }
-          }
-        },
-        "region": "Wilayah",
-        "regions": {
-          "ir": "Iran (ir)",
-          "cn": "Tiongkok (cn)",
-          "ru": "Rusia (ru)",
-          "af": "Afghanistan (af)",
-          "id": "Indonesia (id)",
-          "tr": "Turki (tr)",
-          "br": "Brasil (br)",
-          "other": "Lainnya"
-        },
-        "balancerStrategy": {
-          "title": "Strategi Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "Blokir iklan",
-        "bypassLan": "Lewati LAN",
-        "resolveDestination": "Resolusi tujuan",
-        "ipv6Route": "Rute IPv6",
-        "ipv6Modes": {
-          "disable": "Nonaktifkan",
-          "enable": "Aktifkan",
-          "prefer": "Prioritaskan",
-          "only": "Hanya"
-        },
         "routeRule": {
-          "title": "Aturan perutean",
+          "empty": "Belum ada aturan yang ditambahkan\n\nKetuk tombol + untuk membuat aturan baru atau pilih dari aturan yang telah ditentukan sebelumnya",
+          "delete": "Hapus aturan",
+          "create": "Buat aturan baru",
           "options": {
             "import": {
               "clipboard": "Impor aturan dari papan klip",
@@ -315,12 +252,8 @@
             },
             "reset": "Setel ulang aturan"
           },
-          "deleteRule": "Hapus aturan",
-          "createRule": "Buat aturan baru",
           "rule": {
             "title": "Aturan",
-            "ruleChanged": "Aturan diubah",
-            "ruleChangedMsg": "Apakah Anda ingin menyimpan editan Anda?",
             "onlyTunMode": "Hanya tersedia dalam mode TUN",
             "notAvailabeInThisPlatform": "Tidak tersedia di platform ini",
             "canNotBeEmpty": "Tidak boleh kosong",
@@ -330,7 +263,7 @@
             "validProcessName": "\"Nama Proses\" yang valid seperti\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
             "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
             "validProcessPath": "\"Jalur Proses\" yang valid seperti\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
-            "validPortRangeEx": "80 atau 1-65000",
+            "validPortRangeEx": "80 atau 1:65000",
             "validPortRange": "\"Port\" atau \"Rentang Port\" yang valid seperti\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
             "validIpCidrEx": "8.8.8.8 atau 10.0.0.0/24",
             "validIpCidr": "IP CIDR yang valid seperti\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
@@ -382,13 +315,86 @@
             "update": "Perbarui nilai",
             "clearList": "Bersihkan daftar",
             "clearListMsg": "Semua item dihapus"
+          }
+        },
+        "generalOptions": {
+          "title": "Opsi umum perutean",
+          "region": "Wilayah",
+          "regions": {
+            "ir": "Iran (ir)",
+            "cn": "Tiongkok (cn)",
+            "ru": "Rusia (ru)",
+            "af": "Afghanistan (af)",
+            "id": "Indonesia (id)",
+            "tr": "Turki (tr)",
+            "br": "Brasil (br)",
+            "other": "Lainnya"
           },
-          "androidApps": {
-            "pageTitle": "Aplikasi Android",
-            "showSystemApps": "Tampilkan aplikasi sistem",
-            "hideSystemApps": "Sembunyikan aplikasi sistem",
-            "clearSelection": "Hapus pilihan",
-            "uninstalled": "Dihapus"
+          "balancerStrategy": {
+            "title": "Strategi Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "Resolusi tujuan",
+          "ipv6Route": "Rute IPv6",
+          "ipv6Modes": {
+            "disable": "Nonaktifkan",
+            "enable": "Aktifkan",
+            "prefer": "Prioritaskan",
+            "only": "Eksklusif"
+          },
+          "perAppProxy": {
+            "title": "Proxy per aplikasi",
+            "hideSysApps": "Sembunyikan aplikasi sistem",
+            "options": {
+              "import": {
+                "clipboard": "Impor pilihan dari papan klip",
+                "file": "Impor pilihan dari file",
+                "msg": "Mengimpor akan menggantikan pilihan Anda saat ini. Anda yakin ingin melanjutkan?"
+              },
+              "export": {
+                "clipboard": "Salin pilihan ke papan klip",
+                "file": "Ekspor pilihan ke file"
+              },
+              "shareToAll": "Bagikan ke semua",
+              "clearAllSelections": "Hapus semua pilihan"
+            },
+            "modes": {
+              "all": "Semua",
+              "proxy": "Proxy",
+              "bypass": "Lewati",
+              "allMsg": "Proxy semua aplikasi",
+              "proxyMsg": "Proxy hanya aplikasi yang dipilih",
+              "bypassMsg": "Jangan proxy aplikasi yang dipilih"
+            },
+            "autoSelection": {
+              "title": "Pilihan otomatis",
+              "performNow": "Lakukan sekarang",
+              "resetToDefault": "Setel ulang ke default",
+              "autoUpdateInterval": "Interval pembaruan otomatis",
+              "toast": {
+                "success": "Pilihan aplikasi otomatis berhasil diselesaikan",
+                "failure": "Pilihan otomatis gagal",
+                "regionNotFound": "Pilihan otomatis tidak ditemukan untuk wilayah \"${region}\"",
+                "alreadyInAuto": "Pilihan Anda sudah ada dalam daftar otomatis"
+              },
+              "dialog": {
+                "title": "Pilihan aplikasi otomatis",
+                "msg": "Fitur pilihan otomatis untuk proxy per aplikasi dinonaktifkan karena perubahan wilayah menjadi \"${region}\""
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "Aturan yang telah ditentukan",
+          "ads": {
+            "name": "Blokir iklan",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "Lewati LAN",
+            "description": ""
           }
         }
       },
@@ -398,7 +404,6 @@
         "remoteDnsDomainStrategy": "Strategi domain DNS jarak jauh",
         "directDns": "Penyelesai server keluar (langsung)",
         "directDnsDomainStrategy": "Strategi domain keluar",
-        "enableDnsRouting": "Aktifkan perutean DNS",
         "enableFakeDns": "Aktifkan DNS palsu",
         "domainStrategy": {
           "auto": "Otomatis",
@@ -414,14 +419,12 @@
         "serviceModes": {
           "proxy": "Hanya layanan proksi",
           "systemProxy": "Atur proksi sistem",
-          "tun": "VPN",
-          "tunService": "Layanan VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "Proxy",
           "systemProxy": "Proxy sistem",
-          "tun": "VPN",
-          "tunService": "Layanan VPN"
+          "tun": "VPN"
         },
         "strictRoute": "Rute ketat",
         "tunImplementation": "Implementasi TUN",
@@ -647,7 +650,9 @@
       "asn": "ASN:",
       "organization": "Organisasi:",
       "location": "Lokasi:",
-      "postalCode": "Kode pos:"
+      "postalCode": "Kode pos:",
+      "download": "Unduh:",
+      "upload": "Unggah:"
     },
     "windowClosing": {
       "askEachTime": "Tanyakan setiap kali",
@@ -663,8 +668,7 @@
     "disconnect": "Putuskan",
     "disconnecting": "Memutuskan...",
     "reconnect": "Sambungkan kembali",
-    "reconnectMsg": "Menyambungkan kembali untuk menerapkan perubahan...",
-    "secure": "Diamankan oleh WARP"
+    "reconnectMsg": "Menyambungkan kembali untuk menerapkan perubahan..."
   },
   "errors": {
     "unexpected": "Kesalahan tak terduga",

@@ -42,7 +42,6 @@
     "exit": "Çıkış",
     "reset": "Sıfırla",
     "done": "Bitti",
-    "search": "Ara",
     "decline": "Reddet",
     "agree": "Kabul et",
     "empty": "Boş",
@@ -86,13 +85,16 @@
         "confirm": "İçe aktarmayı onayla",
         "success": "Başarıyla içe aktarıldı",
         "failure": "İçe aktarılamadı"
+      },
+      "autoSave": {
+        "success": "Değişiklikler otomatik olarak kaydedildi"
       }
     }
   },
   "intro": {
     "banner": "Sınırsız bir internet için ihtiyacınız olan her şey",
     "termsAndPolicyCaution(rich)": "Devam ederek ${tap(@:pages.about.termsAndConditions)} kabul etmiş olursunuz",
-    "info(rich)": "Hiddify tarafından ❤️ ile yapıldı - ${tap_source(Açık Kaynak)} (${tap_license(Lisans)})"
+    "info(rich)": "Hiddify tarafından ❤️ ile yapıldı - ${tap_source(Açık Kaynak)} (${tap_license(Licence)})"
   },
   "pages": {
     "home": {
@@ -109,7 +111,8 @@
       "sortOptions": {
         "unsorted": "Varsayılan",
         "name": "Alfabetik",
-        "delay": "Gecikmeye göre"
+        "delay": "Gecikmeye göre",
+        "usage": "Kullanıma göre"
       },
       "ipInfo": {
         "address": "IP adresi",
@@ -221,7 +224,7 @@
         "silentStart": "Simge durumunda başlat",
         "ignoreBatteryOptimizations": "Pil optimizasyonunu devre dışı bırak",
         "ignoreBatteryOptimizationsMsg": "Optimum VPN performansı için kısıtlamaları kaldırın",
-        "memoryLimit": "Bellek limiti",
+        "memoryLimit": "Memory limit",
         "memoryLimitMsg": "Bellek yetersizliği hataları veya sık uygulama çökmeleri yaşıyorsanız etkinleştirin",
         "debugMode": "Hata ayıklama modu",
         "debugModeMsg": "Bu değişikliği uygulamak için uygulamayı yeniden başlatın",
@@ -234,76 +237,10 @@
       },
       "routing": {
         "title": "Yönlendirme",
-        "perAppProxy": {
-          "title": "Uygulama bazlı proxy",
-          "hideSysApps": "Sistem uygulamalarını gizle",
-          "options": {
-            "import": {
-              "clipboard": "Seçimi panodan içe aktar",
-              "file": "Seçimi dosyadan içe aktar",
-              "msg": "İçe aktarma mevcut seçimlerinizin üzerine yazacaktır. Devam etmek istediğinizden emin misiniz?"
-            },
-            "export": {
-              "clipboard": "Seçimi panoya kopyala",
-              "file": "Seçimi dosyaya aktar"
-            },
-            "shareToAll": "Herkesle paylaş",
-            "clearAllSelections": "Tüm seçimleri temizle"
-          },
-          "modes": {
-            "all": "Tümü",
-            "proxy": "Proxy",
-            "bypass": "Atla",
-            "allMsg": "Tüm uygulamaları proxy'le",
-            "proxyMsg": "Yalnızca seçili uygulamaları proxy'le",
-            "bypassMsg": "Seçili uygulamaları proxy'leme"
-          },
-          "autoSelection": {
-            "title": "Otomatik seçim",
-            "performNow": "Şimdi gerçekleştir",
-            "resetToDefault": "Varsayılana sıfırla",
-            "autoUpdateInterval": "Otomatik güncelleme aralığı",
-            "toast": {
-              "success": "Otomatik uygulama seçimi başarıyla tamamlandı",
-              "failure": "Otomatik seçim başarısız oldu",
-              "regionNotFound": "\"${region}\" bölgesi için otomatik seçim bulunamadı",
-              "alreadyInAuto": "Seçimleriniz zaten otomatik listede"
-            },
-            "dialog": {
-              "title": "Otomatik uygulama seçimi",
-              "msg": "Uygulama bazlı proxy için otomatik seçim özelliği, bölge \"${region}\" olarak değiştirildiği için devre dışı bırakıldı"
-            }
-          }
-        },
-        "region": "Bölge",
-        "regions": {
-          "ir": "İran (ir)",
-          "cn": "Çin (cn)",
-          "ru": "Rusya (ru)",
-          "af": "Afganistan (af)",
-          "id": "Endonezya (id)",
-          "tr": "Türkiye (tr)",
-          "br": "Brezilya (br)",
-          "other": "Diğer"
-        },
-        "balancerStrategy": {
-          "title": "Balancer stratejisi",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "Reklamları engelle",
-        "bypassLan": "LAN'ı atla",
-        "resolveDestination": "Hedefi çözümle",
-        "ipv6Route": "IPv6 rotası",
-        "ipv6Modes": {
-          "disable": "Devre dışı bırak",
-          "enable": "Etkinleştir",
-          "prefer": "Tercih et",
-          "only": "Sadece"
-        },
         "routeRule": {
-          "title": "Yönlendirme kuralları",
+          "empty": "Henüz kural eklenmedi\n\nYeni bir kural oluşturmak için + düğmesine dokunun veya önceden tanımlanmış kurallardan birini seçin",
+          "delete": "Kuralı sil",
+          "create": "Yeni kural oluştur",
           "options": {
             "import": {
               "clipboard": "Kuralları panodan içe aktar",
@@ -315,12 +252,8 @@
             },
             "reset": "Kuralları sıfırla"
           },
-          "deleteRule": "Kuralı sil",
-          "createRule": "Yeni kural oluştur",
           "rule": {
             "title": "Kural",
-            "ruleChanged": "Kural değiştirildi",
-            "ruleChangedMsg": "Düzenlemelerinizi kaydetmek istiyor musunuz?",
             "onlyTunMode": "Yalnızca TUN modunda kullanılabilir",
             "notAvailabeInThisPlatform": "Bu platformda mevcut değil",
             "canNotBeEmpty": "Boş olamaz",
@@ -330,7 +263,7 @@
             "validProcessName": "Geçerli \"İşlem Adı\", örn.\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
             "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
             "validProcessPath": "Geçerli \"İşlem Yolu\", örn.\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
-            "validPortRangeEx": "80 veya 1-65000",
+            "validPortRangeEx": "80 veya 1:65000",
             "validPortRange": "Geçerli \"Port\" veya \"Port Aralığı\", örn.\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
             "validIpCidrEx": "8.8.8.8 veya 10.0.0.0/24",
             "validIpCidr": "Geçerli IP CIDR, örn.\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
@@ -382,13 +315,86 @@
             "update": "Değeri güncelle",
             "clearList": "Listeyi temizle",
             "clearListMsg": "Tüm öğeler silindi"
+          }
+        },
+        "generalOptions": {
+          "title": "Genel yönlendirme seçenekleri",
+          "region": "Bölge",
+          "regions": {
+            "ir": "İran (ir)",
+            "cn": "Çin (cn)",
+            "ru": "Rusya (ru)",
+            "af": "Afganistan (af)",
+            "id": "Endonezya (id)",
+            "tr": "Türkiye (tr)",
+            "br": "Brezilya (br)",
+            "other": "Diğer"
           },
-          "androidApps": {
-            "pageTitle": "Android uygulamaları",
-            "showSystemApps": "Sistem uygulamalarını göster",
-            "hideSystemApps": "Sistem uygulamalarını gizle",
-            "clearSelection": "Seçimi temizle",
-            "uninstalled": "Kaldırıldı"
+          "balancerStrategy": {
+            "title": "Balancer stratejisi",
+            "roundRobin": "Round Robin",
+            "consistentHash": "Consistent Hash",
+            "stickySession": "Sticky Session"
+          },
+          "resolveDestination": "Hedefi çözümle",
+          "ipv6Route": "IPv6 rotası",
+          "ipv6Modes": {
+            "disable": "Devre dışı bırak",
+            "enable": "Etkinleştir",
+            "prefer": "Tercih edilen",
+            "only": "Özel"
+          },
+          "perAppProxy": {
+            "title": "Uygulama bazlı proxy",
+            "hideSysApps": "Sistem uygulamalarını gizle",
+            "options": {
+              "import": {
+                "clipboard": "Seçimi panodan içe aktar",
+                "file": "Seçimi dosyadan içe aktar",
+                "msg": "İçe aktarma mevcut seçimlerinizin üzerine yazacaktır. Devam etmek istediğinizden emin misiniz?"
+              },
+              "export": {
+                "clipboard": "Seçimi panoya kopyala",
+                "file": "Seçimi dosyaya aktar"
+              },
+              "shareToAll": "Herkesle paylaş",
+              "clearAllSelections": "Tüm seçimleri temizle"
+            },
+            "modes": {
+              "all": "Tümü",
+              "proxy": "Proxy",
+              "bypass": "Bypass",
+              "allMsg": "Tüm uygulamaları proxy'le",
+              "proxyMsg": "Yalnızca seçili uygulamaları proxy'le",
+              "bypassMsg": "Seçili uygulamaları proxy'leme"
+            },
+            "autoSelection": {
+              "title": "Otomatik seçim",
+              "performNow": "Şimdi gerçekleştir",
+              "resetToDefault": "Varsayılana sıfırla",
+              "autoUpdateInterval": "Otomatik güncelleme aralığı",
+              "toast": {
+                "success": "Otomatik uygulama seçimi başarıyla tamamlandı",
+                "failure": "Otomatik seçim başarısız oldu",
+                "regionNotFound": "\"${region}\" bölgesi için otomatik seçim bulunamadı",
+                "alreadyInAuto": "Seçimleriniz zaten otomatik listede"
+              },
+              "dialog": {
+                "title": "Otomatik uygulama seçimi",
+                "msg": "Uygulama bazlı proxy için otomatik seçim özelliği, bölge \"${region}\" olarak değiştirildiği için devre dışı bırakıldı"
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "Önceden tanımlanmış kurallar",
+          "ads": {
+            "name": "Reklamları engelle",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "LAN'ı atla",
+            "description": ""
           }
         }
       },
@@ -398,7 +404,6 @@
         "remoteDnsDomainStrategy": "Uzak DNS alan adı stratejisi",
         "directDns": "Giden sunucu çözümleyicisi (doğrudan)",
         "directDnsDomainStrategy": "Giden alan adı stratejisi",
-        "enableDnsRouting": "DNS yönlendirmeyi etkinleştir",
         "enableFakeDns": "Sahte DNS'i etkinleştir",
         "domainStrategy": {
           "auto": "Otomatik",
@@ -414,14 +419,12 @@
         "serviceModes": {
           "proxy": "Yalnızca proxy servisi",
           "systemProxy": "Sistem proxy'sini ayarla",
-          "tun": "VPN",
-          "tunService": "VPN servisi"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "Proxy",
           "systemProxy": "Sistem proxy'si",
-          "tun": "VPN",
-          "tunService": "VPN servisi"
+          "tun": "VPN"
         },
         "strictRoute": "Katı yönlendirme",
         "tunImplementation": "TUN uygulaması",
@@ -647,7 +650,9 @@
       "asn": "ASN:",
       "organization": "Kuruluş:",
       "location": "Konum:",
-      "postalCode": "Posta kodu:"
+      "postalCode": "Posta kodu:",
+      "download": "İndirme:",
+      "upload": "Yükleme:"
     },
     "windowClosing": {
       "askEachTime": "Her seferinde sor",
@@ -663,8 +668,7 @@
     "disconnect": "Bağlantıyı kes",
     "disconnecting": "Bağlantı kesiliyor...",
     "reconnect": "Yeniden bağlan",
-    "reconnectMsg": "Değişiklikleri uygulamak için yeniden bağlanılıyor...",
-    "secure": "WARP ile güvende"
+    "reconnectMsg": "Değişiklikleri uygulamak için yeniden bağlanılıyor..."
   },
   "errors": {
     "unexpected": "Beklenmeyen hata",

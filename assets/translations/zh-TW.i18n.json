@@ -42,7 +42,6 @@
     "exit": "退出",
     "reset": "重設",
     "done": "完成",
-    "search": "搜尋",
     "decline": "拒絕",
     "agree": "同意",
     "empty": "空",
@@ -86,6 +85,9 @@
         "confirm": "確認匯入",
         "success": "匯入成功",
         "failure": "匯入失敗"
+      },
+      "autoSave": {
+        "success": "更改已自動儲存"
       }
     }
   },
@@ -109,7 +111,8 @@
       "sortOptions": {
         "unsorted": "預設",
         "name": "按名稱",
-        "delay": "按延遲"
+        "delay": "按延遲",
+        "usage": "按用量"
       },
       "ipInfo": {
         "address": "IP 位址",
@@ -212,7 +215,7 @@
           "black": "純黑模式"
         },
         "enableAnalytics": "啟用分析",
-        "enableAnalyticsMsg": "允許收集分析資料和傳送崩潰報告以改進應用程式",
+        "enableAnalyticsMsg": "允許收集分析資料 and 傳送崩潰報告以改進應用程式",
         "autoIpCheck": "自動檢查連線 IP",
         "dynamicNotification": "在通知中顯示速度",
         "hapticFeedback": "觸覺回饋",
@@ -234,76 +237,10 @@
       },
       "routing": {
         "title": "路由",
-        "perAppProxy": {
-          "title": "依應用程式代理",
-          "hideSysApps": "隱藏系統應用程式",
-          "options": {
-            "import": {
-              "clipboard": "從剪貼簿匯入選擇",
-              "file": "從檔案匯入選擇",
-              "msg": "匯入將取代您目前的選擇。確定要繼續嗎？"
-            },
-            "export": {
-              "clipboard": "複製選擇到剪貼簿",
-              "file": "匯出選擇到檔案"
-            },
-            "shareToAll": "分享給所有人",
-            "clearAllSelections": "清除所有選擇"
-          },
-          "modes": {
-            "all": "全部",
-            "proxy": "代理",
-            "bypass": "繞過",
-            "allMsg": "代理所有應用程式",
-            "proxyMsg": "僅代理選定應用程式",
-            "bypassMsg": "不代理選定應用程式"
-          },
-          "autoSelection": {
-            "title": "自動選擇",
-            "performNow": "立即執行",
-            "resetToDefault": "重設為預設",
-            "autoUpdateInterval": "自動更新間隔",
-            "toast": {
-              "success": "自動選擇應用程式成功完成",
-              "failure": "自動選擇失敗",
-              "regionNotFound": "未找到「${region}」地區的自動選擇",
-              "alreadyInAuto": "您的選擇已在自動清單中"
-            },
-            "dialog": {
-              "title": "自動選擇應用程式",
-              "msg": "由於地區更改為「${region}」，依應用程式代理的自動選擇功能已被停用"
-            }
-          }
-        },
-        "region": "地區",
-        "regions": {
-          "ir": "伊朗 (ir)",
-          "cn": "中國 (cn)",
-          "ru": "俄羅斯 (ru)",
-          "af": "阿富汗 (af)",
-          "id": "印尼 (id)",
-          "tr": "土耳其 (tr)",
-          "br": "巴西 (br)",
-          "other": "其他"
-        },
-        "balancerStrategy": {
-          "title": "Balancer 策略",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "攔截廣告",
-        "bypassLan": "繞過區域網路",
-        "resolveDestination": "解析目的地",
-        "ipv6Route": "IPv6 路由",
-        "ipv6Modes": {
-          "disable": "停用",
-          "enable": "啟用",
-          "prefer": "首選",
-          "only": "僅"
-        },
         "routeRule": {
-          "title": "路由規則",
+          "empty": "尚未新增規則\n\n點擊 + 按鈕建立新規則，或從預設規則中選擇",
+          "delete": "刪除規則",
+          "create": "建立新規則",
           "options": {
             "import": {
               "clipboard": "從剪貼簿匯入規則",
@@ -315,12 +252,8 @@
             },
             "reset": "重設規則"
           },
-          "deleteRule": "刪除規則",
-          "createRule": "建立新規則",
           "rule": {
             "title": "規則",
-            "ruleChanged": "規則已變更",
-            "ruleChangedMsg": "您想儲存您的編輯嗎？",
             "onlyTunMode": "僅在 TUN 模式下可用",
             "notAvailabeInThisPlatform": "在此平台上不可用",
             "canNotBeEmpty": "不能為空",
@@ -382,13 +315,86 @@
             "update": "更新值",
             "clearList": "清除清單",
             "clearListMsg": "所有項目已刪除"
+          }
+        },
+        "generalOptions": {
+          "title": "路由一般選項",
+          "region": "地區",
+          "regions": {
+            "ir": "伊朗 (ir)",
+            "cn": "中國 (cn)",
+            "ru": "俄羅斯 (ru)",
+            "af": "阿富汗 (af)",
+            "id": "印尼 (id)",
+            "tr": "土耳其 (tr)",
+            "br": "巴西 (br)",
+            "other": "其他"
           },
-          "androidApps": {
-            "pageTitle": "Android 應用程式",
-            "showSystemApps": "顯示系統應用程式",
-            "hideSystemApps": "隱藏系統應用程式",
-            "clearSelection": "清除選擇",
-            "uninstalled": "已解除安裝"
+          "balancerStrategy": {
+            "title": "Balancer 策略",
+            "roundRobin": "Round Robin",
+            "consistentHash": "Consistent Hash",
+            "stickySession": "Sticky Session"
+          },
+          "resolveDestination": "解析目的地",
+          "ipv6Route": "IPv6 路由",
+          "ipv6Modes": {
+            "disable": "停用",
+            "enable": "啟用",
+            "prefer": "首選",
+            "only": "僅"
+          },
+          "perAppProxy": {
+            "title": "依應用程式代理",
+            "hideSysApps": "隱藏系統應用程式",
+            "options": {
+              "import": {
+                "clipboard": "從剪貼簿匯入選擇",
+                "file": "從檔案匯入選擇",
+                "msg": "匯入將取代您目前的選擇。確定要繼續嗎？"
+              },
+              "export": {
+                "clipboard": "複製選擇到剪貼簿",
+                "file": "匯出選擇到檔案"
+              },
+              "shareToAll": "分享給所有人",
+              "clearAllSelections": "清除所有選擇"
+            },
+            "modes": {
+              "all": "全部",
+              "proxy": "代理",
+              "bypass": "繞過",
+              "allMsg": "代理所有應用程式",
+              "proxyMsg": "僅代理選定應用程式",
+              "bypassMsg": "不代理選定應用程式"
+            },
+            "autoSelection": {
+              "title": "自動選擇",
+              "performNow": "立即執行",
+              "resetToDefault": "重設為預設",
+              "autoUpdateInterval": "自動更新間隔",
+              "toast": {
+                "success": "自動選擇應用程式成功完成",
+                "failure": "自動選擇失敗",
+                "regionNotFound": "未找到「${region}」地區的自動選擇",
+                "alreadyInAuto": "您的選擇已在自動清單中"
+              },
+              "dialog": {
+                "title": "自動選擇應用程式",
+                "msg": "由於地區更改為「${region}」，依應用程式代理的自動選擇功能已被停用"
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "預設規則",
+          "ads": {
+            "name": "攔截廣告",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "繞過區域網路",
+            "description": ""
           }
         }
       },
@@ -398,7 +404,6 @@
         "remoteDnsDomainStrategy": "遠端 DNS 網域策略",
         "directDns": "出站伺服器解析器（直連）",
         "directDnsDomainStrategy": "出站網域策略",
-        "enableDnsRouting": "啟用 DNS 路由",
         "enableFakeDns": "啟用偽造 DNS",
         "domainStrategy": {
           "auto": "自動",
@@ -414,14 +419,12 @@
         "serviceModes": {
           "proxy": "僅代理服務",
           "systemProxy": "設定系統代理",
-          "tun": "VPN",
-          "tunService": "VPN 服務"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "代理",
           "systemProxy": "系統代理",
-          "tun": "VPN",
-          "tunService": "VPN 服務"
+          "tun": "VPN"
         },
         "strictRoute": "嚴格路由",
         "tunImplementation": "TUN 實現",
@@ -647,7 +650,9 @@
       "asn": "ASN：",
       "organization": "組織：",
       "location": "位置：",
-      "postalCode": "郵遞區號："
+      "postalCode": "郵遞區號：",
+      "download": "下載：",
+      "upload": "上傳："
     },
     "windowClosing": {
       "askEachTime": "每次詢問",
@@ -663,8 +668,7 @@
     "disconnect": "中斷連線",
     "disconnecting": "中斷連線中...",
     "reconnect": "重新連線",
-    "reconnectMsg": "正在重新連線以套用變更...",
-    "secure": "由 WARP 保護"
+    "reconnectMsg": "正在重新連線以套用變更..."
   },
   "errors": {
     "unexpected": "意外錯誤",

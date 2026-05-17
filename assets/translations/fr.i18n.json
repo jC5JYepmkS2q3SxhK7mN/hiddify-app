@@ -42,7 +42,6 @@
     "exit": "Quitter",
     "reset": "Réinitialiser",
     "done": "Terminé",
-    "search": "Rechercher",
     "decline": "Refuser",
     "agree": "Accepter",
     "empty": "Vide",
@@ -86,6 +85,9 @@
         "confirm": "Confirmer l'importation",
         "success": "Importé avec succès",
         "failure": "Échec de l'importation"
+      },
+      "autoSave": {
+        "success": "Modifications enregistrées automatiquement avec succès"
       }
     }
   },
@@ -109,7 +111,8 @@
       "sortOptions": {
         "unsorted": "Par défaut",
         "name": "Alphabétiquement",
-        "delay": "Par latence"
+        "delay": "Par latence",
+        "usage": "Par utilisation"
       },
       "ipInfo": {
         "address": "Adresse IP",
@@ -234,80 +237,14 @@
       },
       "routing": {
         "title": "Routage",
-        "perAppProxy": {
-          "title": "Proxy par application",
-          "hideSysApps": "Masquer les applications système",
-          "options": {
-            "import": {
-              "clipboard": "Importer la sélection depuis le presse-papiers",
-              "file": "Importer la sélection depuis un fichier",
-              "msg": "L'importation remplacera vos sélections actuelles. Êtes-vous sûr de vouloir continuer ?"
-            },
-            "export": {
-              "clipboard": "Copier la sélection dans le presse-papiers",
-              "file": "Exporter la sélection vers un fichier"
-            },
-            "shareToAll": "Partager avec tous",
-            "clearAllSelections": "Effacer toutes les sélections"
-          },
-          "modes": {
-            "all": "Toutes",
-            "proxy": "Proxy",
-            "bypass": "Contourner",
-            "allMsg": "Utiliser le proxy pour toutes les applications",
-            "proxyMsg": "Utiliser le proxy uniquement pour les applications sélectionnées",
-            "bypassMsg": "Ne pas utiliser le proxy pour les applications sélectionnées"
-          },
-          "autoSelection": {
-            "title": "Sélection automatique",
-            "performNow": "Exécuter maintenant",
-            "resetToDefault": "Réinitialiser par défaut",
-            "autoUpdateInterval": "Intervalle de mise à jour automatique",
-            "toast": {
-              "success": "Sélection automatique des applications terminée avec succès",
-              "failure": "Échec de la sélection automatique",
-              "regionNotFound": "Sélection automatique non trouvée pour la région \"${region}\"",
-              "alreadyInAuto": "Vos sélections sont déjà dans la liste automatique"
-            },
-            "dialog": {
-              "title": "Sélection automatique des applications",
-              "msg": "La fonction de sélection automatique pour le proxy par application a été désactivée en raison du changement de région vers \"${region}\""
-            }
-          }
-        },
-        "region": "Région",
-        "regions": {
-          "ir": "Iran (ir)",
-          "cn": "Chine (cn)",
-          "ru": "Russie (ru)",
-          "af": "Afghanistan (af)",
-          "id": "Indonésie (id)",
-          "tr": "Turquie (tr)",
-          "br": "Brésil (br)",
-          "other": "Autre"
-        },
-        "balancerStrategy": {
-          "title": "Stratégie de Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "Bloquer les publicités",
-        "bypassLan": "Contourner le LAN",
-        "resolveDestination": "Résoudre la destination",
-        "ipv6Route": "Route IPv6",
-        "ipv6Modes": {
-          "disable": "Désactiver",
-          "enable": "Activer",
-          "prefer": "Préféré",
-          "only": "Uniquement"
-        },
         "routeRule": {
-          "title": "Règles de routage",
+          "empty": "Aucune règle ajoutée pour le moment\n\nAppuyez sur le bouton + pour créer une nouvelle règle ou choisissez parmi les règles prédéfinies",
+          "delete": "Supprimer la règle",
+          "create": "Créer une nouvelle règle",
           "options": {
             "import": {
-              "clipboard": "Importer les règles depuis le presse-papiers",
-              "file": "Importer les règles depuis un fichier"
+              "clipboard": "Importer des règles depuis le presse-papiers",
+              "file": "Importer des règles depuis un fichier"
             },
             "export": {
               "clipboard": "Copier les règles dans le presse-papiers",
@@ -315,12 +252,8 @@
             },
             "reset": "Réinitialiser les règles"
           },
-          "deleteRule": "Supprimer la règle",
-          "createRule": "Créer une nouvelle règle",
           "rule": {
             "title": "Règle",
-            "ruleChanged": "Règle modifiée",
-            "ruleChangedMsg": "Voulez-vous enregistrer vos modifications ?",
             "onlyTunMode": "Disponible uniquement en mode TUN",
             "notAvailabeInThisPlatform": "Non disponible sur cette plateforme",
             "canNotBeEmpty": "Ne peut pas être vide",
@@ -330,7 +263,7 @@
             "validProcessName": "\"Nom de processus\" valide comme\n@:pages.settings.routing.routeRule.rule.validProcessNameEx",
             "validProcessPathEx": "C:\\Pro...\\chrome.exe\n/App.../Google Chrome\n/usr/lib.../chrome",
             "validProcessPath": "\"Chemin de processus\" valide comme\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
-            "validPortRangeEx": "80 ou 1-65000",
+            "validPortRangeEx": "80 ou 1:65000",
             "validPortRange": "\"Port\" ou \"Plage de ports\" valide comme\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
             "validIpCidrEx": "8.8.8.8 ou 10.0.0.0/24",
             "validIpCidr": "IP CIDR valide comme\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
@@ -382,13 +315,86 @@
             "update": "Mettre à jour la valeur",
             "clearList": "Vider la liste",
             "clearListMsg": "Tous les éléments ont été supprimés"
+          }
+        },
+        "generalOptions": {
+          "title": "Options générales de routage",
+          "region": "Région",
+          "regions": {
+            "ir": "Iran (ir)",
+            "cn": "Chine (cn)",
+            "ru": "Russie (ru)",
+            "af": "Afghanistan (af)",
+            "id": "Indonésie (id)",
+            "tr": "Turquie (tr)",
+            "br": "Brésil (br)",
+            "other": "Autre"
           },
-          "androidApps": {
-            "pageTitle": "Applications Android",
-            "showSystemApps": "Afficher les applications système",
-            "hideSystemApps": "Masquer les applications système",
-            "clearSelection": "Effacer la sélection",
-            "uninstalled": "Désinstallé"
+          "balancerStrategy": {
+            "title": "Stratégie de Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "Résoudre la destination",
+          "ipv6Route": "Route IPv6",
+          "ipv6Modes": {
+            "disable": "Désactiver",
+            "enable": "Activer",
+            "prefer": "Préféré",
+            "only": "Exclusif"
+          },
+          "perAppProxy": {
+            "title": "Proxy par application",
+            "hideSysApps": "Masquer les applications système",
+            "options": {
+              "import": {
+                "clipboard": "Importer la sélection depuis le presse-papiers",
+                "file": "Importer la sélection depuis un fichier",
+                "msg": "L'importation remplacera vos sélections actuelles. Êtes-vous sûr de vouloir continuer ?"
+              },
+              "export": {
+                "clipboard": "Copier la sélection dans le presse-papiers",
+                "file": "Exporter la sélection vers un fichier"
+              },
+              "shareToAll": "Partager avec tous",
+              "clearAllSelections": "Effacer toutes les sélections"
+            },
+            "modes": {
+              "all": "Toutes",
+              "proxy": "Proxy",
+              "bypass": "Contourner",
+              "allMsg": "Proxy pour toutes les applications",
+              "proxyMsg": "Proxy uniquement pour les applications sélectionnées",
+              "bypassMsg": "Ne pas utiliser de proxy pour les applications sélectionnées"
+            },
+            "autoSelection": {
+              "title": "Sélection automatique",
+              "performNow": "Exécuter maintenant",
+              "resetToDefault": "Réinitialiser par défaut",
+              "autoUpdateInterval": "Intervalle de mise à jour automatique",
+              "toast": {
+                "success": "Sélection automatique des applications terminée avec succès",
+                "failure": "Échec de la sélection automatique",
+                "regionNotFound": "Sélection automatique non trouvée pour la région \"${region}\"",
+                "alreadyInAuto": "Vos sélections sont déjà dans la liste automatique"
+              },
+              "dialog": {
+                "title": "Sélection automatique des applications",
+                "msg": "La fonction de sélection automatique pour le proxy par application a été désactivée en raison du changement de région vers \"${region}\""
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "Règles prédéfinies",
+          "ads": {
+            "name": "Bloquer les publicités",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "Contourner le LAN",
+            "description": ""
           }
         }
       },
@@ -398,7 +404,6 @@
         "remoteDnsDomainStrategy": "Stratégie de domaine DNS distant",
         "directDns": "Résolveur de serveur sortant (direct)",
         "directDnsDomainStrategy": "Stratégie de domaine sortant",
-        "enableDnsRouting": "Activer le routage DNS",
         "enableFakeDns": "Activer le faux DNS",
         "domainStrategy": {
           "auto": "Auto",
@@ -414,14 +419,12 @@
         "serviceModes": {
           "proxy": "Service proxy uniquement",
           "systemProxy": "Définir le proxy système",
-          "tun": "VPN",
-          "tunService": "Service VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "Proxy",
           "systemProxy": "Proxy système",
-          "tun": "VPN",
-          "tunService": "Service VPN"
+          "tun": "VPN"
         },
         "strictRoute": "Routage strict",
         "tunImplementation": "Implémentation TUN",
@@ -647,7 +650,9 @@
       "asn": "ASN :",
       "organization": "Organisation :",
       "location": "Emplacement :",
-      "postalCode": "Code postal :"
+      "postalCode": "Code postal :",
+      "download": "Téléchargement :",
+      "upload": "Envoi :"
     },
     "windowClosing": {
       "askEachTime": "Demander à chaque fois",
@@ -663,8 +668,7 @@
     "disconnect": "Déconnecter",
     "disconnecting": "Déconnexion en cours...",
     "reconnect": "Reconnecter",
-    "reconnectMsg": "Reconnexion pour prendre en compte les changements...",
-    "secure": "Sécurisé par WARP"
+    "reconnectMsg": "Reconnexion pour prendre en compte les changements..."
   },
   "errors": {
     "unexpected": "Erreur inattendue",
