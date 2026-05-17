@@ -147,10 +147,17 @@ class SettingsPage extends HookConsumerWidget {
             icon: Icons.layers_rounded,
             namedLocation: context.namedLocation('general'),
           ),
+          if (ref.watch(hasAnyProfileProvider).value ?? false)
+            SettingsSection(
+              title: t.pages.settings.chain.title,
+              icon: Icons.webhook_rounded,
+              subtitle: Text(t.pages.settings.chain.subtitle),
+              namedLocation: context.namedLocation('chainOptions'),
+            ),
           SettingsSection(
             title: t.pages.settings.routing.title,
             icon: Icons.route_rounded,
-            namedLocation: context.namedLocation('routeOptions'),
+            namedLocation: context.namedLocation('routingOptions'),
           ),
           SettingsSection(
             title: t.pages.settings.dns.title,
@@ -167,13 +174,6 @@ class SettingsPage extends HookConsumerWidget {
             icon: Icons.content_cut_rounded,
             namedLocation: context.namedLocation('tlsTricks'),
           ),
-          if (ref.watch(hasAnyProfileProvider).value ?? false)
-            SettingsSection(
-              title: t.pages.settings.chain.title,
-              icon: Icons.webhook_rounded,
-              subtitle: Text(t.pages.settings.chain.subtitle),
-              namedLocation: context.namedLocation('chainOptions'),
-            ),
           if (PlatformUtils.isIOS)
             Material(
               child: ListTile(
