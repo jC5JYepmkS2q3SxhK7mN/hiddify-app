@@ -91,13 +91,13 @@ class RuleNotifier extends _$RuleNotifier {
     state = Rule.fromJson(jsonEncode(map));
   }
 
-  void save() {
+  Future save() async {
     assert(state.hasName() && state.hasOutbound());
     if (isEditMode) {
       assert(state.hasListOrder() && state.hasEnabled());
-      ref.read(rulesNotifierProvider.notifier).updateRule(state);
+      await ref.read(rulesNotifierProvider.notifier).updateRule(state);
     } else {
-      ref.read(rulesNotifierProvider.notifier).addRule(state);
+      await ref.read(rulesNotifierProvider.notifier).addRule(state);
     }
   }
 }
