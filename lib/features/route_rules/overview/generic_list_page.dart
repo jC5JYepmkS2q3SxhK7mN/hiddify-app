@@ -8,11 +8,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:text_scroll/text_scroll.dart';
 
 class GenericListPage extends HookConsumerWidget {
-  const GenericListPage({super.key, this.ruleListOrder, required this.ruleEnum, this.validator});
+  const GenericListPage({super.key, this.ruleListOrder, required this.ruleEnum});
 
   final int? ruleListOrder;
   final RuleEnum ruleEnum;
-  final FormFieldValidator<String>? validator;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +22,10 @@ class GenericListPage extends HookConsumerWidget {
     Future<void> addNewValue() async {
       final result = await ref
           .read(dialogNotifierProvider.notifier)
-          .showSettingText(lable: t.pages.settings.routing.routeRule.genericList.addNew, validator: validator);
+          .showSettingText(
+            lable: t.pages.settings.routing.routeRule.genericList.addNew,
+            validator: ruleEnum.validator(t),
+          );
       if (result is String) ref.read(provider.notifier).add(result);
     }
 
@@ -65,7 +67,7 @@ class GenericListPage extends HookConsumerWidget {
                 .showSettingText(
                   lable: t.pages.settings.routing.routeRule.genericList.update,
                   value: '${list[index]}',
-                  validator: validator,
+                  validator: ruleEnum.validator(t),
                 );
             if (result is String) ref.read(provider.notifier).update(index, result);
           },
