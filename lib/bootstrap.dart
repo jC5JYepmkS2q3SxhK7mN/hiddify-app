@@ -22,6 +22,7 @@ import 'package:hiddify/features/chain/notifier/chain_profile_notifier.dart';
 import 'package:hiddify/features/log/data/log_data_providers.dart';
 import 'package:hiddify/features/profile/data/profile_data_providers.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
+import 'package:hiddify/features/proxy/active/active_proxy_notifier.dart';
 import 'package:hiddify/features/system_tray/notifier/system_tray_notifier.dart';
 import 'package:hiddify/features/window/notifier/window_notifier.dart';
 import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
@@ -97,6 +98,10 @@ Future<void> lazyBootstrap(WidgetsBinding widgetsBinding, Environment env) async
     () => container.read(chainProfileNotifierProvider(ChainType.unblocker).future),
   );
   await _init("hiddify-core", () => container.read(hiddifyCoreServiceProvider).init());
+
+  // Eagerly listen to activeProxyNotifierProvider to force synchronous evaluation in microtasks,
+  // avoiding lazy build-phase flushes and sibling dependency collisions on the Home page.
+  container.listen(activeProxyNotifierProvider, (previous, next) {});
 
   if (!kIsWeb) {
     // await _safeInit(

@@ -10,7 +10,7 @@ import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/proxy/data/proxy_data_providers.dart';
 import 'package:hiddify/features/proxy/model/proxy_failure.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
+
 import 'package:hiddify/utils/riverpod_utils.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -57,12 +57,11 @@ class ProxiesSortNotifier extends _$ProxiesSortNotifier with AppLogger {
 @riverpod
 class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   @override
-  Stream<OutboundGroup?> build() async* {
+  Stream<OutboundGroup?> build() {
     ref.disposeDelay(const Duration(seconds: 15));
-    ref.watch(coreRestartSignalProvider);
-    final serviceRunning = await ref.watch(serviceRunningProvider.future);
+    final serviceRunning = ref.watch(serviceRunningProvider);
     if (!serviceRunning) {
-      throw const ServiceNotRunning();
+      return Stream.error(const ServiceNotRunning());
     }
     final sortBy = ref.watch(proxiesSortNotifierProvider);
     // yield* ref
@@ -82,7 +81,7 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
     //       ),
     //     )
     //     .asyncMap((proxies) async => _sortOutbounds(proxies, sortBy));
-    yield* ref
+    return ref
         .watch(proxyRepositoryProvider)
         .watchProxies()
         .map(
