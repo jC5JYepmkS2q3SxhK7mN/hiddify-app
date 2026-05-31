@@ -61,15 +61,6 @@ class HomePage extends HookConsumerWidget {
           //           tooltip: t.profile.add.buttonText,
           //         )),
           Semantics(
-            key: const ValueKey("profile_quick_settings"),
-            label: t.pages.home.quickSettings,
-            child: IconButton(
-              icon: Icon(Icons.tune_rounded, color: theme.colorScheme.primary),
-              onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
-            ),
-          ),
-          const Gap(8),
-          Semantics(
             key: const ValueKey("profile_add_button"),
             label: t.pages.profiles.add,
             child: IconButton(
@@ -131,6 +122,7 @@ class HomePage extends HookConsumerWidget {
                                 ),
                               ),
                               ActiveProxyFooter(),
+                              Gap(32),
                             ],
                           ),
                         ),
@@ -147,6 +139,43 @@ class HomePage extends HookConsumerWidget {
                 ),
               ),
             ),
+            if (ref.watch(hasAnyProfileProvider).value ?? false)
+              Positioned(
+                right: 0,
+                left: 0,
+                bottom: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Material(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child: InkWell(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
+                        onTap: () => ref.read(bottomSheetsNotifierProvider.notifier).showQuickSettings(),
+                        child: Container(
+                          height: 32,
+                          padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(t.pages.home.quickSettings),
+                              const Gap(4),
+                              const Icon(Icons.arrow_drop_up_rounded, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

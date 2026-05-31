@@ -10,16 +10,16 @@ part 'stats_notifier.g.dart';
 @riverpod
 class StatsNotifier extends _$StatsNotifier with AppLogger {
   @override
-  Stream<SystemInfo> build() async* {
+  Stream<SystemInfo> build() {
     ref.disposeDelay(const Duration(seconds: 10));
-    final serviceRunning = await ref.watch(serviceRunningProvider.future);
+    final serviceRunning = ref.watch(serviceRunningProvider);
     if (serviceRunning) {
-      yield* ref
+      return ref
           .watch(statsRepositoryProvider)
           .watchStats()
           .map((event) => event.getOrElse((_) => SystemInfo.create()));
     } else {
-      yield* Stream.value(SystemInfo.create());
+      return Stream.value(SystemInfo.create());
     }
   }
 }

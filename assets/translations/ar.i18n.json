@@ -42,7 +42,6 @@
     "exit": "خروج",
     "reset": "إعادة تعيين",
     "done": "تم",
-    "search": "بحث",
     "decline": "رفض",
     "agree": "أوافق",
     "empty": "فارغ",
@@ -51,6 +50,10 @@
     "timeout": "انتهى الوقت",
     "sort": "فرز",
     "dashboard": "لوحة التحكم",
+    "disable": "تعطيل",
+    "psiphon": "Psiphon",
+    "profile": "ملف تعريف",
+    "configuration": "تكوين",
     "interval": {
       "day": {
         "zero": "",
@@ -88,6 +91,9 @@
         "confirm": "تأكيد الاستيراد",
         "success": "تم الاستيراد بنجاح",
         "failure": "فشل الاستيراد"
+      },
+      "autoSave": {
+        "success": "تم حفظ التغييرات تلقائيًا بنجاح"
       }
     }
   },
@@ -99,7 +105,7 @@
   "pages": {
     "home": {
       "title": "الرئيسية",
-      "quickSettings": "الإعدادات السريعة"
+      "quickSettings": "خيارات الإعدادات السريعة"
     },
     "proxies": {
       "title": "البروكسيات",
@@ -111,7 +117,8 @@
       "sortOptions": {
         "unsorted": "الافتراضي",
         "name": "أبجديًا",
-        "delay": "حسب التأخير"
+        "delay": "حسب التأخير",
+        "usage": "حسب الاستخدام"
       },
       "ipInfo": {
         "address": "عنوان IP",
@@ -236,76 +243,10 @@
       },
       "routing": {
         "title": "التوجيه",
-        "perAppProxy": {
-          "title": "بروكسي لكل تطبيق",
-          "hideSysApps": "إخفاء تطبيقات النظام",
-          "options": {
-            "import": {
-              "clipboard": "استيراد التحديد من الحافظة",
-              "file": "استيراد التحديد من ملف",
-              "msg": "سيؤدي الاستيراد إلى استبدال تحديداتك الحالية. هل أنت متأكد من رغبتك في المتابعة؟"
-            },
-            "export": {
-              "clipboard": "نسخ التحديد إلى الحافظة",
-              "file": "تصدير التحديد إلى ملف"
-            },
-            "shareToAll": "مشاركة مع الجميع",
-            "clearAllSelections": "مسح جميع التحديدات"
-          },
-          "modes": {
-            "all": "الكل",
-            "proxy": "بروكسي",
-            "bypass": "تجاوز",
-            "allMsg": "استخدام البروكسي لجميع التطبيقات",
-            "proxyMsg": "استخدام البروكسي للتطبيقات المحددة فقط",
-            "bypassMsg": "عدم استخدام البروكسي للتطبيقات المحددة"
-          },
-          "autoSelection": {
-            "title": "الاختيار التلقائي",
-            "performNow": "تنفيذ الآن",
-            "resetToDefault": "إعادة التعيين إلى الافتراضي",
-            "autoUpdateInterval": "فاصل التحديث التلقائي",
-            "toast": {
-              "success": "اكتمل الاختيار التلقائي للتطبيقات بنجاح",
-              "failure": "فشل الاختيار التلقائي",
-              "regionNotFound": "لم يتم العثور على اختيار تلقائي لمنطقة \"${region}\"",
-              "alreadyInAuto": "اختياراتك موجودة بالفعل في القائمة التلقائية"
-            },
-            "dialog": {
-              "title": "الاختيار التلقائي للتطبيقات",
-              "msg": "تم تعطيل ميزة الاختيار التلقائي للبروكسي بسبب تغيير المنطقة إلى \"${region}\""
-            }
-          }
-        },
-        "region": "المنطقة",
-        "regions": {
-          "ir": "إيران (ir)",
-          "cn": "الصين (cn)",
-          "ru": "روسيا (ru)",
-          "af": "أفغانستان (af)",
-          "id": "إندونيسيا (id)",
-          "tr": "تركيا (tr)",
-          "br": "البرازيل (br)",
-          "other": "أخرى"
-        },
-        "balancerStrategy": {
-          "title": "استراتيجية Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "حظر الإعلانات",
-        "bypassLan": "تجاوز الشبكة المحلية",
-        "resolveDestination": "تحديد وجهة الاتصال",
-        "ipv6Route": "توجيه IPv6",
-        "ipv6Modes": {
-          "disable": "تعطيل",
-          "enable": "تفعيل",
-          "prefer": "مفضل",
-          "only": "فقط"
-        },
         "routeRule": {
-          "title": "قواعد التوجيه",
+          "empty": "لم يتم إضافة قواعد بعد\n\nاضغط على زر + لإنشاء قاعدة جديدة أو اختر من القواعد المحددة مسبقًا",
+          "delete": "حذف القاعدة",
+          "create": "إنشاء قاعدة جديدة",
           "options": {
             "import": {
               "clipboard": "استيراد القواعد من الحافظة",
@@ -317,12 +258,8 @@
             },
             "reset": "إعادة تعيين القواعد"
           },
-          "deleteRule": "حذف القاعدة",
-          "createRule": "إنشاء قاعدة جديدة",
           "rule": {
             "title": "قاعدة",
-            "ruleChanged": "تم تغيير القاعدة",
-            "ruleChangedMsg": "هل تريد حفظ تعديلاتك؟",
             "onlyTunMode": "متوفر فقط في وضع TUN",
             "notAvailabeInThisPlatform": "غير متوفر على هذا النظام",
             "canNotBeEmpty": "لا يمكن أن يكون فارغًا",
@@ -384,13 +321,86 @@
             "update": "تحديث القيمة",
             "clearList": "مسح القائمة",
             "clearListMsg": "تم حذف جميع العناصر"
+          }
+        },
+        "generalOptions": {
+          "title": "الخيارات العامة للتوجيه",
+          "region": "المنطقة",
+          "regions": {
+            "ir": "إيران (ir)",
+            "cn": "الصين (cn)",
+            "ru": "روسيا (ru)",
+            "af": "أفغانستان (af)",
+            "id": "إندونيسيا (id)",
+            "tr": "تركيا (tr)",
+            "br": "البرازيل (br)",
+            "other": "أخرى"
           },
-          "androidApps": {
-            "pageTitle": "تطبيقات أندرويد",
-            "showSystemApps": "عرض تطبيقات النظام",
-            "hideSystemApps": "إخفاء تطبيقات النظام",
-            "clearSelection": "مسح التحديد",
-            "uninstalled": "غير مثبت"
+          "balancerStrategy": {
+            "title": "استراتيجية Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "تحديد وجهة الاتصال",
+          "ipv6Route": "توجيه IPv6",
+          "ipv6Modes": {
+            "disable": "تعطيل",
+            "enable": "تفعيل",
+            "prefer": "مفضل",
+            "only": "حصري"
+          },
+          "perAppProxy": {
+            "title": "بروكسي لكل تطبيق",
+            "hideSysApps": "إخفاء تطبيقات النظام",
+            "options": {
+              "import": {
+                "clipboard": "استيراد التحديد من الحافظة",
+                "file": "استيراد التحديد من ملف",
+                "msg": "سيؤدي الاستيراد إلى استبدال تحديداتك الحالية. هل أنت متأكد من رغبتك في المتابعة؟"
+              },
+              "export": {
+                "clipboard": "نسخ التحديد إلى الحافظة",
+                "file": "تصدير التحديد إلى ملف"
+              },
+              "shareToAll": "مشاركة مع الجميع",
+              "clearAllSelections": "مسح جميع التحديدات"
+            },
+            "modes": {
+              "all": "الكل",
+              "proxy": "بروكسي",
+              "bypass": "تجاوز",
+              "allMsg": "استخدام البروكسي لجميع التطبيقات",
+              "proxyMsg": "استخدام البروكسي للتطبيقات المحددة فقط",
+              "bypassMsg": "عدم استخدام البروكسي للتطبيقات المحددة"
+            },
+            "autoSelection": {
+              "title": "الاختيار التلقائي",
+              "performNow": "تنفيذ الآن",
+              "resetToDefault": "إعادة التعيين إلى الافتراضي",
+              "autoUpdateInterval": "فاصل التحديث التلقائي",
+              "toast": {
+                "success": "اكتمل الاختيار التلقائي للتطبيقات بنجاح",
+                "failure": "فشل الاختيار التلقائي",
+                "regionNotFound": "لم يتم العثور على اختيار تلقائي لمنطقة \"${region}\"",
+                "alreadyInAuto": "اختياراتك موجودة بالفعل في القائمة التلقائية"
+              },
+              "dialog": {
+                "title": "الاختيار التلقائي للتطبيقات",
+                "msg": "تم تعطيل ميزة الاختيار التلقائي للبروكسي بسبب تغيير المنطقة إلى \"${region}\""
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "القواعد المحددة مسبقًا",
+          "ads": {
+            "name": "حظر الإعلانات",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "تجاوز الشبكة المحلية",
+            "description": ""
           }
         }
       },
@@ -400,7 +410,6 @@
         "remoteDnsDomainStrategy": "استراتيجية نطاق DNS البعيد",
         "directDns": "محلل خادم الصادر (مباشر)",
         "directDnsDomainStrategy": "استراتيجية النطاق الصادر",
-        "enableDnsRouting": "تمكين توجيه DNS",
         "enableFakeDns": "تمكين DNS الوهمي",
         "domainStrategy": {
           "auto": "تلقائي",
@@ -416,14 +425,12 @@
         "serviceModes": {
           "proxy": "خدمة البروكسي فقط",
           "systemProxy": "تعيين بروكسي النظام",
-          "tun": "VPN",
-          "tunService": "خدمة VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "بروكسي",
           "systemProxy": "بروكسي النظام",
-          "tun": "VPN",
-          "tunService": "خدمة VPN"
+          "tun": "VPN"
         },
         "strictRoute": "توجيه صارم",
         "tunImplementation": "تنفيذ Tun",
@@ -458,27 +465,83 @@
           "size": "حجم padding"
         }
       },
-      "warp": {
-        "title": "WARP",
-        "enable": "تفعيل WARP",
-        "generateConfig": "إنشاء تكوين WARP",
-        "configGenerated": "تم إنشاء تكوين WARP",
-        "missingConfig": "تكوين WARP مفقود",
-        "detourMode": "وضع توجيه WARP",
-        "detourModes": {
-          "proxyOverWarp": "توجيه البروكسيات عبر WARP",
-          "warpOverProxy": "توجيه WARP عبر البروكسيات",
-          "proxyOverWarpExplain": "لإلغاء حظر البروكسيات بواسطة WARP",
-          "warpOverProxyExplain": "لأمان إضافي بواسطة WARP"
+      "chain": {
+        "title": "سلسلة",
+        "subtitle": "أمان إضافي وأداة فك حظر",
+        "finalIp": "عنوان IP النهائي",
+        "levels": {
+          "app": {
+            "title": "التطبيق",
+            "msg": "نقطة البداية: تدخل بيانات التطبيق إلى السلسلة هنا وتمر عبر الطبقات التالية للتحضير للتجاوز النهائي"
+          },
+          "extraSecurity": {
+            "title": "أمان إضافي",
+            "msg": "يضيف درعًا إضافيًا للحفاظ على خصوصية بياناتك، حتى لو كان ملفك الشخصي الرئيسي غير موثوق به"
+          },
+          "mainProfile": {
+            "title": "الملف الشخصي الرئيسي"
+          },
+          "unblocker": {
+            "title": "أداة فك الحظر",
+            "msg": "يساعد في تجاوز قيود الشبكة. إذا اتصل المساعد، فيمكن لملفك الشخصي الرئيسي الاستمرار في العمل حتى لو كان محظورًا حاليًا"
+          },
+          "filtering": {
+            "title": "التصفية",
+            "msg": "المخرج النهائي: بعد المرور عبر الطبقات النشطة (الأمان الإضافي، الملف الشخصي الرئيسي، أو أداة فك الحظر) وتطبيق تأثيراتها، يتم توجيه بياناتك أخيرًا لتجاوز تصفية الشبكة المحلية"
+          }
         },
-        "licenseKey": "مفتاح الترخيص",
-        "cleanIp": "IP نظيف",
-        "port": "المنفذ",
-        "noise": {
-          "count": "عدد الضوضاء",
-          "mode": "وضع الضوضاء",
-          "size": "حجم الضوضاء",
-          "delay": "تأخير الضوضاء"
+        "warp": {
+          "missingConfig": "تكوين وارب مفقود",
+          "licenseKey": "مفتاح الترخيص",
+          "cleanIp": "IP نظيف",
+          "port": "المنفذ",
+          "noise": {
+            "count": "عدد الضوضاء",
+            "mode": "وضع الضوضاء",
+            "size": "حجم الضوضاء",
+            "delay": "تأخير الضوضاء"
+          }
+        },
+        "psiphon": {
+          "selectServerRegion": "اختر منطقة الخادم",
+          "regions": {
+            "auto": "@:common.auto",
+            "at": "النمسا (at)",
+            "au": "أستراليا (au)",
+            "be": "بلجيكا (be)",
+            "bg": "بلغاريا (bg)",
+            "ca": "كندا (ca)",
+            "ch": "سويسرا (ch)",
+            "cz": "جمهورية التشيك (cz)",
+            "de": "ألمانيا (de)",
+            "dk": "الدانمرك (dk)",
+            "ee": "إستونيا (ee)",
+            "es": "إسبانيا (es)",
+            "fi": "فنلندا (fi)",
+            "fr": "فرنسا (fr)",
+            "gb": "المملكة المتحدة (gb)",
+            "hr": "كرواتيا (hr)",
+            "hu": "المجر (hu)",
+            "ie": "أيرلندا (ie)",
+            "in": "الهند (in)",
+            "it": "إيطاليا (it)",
+            "jp": "اليابان (jp)",
+            "lv": "لاتفيا (lv)",
+            "nl": "هولندا (nl)",
+            "no": "النرويج (no)",
+            "pl": "بولندا (pl)",
+            "pt": "البرتغال (pt)",
+            "ro": "رومانيا (ro)",
+            "rs": "صربيا (rs)",
+            "se": "السويد (se)",
+            "sg": "سنغافورة (sg)",
+            "sk": "سلوفاكيا (sk)",
+            "us": "الولايات المتحدة (us)"
+          }
+        },
+        "profile": {
+          "selectProfile": "اختر ملف تعريف",
+          "conduitPairingId": "معرف اقتران Conduit"
         }
       }
     }
@@ -593,7 +656,9 @@
       "asn": "ASN:",
       "organization": "المُنظمة:",
       "location": "الموقع:",
-      "postalCode": "الرمز البريدي:"
+      "postalCode": "الرمز البريدي:",
+      "download": "تنزيل:",
+      "upload": "رفع:"
     },
     "windowClosing": {
       "askEachTime": "السؤال كل مرة",
@@ -609,8 +674,7 @@
     "disconnect": "قطع الاتصال",
     "disconnecting": "جاري قطع الاتصال...",
     "reconnect": "إعادة الاتصال",
-    "reconnectMsg": "جاري إعادة الاتصال لتطبيق التغييرات...",
-    "secure": "مُؤمَّن بواسطة WARP"
+    "reconnectMsg": "جاري إعادة الاتصال لتطبيق التغييرات..."
   },
   "errors": {
     "unexpected": "خطأ غير متوقع",

@@ -147,7 +147,7 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
               ),
             )
           : AppBar(
-              title: Text(t.pages.settings.routing.perAppProxy.title),
+              title: Text(t.pages.settings.routing.generalOptions.perAppProxy.title),
               actions: [
                 IconButton(
                   icon: const Icon(FluentIcons.search_24_regular),
@@ -159,7 +159,7 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                     SubmenuButton(
                       menuChildren: <Widget>[
                         MenuItemButton(
-                          child: Text(t.pages.settings.routing.perAppProxy.options.import.clipboard),
+                          child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.import.clipboard),
                           onPressed: () async => await ref
                               .read(dialogNotifierProvider.notifier)
                               .showConfirmation(
@@ -171,12 +171,12 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                               }),
                         ),
                         MenuItemButton(
-                          child: Text(t.pages.settings.routing.perAppProxy.options.import.file),
+                          child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.import.file),
                           onPressed: () async => await ref
                               .read(dialogNotifierProvider.notifier)
                               .showConfirmation(
-                                title: t.pages.settings.routing.perAppProxy.options.import.file,
-                                message: t.pages.settings.routing.perAppProxy.options.import.msg,
+                                title: t.pages.settings.routing.generalOptions.perAppProxy.options.import.file,
+                                message: t.pages.settings.routing.generalOptions.perAppProxy.options.import.msg,
                               )
                               .then((shouldImport) async {
                                 if (shouldImport) await ref.read(PerAppProxyProvider(mode).notifier).importFile();
@@ -188,11 +188,11 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                     SubmenuButton(
                       menuChildren: <Widget>[
                         MenuItemButton(
-                          child: Text(t.pages.settings.routing.perAppProxy.options.export.clipboard),
+                          child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.export.clipboard),
                           onPressed: () async => await ref.read(PerAppProxyProvider(mode).notifier).exportClipboard(),
                         ),
                         MenuItemButton(
-                          child: Text(t.pages.settings.routing.perAppProxy.options.export.file),
+                          child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.export.file),
                           onPressed: () async => await ref.read(PerAppProxyProvider(mode).notifier).exportFile(),
                         ),
                       ],
@@ -200,14 +200,14 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                     ),
                     if (ref.watch(ConfigOptions.region) != Region.other)
                       MenuItemButton(
-                        child: Text(t.pages.settings.routing.perAppProxy.options.shareToAll),
+                        child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.shareToAll),
                         onPressed: () async => await ref
                             .read(appProxyLoadingProvider.notifier)
                             .doAsync(ref.read(PerAppProxyProvider(mode).notifier).shareOnGithub),
                       ),
                     const PopupMenuDivider(),
                     MenuItemButton(
-                      child: Text(t.pages.settings.routing.perAppProxy.options.clearAllSelections),
+                      child: Text(t.pages.settings.routing.generalOptions.perAppProxy.options.clearAllSelections),
                       onPressed: () => ref.read(PerAppProxyProvider(mode).notifier).clearAll(),
                     ),
                   ],
@@ -271,7 +271,7 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
                       ),
                       const Gap(8),
                       ChoiceChip(
-                        label: Text(t.pages.settings.routing.perAppProxy.hideSysApps),
+                        label: Text(t.pages.settings.routing.generalOptions.perAppProxy.hideSysApps),
                         selected: hideSystemApps.value,
                         onSelected: (value) => hideSystemApps.value = value,
                       ),
@@ -290,7 +290,7 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
           ? FloatingActionButton.extended(
               onPressed: () async =>
                   await ref.read(bottomSheetsNotifierProvider.notifier).showAutoAppsSelection(mode: mode!),
-              label: Text(t.pages.settings.routing.perAppProxy.autoSelection.title),
+              label: Text(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.title),
               icon: Icon(
                 ref.watch(Preferences.autoAppsSelectionRegion) == null
                     ? Icons.toggle_off_outlined
@@ -322,8 +322,7 @@ class PerAppProxyPage extends HookConsumerWidget with PresLogger {
               subtitle: Text(
                 package.packageName,
                 style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines: 1, overflow: TextOverflow.ellipsis,
               ),
               value: flag == null ? false : PkgFlag.checkboxValue(flag),
               tristate: true,

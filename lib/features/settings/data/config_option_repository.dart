@@ -7,10 +7,11 @@ import 'package:hiddify/core/utils/json_converters.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
 import 'package:hiddify/features/log/model/log_level.dart';
 import 'package:hiddify/features/profile/data/profile_parser.dart';
+import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/settings/model/config_option_failure.dart';
+import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
 import 'package:hiddify/singbox/model/singbox_config_option.dart';
-import 'package:hiddify/singbox/model/singbox_rule.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,7 +38,7 @@ abstract class ConfigOptions {
     mapTo: (value) => value.name,
   );
   static final useXrayCoreWhenPossible = PreferencesNotifier.create<bool, bool>("use-xray-core-when-possible", false);
-  static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
+  // static final blockAds = PreferencesNotifier.create<bool, bool>("block-ads", false);
   static final logLevel = PreferencesNotifier.create<LogLevel, String>(
     "log-level",
     LogLevel.warn,
@@ -169,7 +170,7 @@ abstract class ConfigOptions {
     validator: (value) => isPort(value.toString()),
   );
 
-  static final bypassLan = PreferencesNotifier.create<bool, bool>("bypass-lan", false);
+  // static final bypassLan = PreferencesNotifier.create<bool, bool>("bypass-lan", false);
 
   static final allowConnectionFromLan = PreferencesNotifier.create<bool, bool>("allow-connection-from-lan", false);
 
@@ -229,55 +230,100 @@ abstract class ConfigOptions {
     mapTo: (value) => value.name,
   );
 
-  static final enableWarp = PreferencesNotifier.create<bool, bool>("enable-warp", false);
-
-  static final warpDetourMode = PreferencesNotifier.create<WarpDetourMode, String>(
-    "warp-detour-mode",
-    WarpDetourMode.warpOverProxy,
-    mapFrom: WarpDetourMode.values.byName,
+  static final chainStatus = PreferencesNotifier.create<ChainStatus, String>(
+    "chain-status",
+    ChainStatus.off,
+    mapFrom: ChainStatus.values.byName,
     mapTo: (value) => value.name,
   );
 
-  static final warpLicenseKey = PreferencesNotifier.create<String, String>("warp-license-key", "");
-  static final warp2LicenseKey = PreferencesNotifier.create<String, String>("warp2s-license-key", "");
+  static final extraSecurityPsiphonRegion = PreferencesNotifier.create<PsiphonRegion, String>(
+    "extra-security-psiphon-region",
+    PsiphonRegion.auto,
+    mapFrom: PsiphonRegion.values.byName,
+    mapTo: (value) => value.name,
+  );
 
-  static final warpAccountId = PreferencesNotifier.create<String, String>("warp-account-id", "");
-  static final warp2AccountId = PreferencesNotifier.create<String, String>("warp2-account-id", "");
+  static final extraSecurityPsiphonConduitPairingId = PreferencesNotifier.create<String, String>(
+    "extra-security-psiphon-conduit-pairing-id",
+    "",
+  );
 
-  static final warpAccessToken = PreferencesNotifier.create<String, String>("warp-access-token", "");
-  static final warp2AccessToken = PreferencesNotifier.create<String, String>("warp2-access-token", "");
+  static final unblockerPsiphonRegion = PreferencesNotifier.create<PsiphonRegion, String>(
+    "unblocker-psiphon-region",
+    PsiphonRegion.auto,
+    mapFrom: PsiphonRegion.values.byName,
+    mapTo: (value) => value.name,
+  );
 
-  static final warpCleanIp = PreferencesNotifier.create<String, String>("warp-clean-ip", "auto");
+  static final unblockerPsiphonConduitPairingId = PreferencesNotifier.create<String, String>(
+    "unblocker-psiphon-conduit-pairing-id",
+    "",
+  );
 
-  static final warpPort = PreferencesNotifier.create<int, int>(
-    "warp-port",
+  static final extraSecurityMode = PreferencesNotifier.create<ChainMode, String>(
+    "extra-security-mode",
+    ChainMode.warp,
+    mapFrom: ChainMode.values.byName,
+    mapTo: (value) => value.name,
+  );
+
+  static final unblockerMode = PreferencesNotifier.create<ChainMode, String>(
+    "unblocker-mode",
+    ChainMode.psiphon,
+    mapFrom: ChainMode.values.byName,
+    mapTo: (value) => value.name,
+  );
+
+  static final extraSecurityProfileId = PreferencesNotifier.create<String?, String?>(
+    "extra-security-profile-id",
+    null,
+    mapFrom: (value) => value,
+    mapTo: (value) => value,
+  );
+  static final unblockerProfileId = PreferencesNotifier.create<String?, String?>(
+    "unblocker-profile-id",
+    null,
+    mapFrom: (value) => value,
+    mapTo: (value) => value,
+  );
+
+  static final extraSecurityWarpLicenseKey = PreferencesNotifier.create<String, String>(
+    "extra-security-warp-license-key",
+    "",
+  );
+
+  static final unblockerWarpLicenseKey = PreferencesNotifier.create<String, String>("unblocker-warp-license-key", "");
+
+  static final unblockerWarpCleanIp = PreferencesNotifier.create<String, String>("unblocker-warp-clean-ip", "auto");
+
+  static final unblockerWarpPort = PreferencesNotifier.create<int, int>(
+    "unblocker-warp-port",
     0,
     validator: (value) => isPort(value.toString()),
   );
 
-  static final warpNoise = PreferencesNotifier.create<OptionalRange, String>(
-    "warp-noise",
+  static final unblockerWarpNoise = PreferencesNotifier.create<OptionalRange, String>(
+    "unblocker-warp-noise",
     const OptionalRange(min: 1, max: 3),
     mapFrom: (value) => OptionalRange.parse(value, allowEmpty: true),
     mapTo: const OptionalRangeJsonConverter().toJson,
   );
-  static final warpNoiseMode = PreferencesNotifier.create<String, String>("warp-noise-mode", "m4");
 
-  static final warpNoiseDelay = PreferencesNotifier.create<OptionalRange, String>(
-    "warp-noise-delay",
+  static final unblockerWarpNoiseMode = PreferencesNotifier.create<String, String>("unblocker-warp-noise-mode", "m4");
+
+  static final unblockerWarpNoiseDelay = PreferencesNotifier.create<OptionalRange, String>(
+    "unblocker-warp-noise-delay",
     const OptionalRange(min: 10, max: 30),
     mapFrom: (value) => OptionalRange.parse(value, allowEmpty: true),
     mapTo: const OptionalRangeJsonConverter().toJson,
   );
-  static final warpNoiseSize = PreferencesNotifier.create<OptionalRange, String>(
-    "warp-noise-size",
+  static final unblockerWarpNoiseSize = PreferencesNotifier.create<OptionalRange, String>(
+    "unblocker-warp-noise-size",
     const OptionalRange(min: 10, max: 30),
     mapFrom: (value) => OptionalRange.parse(value, allowEmpty: true),
     mapTo: const OptionalRangeJsonConverter().toJson,
   );
-
-  static final warpWireguardConfig = PreferencesNotifier.create<String, String>("warp-wireguard-config", "");
-  static final warp2WireguardConfig = PreferencesNotifier.create<String, String>("warp2-wireguard-config", "");
 
   static final hasExperimentalFeatures = Provider.autoDispose<bool>((ref) {
     // final mode = ref.watch(serviceMode);
@@ -292,21 +338,12 @@ abstract class ConfigOptions {
   });
 
   /// preferences to exclude from share and export
-  static final privatePreferencesKeys = {
-    "warp.license-key",
-    "warp.access-token",
-    "warp.account-id",
-    "warp.wireguard-config",
-    "warp2.license-key",
-    "warp2.access-token",
-    "warp2.account-id",
-    "warp2.wireguard-config",
-  };
+  static final privatePreferencesKeys = {"extra-security.warp.license-key", "unblocker.warp.license-key"};
 
   static final Map<String, StateNotifierProvider<PreferencesNotifier, dynamic>> preferences = {
     "region": region,
     "balancer-strategy": balancerStrategy,
-    "block-ads": blockAds,
+    // "block-ads": blockAds,
     "use-xray-core-when-possible": useXrayCoreWhenPossible,
     "service-mode": serviceMode,
     "log-level": logLevel,
@@ -326,7 +363,7 @@ abstract class ConfigOptions {
     "connection-test-url": connectionTestUrl,
     "url-test-interval": urlTestInterval,
     "clash-api-port": clashApiPort,
-    "bypass-lan": bypassLan,
+    // "bypass-lan": bypassLan,
     "allow-connection-from-lan": allowConnectionFromLan,
     // "enable-dns-routing": enableDnsRouting,
 
@@ -345,28 +382,34 @@ abstract class ConfigOptions {
     "tls-tricks.enable-padding": enableTlsPadding,
     "tls-tricks.padding-size": tlsPaddingSize,
 
+    // EXTRA-SECURITY
     // warp
-    "warp.enable": enableWarp,
-    "warp.mode": warpDetourMode,
-    "warp.license-key": warpLicenseKey,
-    "warp.account-id": warpAccountId,
-    "warp.access-token": warpAccessToken,
-    "warp.clean-ip": warpCleanIp,
-    "warp.clean-port": warpPort,
-    "warp.noise": warpNoise,
-    "warp.noise-size": warpNoiseSize,
-    "warp.noise-mode": warpNoiseMode,
-    "warp.noise-delay": warpNoiseDelay,
-    "warp.wireguard-config": warpWireguardConfig,
-    "warp2.license-key": warp2LicenseKey,
-    "warp2.account-id": warp2AccountId,
-    "warp2.access-token": warp2AccessToken,
-    "warp2.wireguard-config": warp2WireguardConfig,
+    "extra-security.warp.license-key": extraSecurityWarpLicenseKey,
+    // psiphon
+    "extra-security.psiphon.region": extraSecurityPsiphonRegion,
+    "extra-security.psiphon.conduit-pairing-id": extraSecurityPsiphonConduitPairingId,
+    // profile
+    "extra-security.profile.id": extraSecurityProfileId,
+
+    // UNBLOCKER
+    // warp
+    "unblocker.warp.license-key": unblockerWarpLicenseKey,
+    "unblocker.warp.clean-ip": unblockerWarpCleanIp,
+    "unblocker.warp.clean-port": unblockerWarpPort,
+    "unblocker.warp.noise": unblockerWarpNoise,
+    "unblocker.warp.noise-size": unblockerWarpNoiseSize,
+    "unblocker.warp.noise-mode": unblockerWarpNoiseMode,
+    "unblocker.warp.noise-delay": unblockerWarpNoiseDelay,
+    // psiphon
+    "unblocker.psiphon.region": unblockerPsiphonRegion,
+    "unblocker.psiphon.conduit-pairing-id": unblockerPsiphonConduitPairingId,
+    // profile
+    "unblocker.profile.id": unblockerProfileId,
   };
 
   static final singboxConfigOptions = Provider<SingboxConfigOption>((ref) {
     // final region = ref.watch(Preferences.region);
-    final rules = <SingboxRule>[];
+    // final rules = <SingboxRule>[];
     // final rules = switch (region) {
     //   Region.ir => [
     //       const SingboxRule(
@@ -408,11 +451,10 @@ abstract class ConfigOptions {
 
     final mode = ref.watch(serviceMode);
     // final reg = ref.watch(Preferences.region.notifier).raw();
-
     return SingboxConfigOption(
       region: ref.watch(region).name,
       balancerStrategy: ref.watch(balancerStrategy),
-      blockAds: ref.watch(blockAds),
+      // blockAds: ref.watch(blockAds),
       useXrayCoreWhenPossible: ref.watch(useXrayCoreWhenPossible),
       executeConfigAsIs: false,
       logLevel: ref.watch(logLevel),
@@ -436,7 +478,7 @@ abstract class ConfigOptions {
       enableTun: mode == ServiceMode.tun,
       // enableTunService: mode == false, //ServiceMode.tunService,
       setSystemProxy: mode == ServiceMode.systemProxy,
-      bypassLan: ref.watch(bypassLan),
+      // bypassLan: ref.watch(bypassLan),
       allowConnectionFromLan: ref.watch(allowConnectionFromLan),
       enableFakeDns: ref.watch(enableFakeDns),
       // enableDnsRouting: ref.watch(enableDnsRouting),
@@ -455,35 +497,34 @@ abstract class ConfigOptions {
         enablePadding: ref.watch(enableTlsPadding),
         paddingSize: ref.watch(tlsPaddingSize),
       ),
-      warp: SingboxWarpOption(
-        enable: ref.watch(enableWarp),
-        mode: ref.watch(warpDetourMode),
-        wireguardConfig: ref.watch(warpWireguardConfig),
-        licenseKey: ref.watch(warpLicenseKey),
-        accountId: ref.watch(warpAccountId),
-        accessToken: ref.watch(warpAccessToken),
-        cleanIp: ref.watch(warpCleanIp),
-        cleanPort: ref.watch(warpPort),
-        noise: ref.watch(warpNoise),
-        noiseMode: ref.watch(warpNoiseMode),
-        noiseSize: ref.watch(warpNoiseSize),
-        noiseDelay: ref.watch(warpNoiseDelay),
+      chainStatus: ref.watch(chainStatus),
+      extraSecurity: SingboxExtraSecurityOption(
+        mode: ref.watch(extraSecurityMode),
+        warp: SingboxExtraSecurityWarpOption(licenseKey: ref.watch(extraSecurityWarpLicenseKey)),
+        psiphon: SingboxExtraSecurityPsiphonOption(
+          region: ref.watch(extraSecurityPsiphonRegion),
+          conduitPairingId: ref.watch(extraSecurityPsiphonConduitPairingId),
+        ),
+        profile: SingboxExtraSecurityProfileOption(id: ref.watch(extraSecurityProfileId)),
       ),
-      warp2: SingboxWarpOption(
-        enable: ref.watch(enableWarp),
-        mode: ref.watch(warpDetourMode),
-        wireguardConfig: ref.watch(warp2WireguardConfig),
-        licenseKey: ref.watch(warp2LicenseKey),
-        accountId: ref.watch(warp2AccountId),
-        accessToken: ref.watch(warp2AccessToken),
-        cleanIp: ref.watch(warpCleanIp),
-        cleanPort: ref.watch(warpPort),
-        noise: ref.watch(warpNoise),
-        noiseMode: ref.watch(warpNoiseMode),
-        noiseSize: ref.watch(warpNoiseSize),
-        noiseDelay: ref.watch(warpNoiseDelay),
+      unblocker: SingboxUnblockerOption(
+        mode: ref.watch(extraSecurityMode),
+        warp: SingboxUnblockerWarpOption(
+          licenseKey: ref.watch(unblockerWarpLicenseKey),
+          cleanIp: ref.watch(unblockerWarpCleanIp),
+          cleanPort: ref.watch(unblockerWarpPort),
+          noise: ref.watch(unblockerWarpNoise),
+          noiseMode: ref.watch(unblockerWarpNoiseMode),
+          noiseSize: ref.watch(unblockerWarpNoiseSize),
+          noiseDelay: ref.watch(unblockerWarpNoiseDelay),
+        ),
+        psiphon: SingboxUnblockerPsiphonOption(
+          region: ref.watch(unblockerPsiphonRegion),
+          conduitPairingId: ref.watch(unblockerPsiphonConduitPairingId),
+        ),
+        profile: SingboxUnblockerProfileOption(id: ref.watch(unblockerProfileId)),
       ),
-      rules: rules,
+      routeRule: RouteRule(rules: ref.watch(rulesNotifierProvider)).toProto3Json()! as Map<String, dynamic>,
     );
   });
 }

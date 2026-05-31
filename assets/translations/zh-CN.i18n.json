@@ -42,7 +42,6 @@
     "exit": "退出",
     "reset": "重置",
     "done": "完成",
-    "search": "搜索",
     "decline": "拒绝",
     "agree": "同意",
     "empty": "空",
@@ -51,6 +50,10 @@
     "timeout": "超时",
     "sort": "排序",
     "dashboard": "仪表盘",
+    "disable": "禁用",
+    "psiphon": "Psiphon",
+    "profile": "配置",
+    "configuration": "配置",
     "interval": {
       "day": {
         "zero": "",
@@ -82,6 +85,9 @@
         "confirm": "确认导入",
         "success": "导入成功",
         "failure": "导入失败"
+      },
+      "autoSave": {
+        "success": "更改已自动保存"
       }
     }
   },
@@ -93,7 +99,7 @@
   "pages": {
     "home": {
       "title": "主页",
-      "quickSettings": "快速设置"
+      "quickSettings": "快速设置选项"
     },
     "proxies": {
       "title": "代理",
@@ -105,7 +111,8 @@
       "sortOptions": {
         "unsorted": "默认",
         "name": "按名称",
-        "delay": "按延迟"
+        "delay": "按延迟",
+        "usage": "按用量"
       },
       "ipInfo": {
         "address": "IP 地址",
@@ -230,76 +237,10 @@
       },
       "routing": {
         "title": "路由",
-        "perAppProxy": {
-          "title": "分应用代理",
-          "hideSysApps": "隐藏系统应用",
-          "options": {
-            "import": {
-              "clipboard": "从剪贴板导入选择",
-              "file": "从文件导入选择",
-              "msg": "导入将替换您当前的选择。确定要继续吗？"
-            },
-            "export": {
-              "clipboard": "复制选择到剪贴板",
-              "file": "导出选择到文件"
-            },
-            "shareToAll": "分享给所有人",
-            "clearAllSelections": "清除所有选择"
-          },
-          "modes": {
-            "all": "全部",
-            "proxy": "代理",
-            "bypass": "绕过",
-            "allMsg": "代理所有应用",
-            "proxyMsg": "仅代理选定应用",
-            "bypassMsg": "不代理选定应用"
-          },
-          "autoSelection": {
-            "title": "自动选择",
-            "performNow": "立即执行",
-            "resetToDefault": "重置为默认",
-            "autoUpdateInterval": "自动更新间隔",
-            "toast": {
-              "success": "自动选择应用成功完成",
-              "failure": "自动选择失败",
-              "regionNotFound": "未找到 \"${region}\" 地区的自动选择",
-              "alreadyInAuto": "您的选择已在自动列表中"
-            },
-            "dialog": {
-              "title": "自动选择应用",
-              "msg": "由于地区更改为 \"${region}\"，分应用代理的自动选择功能已被禁用"
-            }
-          }
-        },
-        "region": "地区",
-        "regions": {
-          "ir": "伊朗 (ir)",
-          "cn": "中国 (cn)",
-          "ru": "俄罗斯 (ru)",
-          "af": "阿富汗 (af)",
-          "id": "印度尼西亚 (id)",
-          "tr": "土耳其 (tr)",
-          "br": "巴西 (br)",
-          "other": "其他"
-        },
-        "balancerStrategy": {
-          "title": "Balancer 策略",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "拦截广告",
-        "bypassLan": "绕过局域网",
-        "resolveDestination": "解析目的地",
-        "ipv6Route": "IPv6 路由",
-        "ipv6Modes": {
-          "disable": "禁用",
-          "enable": "启用",
-          "prefer": "首选",
-          "only": "仅"
-        },
         "routeRule": {
-          "title": "路由规则",
+          "empty": "尚未添加规则\n\n点击 + 按钮创建新规则或从预设规则中选择",
+          "delete": "删除规则",
+          "create": "创建新规则",
           "options": {
             "import": {
               "clipboard": "从剪贴板导入规则",
@@ -311,12 +252,8 @@
             },
             "reset": "重置规则"
           },
-          "deleteRule": "删除规则",
-          "createRule": "创建新规则",
           "rule": {
             "title": "规则",
-            "ruleChanged": "规则已更改",
-            "ruleChangedMsg": "您想保存您的编辑吗？",
             "onlyTunMode": "仅在 TUN 模式下可用",
             "notAvailabeInThisPlatform": "在此平台上不可用",
             "canNotBeEmpty": "不能为空",
@@ -332,7 +269,7 @@
             "validIpCidr": "有效的 IP CIDR，例如\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com 或 dl.google.com",
             "validDomain": "有效的 \"域名\"，例如\n@:pages.settings.routing.routeRule.rule.validDomainEx",
-            "validDomainSuffixEx": ".com 或 .cn",
+            "validDomainSuffixEx": ".com 或 .ir",
             "validDomainSuffix": "有效的 \"域名后缀\"，例如\n@:pages.settings.routing.routeRule.rule.validDomainSuffixEx",
             "tileTitle(map)": {
               "name": "名称",
@@ -378,13 +315,86 @@
             "update": "更新值",
             "clearList": "清空列表",
             "clearListMsg": "所有项目已删除"
+          }
+        },
+        "generalOptions": {
+          "title": "路由通用选项",
+          "region": "地区",
+          "regions": {
+            "ir": "伊朗 (ir)",
+            "cn": "中国 (cn)",
+            "ru": "俄罗斯 (ru)",
+            "af": "阿富汗 (af)",
+            "id": "印度尼西亚 (id)",
+            "tr": "土耳其 (tr)",
+            "br": "巴西 (br)",
+            "other": "其他"
           },
-          "androidApps": {
-            "pageTitle": "安卓应用",
-            "showSystemApps": "显示系统应用",
-            "hideSystemApps": "隐藏系统应用",
-            "clearSelection": "清除选择",
-            "uninstalled": "已卸载"
+          "balancerStrategy": {
+            "title": "Balancer 策略",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "解析目的地",
+          "ipv6Route": "IPv6 路由",
+          "ipv6Modes": {
+            "disable": "禁用",
+            "enable": "启用",
+            "prefer": "首选",
+            "only": "专享"
+          },
+          "perAppProxy": {
+            "title": "分应用代理",
+            "hideSysApps": "隐藏系统应用",
+            "options": {
+              "import": {
+                "clipboard": "从剪贴板导入选择",
+                "file": "从文件导入选择",
+                "msg": "导入将替换您当前的选择。确定要继续吗？"
+              },
+              "export": {
+                "clipboard": "复制选择到剪贴板",
+                "file": "导出选择到文件"
+              },
+              "shareToAll": "分享给所有人",
+              "clearAllSelections": "清除所有选择"
+            },
+            "modes": {
+              "all": "全部",
+              "proxy": "代理",
+              "bypass": "绕过",
+              "allMsg": "代理所有应用",
+              "proxyMsg": "仅代理选定应用",
+              "bypassMsg": "不代理选定应用"
+            },
+            "autoSelection": {
+              "title": "自动选择",
+              "performNow": "立即执行",
+              "resetToDefault": "重置为默认",
+              "autoUpdateInterval": "自动更新间隔",
+              "toast": {
+                "success": "自动选择应用成功完成",
+                "failure": "自动选择失败",
+                "regionNotFound": "未找到 \"${region}\" 地区的自动选择",
+                "alreadyInAuto": "您的选择已在自动列表中"
+              },
+              "dialog": {
+                "title": "自动选择应用",
+                "msg": "由于地区更改为 \"${region}\"，分应用代理的自动选择功能已被禁用"
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "预设规则",
+          "ads": {
+            "name": "拦截广告",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "绕过局域网",
+            "description": ""
           }
         }
       },
@@ -394,7 +404,6 @@
         "remoteDnsDomainStrategy": "远程 DNS 域名策略",
         "directDns": "出站服务器解析器（直连）",
         "directDnsDomainStrategy": "出站域名策略",
-        "enableDnsRouting": "启用 DNS 路由",
         "enableFakeDns": "启用伪造 DNS",
         "domainStrategy": {
           "auto": "自动",
@@ -410,14 +419,12 @@
         "serviceModes": {
           "proxy": "仅代理服务",
           "systemProxy": "设置系统代理",
-          "tun": "VPN",
-          "tunService": "VPN 服务"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "代理",
           "systemProxy": "系统代理",
-          "tun": "VPN",
-          "tunService": "VPN 服务"
+          "tun": "VPN"
         },
         "strictRoute": "严格路由",
         "tunImplementation": "TUN 实现",
@@ -430,7 +437,7 @@
         "tproxyPort": "透明代理端口",
         "directPort": "本地 Direct 端口",
         "redirectPort": "重定向端口",
-        "allowConnectionFromLan": "允许来自局域网的连接"
+        "allowConnectionFromLan": "在本地网络中共享 VPN"
       },
       "tlsTricks": {
         "title": "TLS 技巧",
@@ -452,27 +459,83 @@
           "size": "填充大小"
         }
       },
-      "warp": {
-        "title": "WARP",
-        "enable": "启用 WARP",
-        "generateConfig": "生成 WARP 配置",
-        "configGenerated": "WARP 配置已生成",
-        "missingConfig": "WARP 配置缺失",
-        "detourMode": "WARP 路由模式",
-        "detourModes": {
-          "proxyOverWarp": "通过 WARP 路由代理",
-          "warpOverProxy": "通过代理路由 WARP",
-          "proxyOverWarpExplain": "通过 WARP 解锁代理",
-          "warpOverProxyExplain": "通过 WARP 增强安全性"
+      "chain": {
+        "title": "链",
+        "subtitle": "额外安全与解锁器",
+        "finalIp": "最终 IP",
+        "levels": {
+          "app": {
+            "title": "应用",
+            "msg": "起始点：您的应用流量在此进入链条，并经过后续层级以为最终分流做准备"
+          },
+          "extraSecurity": {
+            "title": "额外安全",
+            "msg": "增加一个额外的防护层以保护您的数据隐私，即使您的主配置文件不可信"
+          },
+          "mainProfile": {
+            "title": "主配置"
+          },
+          "unblocker": {
+            "title": "解锁器",
+            "msg": "帮助绕过网络限制。如果辅助程序连接成功，即使您的主配置当前被封锁，它仍可继续工作"
+          },
+          "filtering": {
+            "title": "分流",
+            "msg": "最终出口：通过活动层（额外安全、主配置或解锁器）并应用其效果后，您的流量最终被路由以绕过本地网络过滤"
+          }
         },
-        "licenseKey": "许可证密钥",
-        "cleanIp": "优选 IP",
-        "port": "端口",
-        "noise": {
-          "count": "噪声数量",
-          "mode": "噪声模式",
-          "size": "噪声大小",
-          "delay": "噪声延迟"
+        "warp": {
+          "missingConfig": "WARP 配置缺失",
+          "licenseKey": "许可证密钥",
+          "cleanIp": "优选 IP",
+          "port": "端口",
+          "noise": {
+            "count": "噪声数量",
+            "mode": "噪声模式",
+            "size": "噪声大小",
+            "delay": "噪声延迟"
+          }
+        },
+        "psiphon": {
+          "selectServerRegion": "选择服务器地区",
+          "regions": {
+            "auto": "@:common.auto",
+            "at": "奥地利 (at)",
+            "au": "澳大利亚 (au)",
+            "be": "比利时 (be)",
+            "bg": "保加利亚 (bg)",
+            "ca": "加拿大 (ca)",
+            "ch": "瑞士 (ch)",
+            "cz": "捷克共和国 (cz)",
+            "de": "德国 (de)",
+            "dk": "丹麦 (dk)",
+            "ee": "爱沙尼亚 (ee)",
+            "es": "西班牙 (es)",
+            "fi": "芬兰 (fi)",
+            "fr": "法国 (fr)",
+            "gb": "英国 (gb)",
+            "hr": "克罗地亚 (hr)",
+            "hu": "匈牙利 (hu)",
+            "ie": "爱尔兰 (ie)",
+            "in": "印度 (in)",
+            "it": "意大利 (it)",
+            "jp": "日本 (jp)",
+            "lv": "拉脱维亚 (lv)",
+            "nl": "荷兰 (nl)",
+            "no": "挪威 (no)",
+            "pl": "波兰 (pl)",
+            "pt": "葡萄牙 (pt)",
+            "ro": "罗马尼亚 (ro)",
+            "rs": "塞尔维亚 (rs)",
+            "se": "瑞典 (se)",
+            "sg": "新加坡 (sg)",
+            "sk": "斯洛伐克 (sk)",
+            "us": "美国 (us)"
+          }
+        },
+        "profile": {
+          "selectProfile": "选择配置",
+          "conduitPairingId": "Conduit 配对 ID"
         }
       }
     }
@@ -587,7 +650,9 @@
       "asn": "ASN：",
       "organization": "组织：",
       "location": "位置：",
-      "postalCode": "邮政编码："
+      "postalCode": "邮政编码：",
+      "download": "下载：",
+      "upload": "上传："
     },
     "windowClosing": {
       "askEachTime": "每次询问",
@@ -603,8 +668,7 @@
     "disconnect": "断开连接",
     "disconnecting": "断开连接中...",
     "reconnect": "重新连接",
-    "reconnectMsg": "正在重新连接以应用更改...",
-    "secure": "由 WARP 保护"
+    "reconnectMsg": "正在重新连接以应用更改..."
   },
   "errors": {
     "unexpected": "意外错误",

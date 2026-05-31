@@ -42,7 +42,6 @@
     "exit": "Sair",
     "reset": "Redefinir",
     "done": "Concluído",
-    "search": "Buscar",
     "decline": "Recusar",
     "agree": "Aceitar",
     "empty": "Vazio",
@@ -51,6 +50,10 @@
     "timeout": "Tempo esgotado",
     "sort": "Ordenar",
     "dashboard": "Painel",
+    "disable": "Desativar",
+    "psiphon": "Psiphon",
+    "profile": "Perfil",
+    "configuration": "Configuração",
     "interval": {
       "day": {
         "zero": "",
@@ -82,6 +85,9 @@
         "confirm": "Confirmar importação",
         "success": "Importado com sucesso",
         "failure": "Falha ao importar"
+      },
+      "autoSave": {
+        "success": "Alterações salvas automaticamente com sucesso"
       }
     }
   },
@@ -93,7 +99,7 @@
   "pages": {
     "home": {
       "title": "Início",
-      "quickSettings": "Configurações rápidas"
+      "quickSettings": "Opções de configurações rápidas"
     },
     "proxies": {
       "title": "Proxies",
@@ -105,7 +111,8 @@
       "sortOptions": {
         "unsorted": "Padrão",
         "name": "Alfabeticamente",
-        "delay": "Por latência"
+        "delay": "Por latência",
+        "usage": "Por uso"
       },
       "ipInfo": {
         "address": "Endereço de IP",
@@ -230,76 +237,10 @@
       },
       "routing": {
         "title": "Roteamento",
-        "perAppProxy": {
-          "title": "Proxy por aplicativo",
-          "hideSysApps": "Ocultar aplicativos do sistema",
-          "options": {
-            "import": {
-              "clipboard": "Importar seleção da área de transferência",
-              "file": "Importar seleção de um arquivo",
-              "msg": "A importação substituirá suas seleções atuais. Tem certeza de que deseja continuar?"
-            },
-            "export": {
-              "clipboard": "Copiar seleção para a área de transferência",
-              "file": "Exportar seleção para um arquivo"
-            },
-            "shareToAll": "Compartilhar com todos",
-            "clearAllSelections": "Limpar todas as seleções"
-          },
-          "modes": {
-            "all": "Todos",
-            "proxy": "Proxy",
-            "bypass": "Ignorar",
-            "allMsg": "Usar proxy para todos os aplicativos",
-            "proxyMsg": "Usar proxy apenas para aplicativos selecionados",
-            "bypassMsg": "Não usar proxy para aplicativos selecionados"
-          },
-          "autoSelection": {
-            "title": "Seleção automática",
-            "performNow": "Executar agora",
-            "resetToDefault": "Redefinir para o padrão",
-            "autoUpdateInterval": "Intervalo de atualização automática",
-            "toast": {
-              "success": "Seleção automática de aplicativos concluída com sucesso",
-              "failure": "Falha na seleção automática",
-              "regionNotFound": "Seleção automática não encontrada para a região \"${region}\"",
-              "alreadyInAuto": "Suas seleções já estão na lista automática"
-            },
-            "dialog": {
-              "title": "Seleção automática de aplicativos",
-              "msg": "A função de seleção automática para o proxy por aplicativo foi desativada devido à mudança de região para \"${region}\""
-            }
-          }
-        },
-        "region": "Região",
-        "regions": {
-          "ir": "Irã (ir)",
-          "cn": "China (cn)",
-          "ru": "Rússia (ru)",
-          "af": "Afeganistão (af)",
-          "id": "Indonésia (id)",
-          "tr": "Turquia (tr)",
-          "br": "Brasil (br)",
-          "other": "Outro"
-        },
-        "balancerStrategy": {
-          "title": "Estratégia de Balancer",
-          "roundRobin": "Round robin",
-          "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
-        },
-        "blockAds": "Bloquear anúncios",
-        "bypassLan": "Ignorar LAN",
-        "resolveDestination": "Resolver destino",
-        "ipv6Route": "Rota IPv6",
-        "ipv6Modes": {
-          "disable": "Desativar",
-          "enable": "Ativar",
-          "prefer": "Preferencial",
-          "only": "Exclusivo"
-        },
         "routeRule": {
-          "title": "Regras de Roteamento",
+          "empty": "Nenhuma regra adicionada ainda\n\nToque no botão + para criar uma nova regra ou escolha a partir de regras predefinidas",
+          "delete": "Excluir regra",
+          "create": "Criar nova regra",
           "options": {
             "import": {
               "clipboard": "Importar regras da área de transferência",
@@ -311,12 +252,8 @@
             },
             "reset": "Redefinir regras"
           },
-          "deleteRule": "Excluir regra",
-          "createRule": "Criar nova regra",
           "rule": {
             "title": "Regra",
-            "ruleChanged": "Regra alterada",
-            "ruleChangedMsg": "Deseja salvar suas edições?",
             "onlyTunMode": "Disponível apenas no modo TUN",
             "notAvailabeInThisPlatform": "Não disponível nesta plataforma",
             "canNotBeEmpty": "Não pode estar vazio",
@@ -378,13 +315,86 @@
             "update": "Atualizar valor",
             "clearList": "Limpar lista",
             "clearListMsg": "Todos os itens foram excluídos"
+          }
+        },
+        "generalOptions": {
+          "title": "Opções gerais de rota",
+          "region": "Região",
+          "regions": {
+            "ir": "Irã (ir)",
+            "cn": "China (cn)",
+            "ru": "Rússia (ru)",
+            "af": "Afeganistão (af)",
+            "id": "Indonésia (id)",
+            "tr": "Turquia (tr)",
+            "br": "Brasil (br)",
+            "other": "Outro"
           },
-          "androidApps": {
-            "pageTitle": "Aplicativos Android",
-            "showSystemApps": "Mostrar aplicativos do sistema",
-            "hideSystemApps": "Ocultar aplicativos do sistema",
-            "clearSelection": "Limpar seleção",
-            "uninstalled": "Desinstalado"
+          "balancerStrategy": {
+            "title": "Estratégia de Balancer",
+            "roundRobin": "Round robin",
+            "consistentHash": "Consistent hash",
+            "stickySession": "Sticky session"
+          },
+          "resolveDestination": "Resolver destino",
+          "ipv6Route": "Rota IPv6",
+          "ipv6Modes": {
+            "disable": "Desativar",
+            "enable": "Ativar",
+            "prefer": "Preferencial",
+            "only": "Exclusivo"
+          },
+          "perAppProxy": {
+            "title": "Proxy por aplicativo",
+            "hideSysApps": "Ocultar aplicativos do sistema",
+            "options": {
+              "import": {
+                "clipboard": "Importar seleção da área de transferência",
+                "file": "Importar seleção de um arquivo",
+                "msg": "A importação substituirá suas seleções atuais. Tem certeza de que deseja continuar?"
+              },
+              "export": {
+                "clipboard": "Copiar seleção para a área de transferência",
+                "file": "Exportar seleção para um arquivo"
+              },
+              "shareToAll": "Compartilhar com todos",
+              "clearAllSelections": "Limpar todas as seleções"
+            },
+            "modes": {
+              "all": "Todos",
+              "proxy": "Proxy",
+              "bypass": "Ignorar",
+              "allMsg": "Usar proxy para todos os aplicativos",
+              "proxyMsg": "Usar proxy apenas para aplicativos selecionados",
+              "bypassMsg": "Não usar proxy para aplicativos selecionados"
+            },
+            "autoSelection": {
+              "title": "Seleção automática",
+              "performNow": "Executar agora",
+              "resetToDefault": "Redefinir para o padrão",
+              "autoUpdateInterval": "Intervalo de atualização automática",
+              "toast": {
+                "success": "Seleção automática de aplicativos concluída com sucesso",
+                "failure": "Falha na seleção automática",
+                "regionNotFound": "Seleção automática não encontrada para a região \"${region}\"",
+                "alreadyInAuto": "Suas seleções já estão na lista automática"
+              },
+              "dialog": {
+                "title": "Seleção automática de aplicativos",
+                "msg": "A função de seleção automática para o proxy por aplicativo foi desativada devido à mudança de região para \"${region}\""
+              }
+            }
+          }
+        },
+        "predefinedRules": {
+          "title": "Regras predefinidas",
+          "ads": {
+            "name": "Bloquear anúncios",
+            "description": ""
+          },
+          "bypassLan": {
+            "name": "Ignorar LAN",
+            "description": ""
           }
         }
       },
@@ -394,7 +404,6 @@
         "remoteDnsDomainStrategy": "Estratégia de domínio de DNS remoto",
         "directDns": "Resolvedor de servidor de saída (direto)",
         "directDnsDomainStrategy": "Estratégia de domínio de saída",
-        "enableDnsRouting": "Ativar roteamento de DNS",
         "enableFakeDns": "Ativar DNS falso",
         "domainStrategy": {
           "auto": "Automático",
@@ -410,14 +419,12 @@
         "serviceModes": {
           "proxy": "Apenas serviço de proxy",
           "systemProxy": "Definir proxy do sistema",
-          "tun": "VPN",
-          "tunService": "Serviço VPN"
+          "tun": "VPN"
         },
         "shortServiceModes": {
           "proxy": "Proxy",
           "systemProxy": "Proxy do sistema",
-          "tun": "VPN",
-          "tunService": "Serviço VPN"
+          "tun": "VPN"
         },
         "strictRoute": "Roteamento estrito",
         "tunImplementation": "Implementação de TUN",
@@ -428,7 +435,7 @@
         },
         "mixedPort": "Porta mista",
         "tproxyPort": "Porta de proxy transparente",
-        "directPort": "Porta de directo",
+        "directPort": "Porta direta",
         "redirectPort": "Porta de redirecionamento",
         "allowConnectionFromLan": "Compartilhar VPN na rede local"
       },
@@ -452,27 +459,83 @@
           "size": "Tamanho do preenchimento"
         }
       },
-      "warp": {
-        "title": "WARP",
-        "enable": "Ativar WARP",
-        "generateConfig": "Gerar configuração WARP",
-        "configGenerated": "Configuração WARP gerada",
-        "missingConfig": "Configuração WARP ausente",
-        "detourMode": "Modo de Roteamento WARP",
-        "detourModes": {
-          "proxyOverWarp": "Desviar proxies através do WARP",
-          "warpOverProxy": "Desviar WARP através de proxies",
-          "proxyOverWarpExplain": "Desbloquear proxies com WARP",
-          "warpOverProxyExplain": "Segurança extra com WARP"
+      "chain": {
+        "title": "Cadeia",
+        "subtitle": "Segurança extra & Desbloqueador",
+        "finalIp": "IP final",
+        "levels": {
+          "app": {
+            "title": "App",
+            "msg": "Ponto de início: O tráfego do seu app entra na cadeia aqui e passa pelas camadas seguintes para se preparar para o bypass final"
+          },
+          "extraSecurity": {
+            "title": "Segurança extra",
+            "msg": "Adiciona um escudo extra para manter seus dados privados, mesmo que seu perfil principal não seja confiável"
+          },
+          "mainProfile": {
+            "title": "Perfil principal"
+          },
+          "unblocker": {
+            "title": "Desbloqueador",
+            "msg": "Ajuda a contornar restrições de rede. Se o ajudante se conectar, seu perfil principal ainda poderá funcionar mesmo que esteja bloqueado no momento"
+          },
+          "filtering": {
+            "title": "Filtragem",
+            "msg": "Saída final: Após passar pelas camadas ativas (Segurança extra, Perfil principal ou Desbloqueador) e aplicar seus efeitos, seu tráfego é finalmente roteado para contornar a filtragem da rede local"
+          }
         },
-        "licenseKey": "Chave de licença",
-        "cleanIp": "IP limpo",
-        "port": "Porta",
-        "noise": {
-          "count": "Contagem de ruído",
-          "mode": "Modo de ruído",
-          "size": "Tamanho do ruído",
-          "delay": "Atraso do ruído"
+        "warp": {
+          "missingConfig": "Configuração WARP ausente",
+          "licenseKey": "Chave de licença",
+          "cleanIp": "IP limpo",
+          "port": "Porta",
+          "noise": {
+            "count": "Contagem de ruído",
+            "mode": "Modo de ruído",
+            "size": "Tamanho do ruído",
+            "delay": "Atraso do ruído"
+          }
+        },
+        "psiphon": {
+          "selectServerRegion": "Selecionar região do servidor",
+          "regions": {
+            "auto": "@:common.auto",
+            "at": "Áustria (at)",
+            "au": "Austrália (au)",
+            "be": "Bélgica (be)",
+            "bg": "Bulgária (bg)",
+            "ca": "Canadá (ca)",
+            "ch": "Suíça (ch)",
+            "cz": "República Tcheca (cz)",
+            "de": "Alemanha (de)",
+            "dk": "Dinamarca (dk)",
+            "ee": "Estônia (ee)",
+            "es": "Espanha (es)",
+            "fi": "Finlândia (fi)",
+            "fr": "França (fr)",
+            "gb": "Reino Unido (gb)",
+            "hr": "Croácia (hr)",
+            "hu": "Hungria (hu)",
+            "ie": "Irlanda (ie)",
+            "in": "Índia (in)",
+            "it": "Itália (it)",
+            "jp": "Japão (jp)",
+            "lv": "Letônia (lv)",
+            "nl": "Países Baixos (nl)",
+            "no": "Noruega (no)",
+            "pl": "Polônia (pl)",
+            "pt": "Portugal (pt)",
+            "ro": "Romênia (ro)",
+            "rs": "Sérvia (rs)",
+            "se": "Suécia (se)",
+            "sg": "Singapura (sg)",
+            "sk": "Eslováquia (sk)",
+            "us": "Estados Unidos (us)"
+          }
+        },
+        "profile": {
+          "selectProfile": "Selecionar perfil",
+          "conduitPairingId": "ID de emparelhamento Conduit"
         }
       }
     }
@@ -587,7 +650,9 @@
       "asn": "ASN:",
       "organization": "Organização:",
       "location": "Localização:",
-      "postalCode": "Código postal:"
+      "postalCode": "Código postal:",
+      "download": "Download:",
+      "upload": "Upload:"
     },
     "windowClosing": {
       "askEachTime": "Perguntar sempre",
@@ -603,8 +668,7 @@
     "disconnect": "Desconectar",
     "disconnecting": "Desconectando...",
     "reconnect": "Reconectar",
-    "reconnectMsg": "Reconectando para aplicar as alterações...",
-    "secure": "Protegido por WARP"
+    "reconnectMsg": "Reconectando para aplicar as alterações..."
   },
   "errors": {
     "unexpected": "Erro inesperado",

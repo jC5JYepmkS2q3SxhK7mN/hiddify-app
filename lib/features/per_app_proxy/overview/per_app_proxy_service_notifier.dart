@@ -50,7 +50,7 @@ class PerAppProxyService extends _$PerAppProxyService {
         final t = ref.read(translationsProvider).requireValue;
         ref
             .read(inAppNotificationControllerProvider)
-            .showSuccessToast(t.pages.settings.routing.perAppProxy.autoSelection.toast.success);
+            .showSuccessToast(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.success);
       }
     }
   }

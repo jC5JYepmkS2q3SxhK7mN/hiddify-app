@@ -6,10 +6,11 @@ import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/utils/throttler.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/proxy/data/proxy_data_providers.dart';
+import 'package:hiddify/features/proxy/data/proxy_repository.dart';
 import 'package:hiddify/features/proxy/model/ip_info_entity.dart' as oldipinfo;
 import 'package:hiddify/features/proxy/model/proxy_failure.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
-import 'package:hiddify/hiddifycore/init_signal.dart';
+
 import 'package:hiddify/utils/riverpod_utils.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -32,7 +33,7 @@ class IpInfoNotifier extends _$IpInfoNotifier with AppLogger {
     ref.listen(serviceRunningProvider, (_, next) => _idle = false);
 
     final autoCheck = ref.watch(Preferences.autoCheckIp);
-    final serviceRunning = await ref.watch(serviceRunningProvider.future);
+    final serviceRunning = ref.watch(serviceRunningProvider);
     // loggy.debug(
     //   "idle? [$_idle], forced? [$_forceCheck], connected? [$serviceRunning]",
     // );
@@ -74,19 +75,19 @@ class IpInfoNotifier extends _$IpInfoNotifier with AppLogger {
 @Riverpod(keepAlive: true)
 class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
   @override
-  Stream<OutboundInfo> build() async* {
+  Stream<OutboundInfo> build() {
     // ref.disposeDelay(const Duration(seconds: 20));
-    ref.watch(coreRestartSignalProvider);
-    final serviceRunning = await ref.watch(serviceRunningProvider.future);
+    final serviceRunning = ref.watch(serviceRunningProvider);
     if (!serviceRunning) {
-      throw const ServiceNotRunning();
+      return Stream.error(const ServiceNotRunning());
     }
-    final proxyprovider = ref.watch(proxyRepositoryProvider);
-    yield* proxyprovider
+    return _proxyRepo
         .watchActiveProxies()
         .map((event) => event.getOrElse((l) => List<OutboundGroup>.empty()))
         .map((event) => event.firstOrNull?.items.first ?? OutboundInfo());
   }
+
+  ProxyRepository get _proxyRepo => ref.read(proxyRepositoryProvider);
 
   final _urlTestThrottler = Throttler(const Duration(seconds: 1));
 
