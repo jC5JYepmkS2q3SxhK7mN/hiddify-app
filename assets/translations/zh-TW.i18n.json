@@ -613,6 +613,10 @@
           "title": "刪除規則",
           "msg": "您確定要刪除規則「$rulename」嗎？"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "添加配置？",
+        "message": "來自 \"${host}\" 的外部連結請求添加新配置。您想要匯入嗎？"
       }
     },
     "experimentalNotice": {

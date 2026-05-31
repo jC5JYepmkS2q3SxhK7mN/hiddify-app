@@ -613,6 +613,10 @@
           "title": "Kuralı sil",
           "msg": "\"$rulename\" kuralını silmek istediğinizden emin misiniz?"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "Profil ekle?",
+        "message": "\"${host}\" adresinden bir dış bağlantı yeni bir profil eklemek istiyor. İçe aktarmak ister misiniz?"
       }
     },
     "experimentalNotice": {
