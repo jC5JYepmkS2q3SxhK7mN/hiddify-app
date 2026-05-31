@@ -52,8 +52,8 @@ class BottomSheetsNotifier extends _$BottomSheetsNotifier {
       final isConfirmed = await ref
           .read(dialogNotifierProvider.notifier)
           .showConfirmation(
-            title: t.dialogs.confirmation.addProfileFromLink.title,
-            message: t.dialogs.confirmation.addProfileFromLink.message(host: Uri.parse(url).host),
+            title: t.dialogs.confirmation.addProfileByDeepLinkWarning.title,
+            message: t.dialogs.confirmation.addProfileByDeepLinkWarning.message(host: Uri.parse(url).host),
           );
       if (isConfirmed) {
         await _show(isScrollControlled: true, child: AddProfileModal(url: url));

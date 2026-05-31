@@ -613,6 +613,10 @@
           "title": "حذف قانون",
           "msg": "آیا از حذف قانون «$rulename» مطمئن هستید؟"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "افزودن پروفایل؟",
+        "message": "یک لینک خارجی از «${host}» درخواست افزودن پروفایل جدید دارد. آیا می‌خواهید آن را وارد کنید؟"
       }
     },
     "experimentalNotice": {

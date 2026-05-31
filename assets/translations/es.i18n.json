@@ -613,6 +613,10 @@
           "title": "Eliminar regla",
           "msg": "¿Estás seguro de que quieres eliminar la regla \"$rulename\"?"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "¿Añadir perfil?",
+        "message": "Un enlace externo de \"${host}\" está solicitando añadir un nuevo perfil. ¿Quieres importarlo?"
       }
     },
     "experimentalNotice": {

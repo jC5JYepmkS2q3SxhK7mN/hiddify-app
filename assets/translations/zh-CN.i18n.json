@@ -613,6 +613,10 @@
           "title": "删除规则",
           "msg": "您确定要删除规则 \"$rulename\" 吗？"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "添加配置？",
+        "message": "来自 \"${host}\" 的外部链接请求添加新配置。您想要导入吗？"
       }
     },
     "experimentalNotice": {

@@ -614,7 +614,7 @@
           "msg": "Are you sure you want to delete the \"$rulename\" rule?"
         }
       },
-      "addProfileFromLink": {
+      "addProfileByDeepLinkWarning": {
         "title": "Add Profile?",
         "message": "An external link from \"${host}\" is requesting to add a new profile. Do you want to import it?"
       }

@@ -613,6 +613,10 @@
           "title": "Hapus aturan",
           "msg": "Anda yakin ingin menghapus aturan \"$rulename\"?"
         }
+      },
+      "addProfileByDeepLinkWarning": {
+        "title": "Tambah Profil?",
+        "message": "Tautan eksternal dari \"${host}\" meminta untuk menambahkan profil baru. Apakah Anda ingin mengimpornya?"
       }
     },
     "experimentalNotice": {
