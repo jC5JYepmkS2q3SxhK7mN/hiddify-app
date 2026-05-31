@@ -52,9 +52,8 @@ class BottomSheetsNotifier extends _$BottomSheetsNotifier {
       final isConfirmed = await ref
           .read(dialogNotifierProvider.notifier)
           .showConfirmation(
-            title: 'Add Profile?',
-            message:
-                'An external link from "${Uri.parse(url).host}" is requesting to add a new profile. Do you want to import it',
+            title: t.dialogs.confirmation.addProfileFromLink.title,
+            message: t.dialogs.confirmation.addProfileFromLink.message(host: Uri.parse(url).host),
           );
       if (isConfirmed) {
         await _show(isScrollControlled: true, child: AddProfileModal(url: url));
