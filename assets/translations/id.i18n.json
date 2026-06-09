@@ -709,7 +709,11 @@
     },
     "warp": {
       "missingLicense": "Lisensi WARP hilang",
-      "missingLicenseMsg": "Profil yang dipilih menggunakan fitur WARP. Untuk menggunakan fitur ini, Anda harus menyetujui lisensi WARP."
+      "missingLicenseMsg": "Profil yang dipilih menggunakan fitur WARP; untuk menggunakan fitur ini, Anda harus menyetujui lisensi WARP"
+    },
+    "psiphon": {
+      "missingLicense": "Lisensi Psiphon diperlukan",
+      "missingLicenseMsg": "Profil yang dipilih menggunakan fitur Psiphon; untuk menggunakan fitur ini, Anda harus menyetujui lisensi Psiphon"
     }
   }
 }

@@ -709,7 +709,11 @@
     },
     "warp": {
       "missingLicense": "Licença do WARP ausente",
-      "missingLicenseMsg": "O perfil selecionado usa o recurso WARP. Para usar este recurso, você deve concordar com a licença do WARP."
+      "missingLicenseMsg": "O perfil selecionado usa o recurso WARP; para usar este recurso, você deve concordar com a licença do WARP"
+    },
+    "psiphon": {
+      "missingLicense": "Licença do Psiphon necessária",
+      "missingLicenseMsg": "O perfil selecionado usa o recurso Psiphon; para usar este recurso, você deve concordar com a licença do Psiphon"
     }
   }
 }

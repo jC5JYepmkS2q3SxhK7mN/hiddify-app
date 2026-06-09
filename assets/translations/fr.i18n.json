@@ -705,7 +705,11 @@
     },
     "warp": {
       "missingLicense": "Licence WARP manquante",
-      "missingLicenseMsg": "Le profil sélectionné utilise la fonctionnalité WARP. Pour utiliser cette fonctionnalité, vous devez accepter la licence WARP."
+      "missingLicenseMsg": "Le profil sélectionné utilise la fonctionnalité WARP ; pour utiliser cette fonctionnalité, vous devez accepter la licence WARP"
+    },
+    "psiphon": {
+      "missingLicense": "Licence Psiphon requise",
+      "missingLicenseMsg": "Le profil sélectionné utilise la fonctionnalité Psiphon ; pour utiliser cette fonctionnalité, vous devez accepter la licence Psiphon"
     }
   }
 }

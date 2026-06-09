@@ -715,7 +715,11 @@
     },
     "warp": {
       "missingLicense": "رخصة WARP مفقودة",
-      "missingLicenseMsg": "الملف الشخصي المحدد يستخدم ميزة WARP. لاستخدام هذه الميزة، يجب الموافقة على شروط رخصة WARP."
+      "missingLicenseMsg": "الملف الشخصي المحدد يستخدم ميزة WARP؛ لاستخدام هذه الميزة، يجب الموافقة على رخصة WARP"
+    },
+    "psiphon": {
+      "missingLicense": "رخصة Psiphon مطلوبة",
+      "missingLicenseMsg": "الملف الشخصي المحدد يستخدم ميزة Psiphon؛ لاستخدام هذه الميزة، يجب الموافقة على رخصة Psiphon"
     }
   }
 }
