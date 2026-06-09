@@ -708,7 +708,7 @@
       "invalidConfig": "پیکربندی نامعتبر"
     },
     "warp": {
-      "missingLicense": "لایسنس WARP",
+      "missingLicense": "لایسنس WARP لازم است",
       "missingLicenseMsg": "پروفایل انتخاب‌شده از ویژگی WARP استفاده می‌کند؛ برای استفاده از این قابلیت، باید با لایسنس WARP موافقت شود"
     },
     "psiphon": {
