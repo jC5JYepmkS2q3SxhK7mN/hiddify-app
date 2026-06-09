@@ -74,6 +74,16 @@ abstract class WarpConst {
   };
 }
 
+abstract class PsiphonConst {
+  static const psiphonConsentGiven = "psiphon-consent-given";
+  static const psiphonTermsOfServiceKey = 'psiphon-terms-of-service';
+  static const psiphonPrivacyPolicyKey = 'psiphon-privacy-policy';
+  static const url = <String, String>{
+    PsiphonConst.psiphonTermsOfServiceKey: "https://psiphon.ca/en/license.html",
+    PsiphonConst.psiphonPrivacyPolicyKey: "https://psiphon.ca/en/privacy.html",
+  };
+}
+
 abstract class KeyboardConst {
   static final allArrows = {
     LogicalKeyboardKey.arrowUp,

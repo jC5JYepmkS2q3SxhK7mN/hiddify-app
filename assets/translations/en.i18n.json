@@ -580,6 +580,10 @@
       "title": "Cloudflare WARP consent",
       "description(rich)": "Cloudflare WARP is a free WireGuard VPN provider. By enabling this option you are agreeing to the Cloudflare WARP's ${tos(Terms of service)} and ${privacy(Privacy policy)}."
     },
+    "psiphonLicense": {
+      "title": "Psiphon License Agreement",
+      "description(rich)": "By using Psiphon, you agree to the ${tos(Terms of Service)} and acknowledge the ${privacy(Privacy Policy)}. Please read them carefully before proceeding."
+    },
     "newVersion": {
       "title": "Update available",
       "msg": "A new version of @:common.appTitle is available. Would you like to update now?",
@@ -704,8 +708,12 @@
       "invalidConfig": "Invalid configuration"
     },
     "warp": {
-      "missingLicense": "Warp license",
-      "missingLicenseMsg": "The selected profile uses the WARP feature; to use this feature, the WARP license must be agreed to."
+      "missingLicense": "Warp license required",
+      "missingLicenseMsg": "The selected profile uses the WARP feature; to use this feature, the WARP license must be agreed to"
+    },
+    "psiphon": {
+      "missingLicense": "Psiphon license required",
+      "missingLicenseMsg": "The selected profile uses the Psiphon feature; to use this feature, the Psiphon license must be agreed to"
     }
   }
 }
