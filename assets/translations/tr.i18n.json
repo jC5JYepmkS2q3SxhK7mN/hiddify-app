@@ -708,7 +708,7 @@
       "invalidConfig": "Geçersiz yapılandırma"
     },
     "warp": {
-      "missingLicense": "WARP lisansı eksik",
+      "missingLicense": "WARP lisansı gerekli",
       "missingLicenseMsg": "Seçili profil WARP özelliğini kullanıyor. Bu özelliği kullanmak için WARP lisansını kabul etmeniz gerekir"
     },
     "psiphon": {
