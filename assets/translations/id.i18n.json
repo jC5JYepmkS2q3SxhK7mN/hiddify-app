@@ -580,6 +580,10 @@
       "title": "Persetujuan Cloudflare WARP",
       "description(rich)": "Cloudflare WARP adalah penyedia VPN WireGuard gratis. Dengan mengaktifkan opsi ini, Anda menyetujui ${tos(Ketentuan Layanan)} dan ${privacy(Kebijakan Privasi)} Cloudflare WARP."
     },
+    "psiphonLicense": {
+      "title": "Perjanjian Lisensi Psiphon",
+      "description(rich)": "Dengan menggunakan Psiphon, Anda menyetujui ${tos(Syarat Layanan)} dan mengakui ${privacy(Kebijakan Privasi)}. Harap baca dengan teliti sebelum melanjutkan."
+    },
     "newVersion": {
       "title": "Pembaruan tersedia",
       "msg": "Versi baru @:common.appTitle tersedia. Apakah Anda ingin memperbarui sekarang?",

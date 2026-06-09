@@ -580,6 +580,10 @@
       "title": "رضایت‌نامه Cloudflare WARP",
       "description(rich)": "Cloudflare WARP یک ارائه‌دهنده رایگان WireGuard VPN است. با فعال کردن این گزینه، شما با ${tos(شرایط خدمات)} و ${privacy(سیاست حفظ حریم خصوصی)} Cloudflare WARP موافقت می‌کنید."
     },
+    "psiphonLicense": {
+      "title": "قرارداد لایسنس Psiphon",
+      "description(rich)": "با استفاده از Psiphon، شما با ${tos(شرایط خدمات)} موافقت کرده و ${privacy(سیاست حفظ حریم خصوصی)} را تایید می‌کنید. لطفاً پیش از ادامه، آن‌ها را با دقت بخوانید."
+    },
     "newVersion": {
       "title": "به‌روزرسانی موجود است",
       "msg": "نسخه جدیدی از @:common.appTitle در دسترس است. آیا مایل به به‌روزرسانی هستید؟",

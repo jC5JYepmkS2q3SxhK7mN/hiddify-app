@@ -580,6 +580,10 @@
       "title": "Cloudflare WARP 同意書",
       "description(rich)": "Cloudflare WARP 是一個免費的 WireGuard VPN 提供商。啟用此選項即表示您同意 Cloudflare WARP 的 ${tos(服務條款)} 和 ${privacy(隱私權政策)}。"
     },
+    "psiphonLicense": {
+      "title": "Psiphon 授權協議",
+      "description(rich)": "使用 Psiphon 即表示您同意 ${tos(服務條款)} 並確認 ${privacy(隱私權政策)}。請在繼續之前仔細閱讀它們。"
+    },
     "newVersion": {
       "title": "有可用更新",
       "msg": "@:common.appTitle 的新版本已發布。您想立即更新嗎？",
@@ -705,7 +709,11 @@
     },
     "warp": {
       "missingLicense": "WARP 授權缺失",
-      "missingLicenseMsg": "所選設定檔使用 WARP 功能；要使用此功能，必須同意 WARP 授權條款。"
+      "missingLicenseMsg": "所選設定檔使用 WARP 功能；要使用此功能，必須同意 WARP 授權條款"
+    },
+    "psiphon": {
+      "missingLicense": "需要 Psiphon 授權",
+      "missingLicenseMsg": "所選設定檔使用 Psiphon 功能；要使用此功能，必須同意 Psiphon 授權條款"
     }
   }
 }

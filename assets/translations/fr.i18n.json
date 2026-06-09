@@ -580,6 +580,10 @@
       "title": "Consentement Cloudflare WARP",
       "description(rich)": "Cloudflare WARP est un fournisseur VPN WireGuard gratuit. En activant cette option, vous acceptez les ${tos(Conditions d'utilisation)} et la ${privacy(Politique de confidentialité)} de Cloudflare WARP."
     },
+    "psiphonLicense": {
+      "title": "Contrat de licence Psiphon",
+      "description(rich)": "En utilisant Psiphon, vous acceptez les ${tos(Conditions d'utilisation)} et reconnaissez la ${privacy(Politique de confidentialité)}. Veuillez les lire attentivement avant de continuer."
+    },
     "newVersion": {
       "title": "Mise à jour disponible",
       "msg": "Une nouvelle version de @:common.appTitle est disponible. Voulez-vous mettre à jour maintenant ?",
