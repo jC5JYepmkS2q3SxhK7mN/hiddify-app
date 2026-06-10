@@ -1,6 +1,6 @@
 // This is a generated file - do not edit.
 //
-// Generated from extension/extension_service.proto.
+// Generated from v2/ezytel/ezytel_service.proto.
 
 // @dart = 3.3
 
