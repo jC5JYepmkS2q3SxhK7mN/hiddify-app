@@ -33,14 +33,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.13.4"
-  animated_notch_bottom_bar:
-    dependency: "direct main"
-    description:
-      name: animated_notch_bottom_bar
-      sha256: adc389a39e7b015883bba22de57e691eb6445c98c055b2438d6593a7f68017fe
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   ansicolor:
     dependency: transitive
     description:
@@ -282,14 +274,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  combine:
-    dependency: "direct main"
-    description:
-      name: combine
-      sha256: c16464b55d140871fbab5b37909e1808c2f020e46f9ba7deca59d40faabb6008
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.7"
   convert:
     dependency: transitive
     description:
@@ -394,14 +378,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.4"
-  dependency_validator:
-    dependency: "direct main"
-    description:
-      name: dependency_validator
-      sha256: "3a243f5b9def5f902887a66fbea7e72e612eee956af6c8c34d382fe6d5484145"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.2"
   device_info_plus:
     dependency: transitive
     description:
@@ -636,22 +612,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_loggy:
-    dependency: "direct main"
-    description:
-      name: flutter_loggy
-      sha256: f7640f2d06e64a6141b2210e18cac3146f30bcb4b92349da53f969f59b78c04b
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.3+1"
-  flutter_loggy_dio:
-    dependency: "direct main"
-    description:
-      name: flutter_loggy_dio
-      sha256: d17d26bb85667c14aefa6dce9b12bd2c1ae13cd75e89d25b0c799b063be55e3c
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
   flutter_markdown_plus:
     dependency: "direct main"
     description:
@@ -1336,7 +1296,7 @@ packages:
     source: hosted
     version: "1.5.1"
   posix:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: posix
       sha256: a0117dc2167805aa9125b82eee515cc891819bac2f538c83646d355b16f58b9a
@@ -1647,14 +1607,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.2"
-  showcaseview:
-    dependency: "direct main"
-    description:
-      name: showcaseview
-      sha256: f236c1f44b286e1ba888f8701adca067af92c33e29ea937d0fe9b4a29d4cd41e
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   simple_icons:
     dependency: "direct main"
     description:
@@ -2045,7 +1997,7 @@ packages:
     source: hosted
     version: "15.0.0"
   watcher:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: watcher
       sha256: "69da27e49efa56a15f8afe8f4438c4ec02eff0a117df1b22ea4aad194fe1c104"
