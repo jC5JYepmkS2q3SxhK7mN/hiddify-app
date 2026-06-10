@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/features/settings/widget/preference_tile.dart';
+import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:network_info_plus/network_info_plus.dart';
 
-class InboundOptionsPage extends HookConsumerWidget {
+class InboundOptionsPage extends HookConsumerWidget with AppLogger {
   const InboundOptionsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,13 +86,26 @@ class InboundOptionsPage extends HookConsumerWidget {
             onChanged: (bool value) async {
               await ref.read(ConfigOptions.allowConnectionFromLan.notifier).update(value);
               if (value == true) {
-                final ip = await NetworkInfo().getWifiIP();
-                // final ipp = Networkinfo
-                if (ip == null) return;
-                final port = ref.read(ConfigOptions.mixedPort);
-                final link = '#profile-title: LAN only\nsocks://$ip:$port#LAN only';
-                final message = 'socks://$ip:$port';
-                await ref.read(dialogNotifierProvider.notifier).showQrCode(link, message: message);
+                final rs = await ref
+                    .read(hiddifyCoreServiceProvider)
+                    .getLANIP()
+                    .flatMap(
+                      (r) => TaskEither.tryCatch(() async {
+                        final port = ref.read(ConfigOptions.mixedPort);
+                        final link = '#profile-title: LAN only\nsocks://${r.ip}:$port#LAN only';
+                        final message = 'socks://${r.ip}:$port';
+                        await ref.read(dialogNotifierProvider.notifier).showQrCode(link, message: message);
+                      }, (error, stackTrace) => error.toString()),
+                    )
+                    .run();
+                rs.fold(
+                  (l) {
+                    loggy.debug('lan failure');
+                  },
+                  (r) {
+                    loggy.debug('lan success');
+                  },
+                );
               }
             },
           ),
