@@ -20,8 +20,10 @@ const kAnimationDuration = Duration(milliseconds: 250);
 
 abstract class AddProfileModalConst {
   static const fixBtnsGap = 16.0;
-  static const fixBtnsGapCount = 4;
-  static const fixBtnsItemCount = 3;
+  static const fixBtnsGapCount = 5;
+  static const fixBtnsGapCountDesktop = 4;
+  static const fixBtnsItemCount = 4;
+  static const fixBtnsItemCountDesktop = 3;
   static const navBarGap = 16.0;
   static const navBarBottomGap = 4.0;
   //switch default height
