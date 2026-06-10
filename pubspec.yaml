@@ -95,13 +95,12 @@ dependencies:
   circle_flags:
     git: https://github.com/hiddify-com/flutter_circle_flags.git
   fixnum: ^1.1.0
-  grpc: ^4.0.1
-  bottom_navy_bar: ^6.1.0
   # # for using protobuf install protoc from this link -> https://github.com/protocolbuffers/protobuf/releases
   # # then add path to "environment variable" e.g. -> C:\src\protoc-28.3-win64\bin
   # # then active "protoc_plugin" by running this command -> dart pub global activate protoc_plugin
   # # then add path to "environment variable" e.g. -> C:\Users\%USERPROFILE%\AppData\Local\Pub\Cache\global_packages\protoc_plugin\bin
-  protobuf: ^2.0.0
+  protobuf: ^5.0.0
+  grpc: ^4.0.1
   dynamic_color: ^1.7.0
   flutter_typeahead: ^5.0.1
   # flutter_platform_widgets: ^7.0.1
@@ -127,10 +126,6 @@ dependencies:
   app_links: ^6.4.0
   # Used for registering custom schemes in the Windows registry
   win32: ^5.12.0
-  # Working with Wifi(get LAN IP address)
-  # Web platform not supported
-  # platform-specific settings
-  network_info_plus: ^6.1.4
   humanizer: ^3.0.1
   dependency_validator: ^5.0.2
 
