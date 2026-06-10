@@ -54,6 +54,7 @@
     "psiphon": "Psiphon",
     "profile": "Profil",
     "configuration": "Configuration",
+    "file": "Fichier",
     "interval": {
       "day": {
         "zero": "",
