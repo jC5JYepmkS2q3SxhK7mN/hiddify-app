@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/model/environment.dart';
@@ -116,8 +116,6 @@ abstract class Preferences {
   static final psiphonConsentGiven = PreferencesNotifier.create<bool, bool>("psiphon-consent-given", false);
 
   static final showRouteGeneralOptions = PreferencesNotifier.create<bool, bool>("show-route-general-options", true);
-
-  static final lanSharingPassword = PreferencesNotifier.create<String, String>("lan_sharing_password", "");
 }
 
 @Riverpod(keepAlive: true)

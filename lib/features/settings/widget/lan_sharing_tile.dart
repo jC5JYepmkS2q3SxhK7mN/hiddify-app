@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
-import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/hiddifycore/hiddify_core_service_provider.dart';
@@ -25,7 +24,7 @@ class LanSharingPreferenceWidget extends HookConsumerWidget {
         return null;
       }
       final port = ref.read(ConfigOptions.mixedPort);
-      final password = ref.read(Preferences.lanSharingPassword);
+      final password = ref.read(ConfigOptions.lanSharingPassword);
       if (password.isEmpty) {
         return 'socks://$ip:$port';
       } else {
@@ -40,9 +39,9 @@ class LanSharingPreferenceWidget extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            ref.watch(Preferences.lanSharingPassword).isEmpty
+            ref.watch(ConfigOptions.lanSharingPassword).isEmpty
                 ? t.pages.settings.inbound.lanSharingPasswordNotSet
-                : ref.watch(Preferences.lanSharingPassword),
+                : ref.watch(ConfigOptions.lanSharingPassword),
           ),
           if (ref.watch(ConfigOptions.allowConnectionFromLan)) ...[
             const Gap(12),
@@ -94,11 +93,11 @@ class LanSharingPreferenceWidget extends HookConsumerWidget {
             .read(dialogNotifierProvider.notifier)
             .showSettingInput(
               title: t.pages.settings.inbound.lanSharingPassword,
-              initialValue: ref.read(Preferences.lanSharingPassword),
-              onReset: ref.read(Preferences.lanSharingPassword.notifier).reset,
+              initialValue: ref.read(ConfigOptions.lanSharingPassword),
+              onReset: ref.read(ConfigOptions.lanSharingPassword.notifier).reset,
             );
         if (inputValue != null) {
-          await ref.read(Preferences.lanSharingPassword.notifier).update(inputValue);
+          await ref.read(ConfigOptions.lanSharingPassword.notifier).update(inputValue);
         }
       },
     );

@@ -178,6 +178,8 @@ abstract class ConfigOptions {
 
   static final allowConnectionFromLan = PreferencesNotifier.create<bool, bool>("allow-connection-from-lan", false);
 
+  static final lanSharingPassword = PreferencesNotifier.create<String, String>("lan_sharing_password", "");
+
   static final enableFakeDns = PreferencesNotifier.create<bool, bool>("enable-fake-dns", false);
 
   // static final enableDnsRouting = PreferencesNotifier.create<bool, bool>("enable-dns-routing", true);
@@ -342,7 +344,11 @@ abstract class ConfigOptions {
   });
 
   /// preferences to exclude from share and export
-  static final privatePreferencesKeys = {"extra-security.warp.license-key", "unblocker.warp.license-key"};
+  static final privatePreferencesKeys = {
+    "extra-security.warp.license-key",
+    "unblocker.warp.license-key",
+    "lan-sharing-password",
+  };
 
   static final Map<String, StateNotifierProvider<PreferencesNotifier, dynamic>> preferences = {
     "region": region,
@@ -373,6 +379,7 @@ abstract class ConfigOptions {
     "clash-api-port": clashApiPort,
     // "bypass-lan": bypassLan,
     "allow-connection-from-lan": allowConnectionFromLan,
+    "lan-sharing-password": lanSharingPassword,
     // "enable-dns-routing": enableDnsRouting,
 
     // mux
@@ -492,6 +499,7 @@ abstract class ConfigOptions {
       setSystemProxy: mode == ServiceMode.systemProxy,
       // bypassLan: ref.watch(bypassLan),
       allowConnectionFromLan: ref.watch(allowConnectionFromLan),
+      lanSharingPassword: ref.watch(lanSharingPassword),
       enableFakeDns: ref.watch(enableFakeDns),
       // enableDnsRouting: ref.watch(enableDnsRouting),
       independentDnsCache: ref.watch(independentDnsCache),
