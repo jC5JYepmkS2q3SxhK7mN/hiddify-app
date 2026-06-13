@@ -438,7 +438,12 @@
         "tproxyPort": "Şeffaf proxy portu",
         "directPort": "Direct portu",
         "redirectPort": "Yönlendirme portu",
-        "allowConnectionFromLan": "VPN'i yerel ağda paylaş"
+        "lanSharing": "VPN paylaşımı",
+        "lanSharingPasswordNotSet": "Şifre ayarlanmamış",
+        "lanSharingPassword": "VPN paylaşım şifresi",
+        "copyLink": "Bağlantıyı kopyala",
+        "qrCode": "QR Kod",
+        "lanIPError": "Yerel IP adresi alınamadı"
       },
       "tlsTricks": {
         "title": "TLS hileleri",
