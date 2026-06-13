@@ -438,7 +438,12 @@
         "tproxyPort": "Puerto de proxy transparente",
         "directPort": "Puerto de Directo",
         "redirectPort": "Puerto de redirección",
-        "allowConnectionFromLan": "Compartir VPN en la red local"
+        "lanSharing": "Compartir VPN",
+        "lanSharingPasswordNotSet": "Contraseña no establecida",
+        "lanSharingPassword": "Contraseña de compartir VPN",
+        "copyLink": "Copiar enlace",
+        "qrCode": "Código QR",
+        "lanIPError": "Error al obtener la IP local"
       },
       "tlsTricks": {
         "title": "Trucos de TLS",
