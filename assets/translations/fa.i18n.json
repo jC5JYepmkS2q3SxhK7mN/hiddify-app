@@ -438,7 +438,12 @@
         "tproxyPort": "پورت پروکسی شفاف",
         "directPort": "پورت مستقیم",
         "redirectPort": "پورت تغییر مسیر",
-        "allowConnectionFromLan": "اشتراک VPN در شبکه محلی"
+        "lanSharing": "اشتراک VPN",
+        "lanSharingPasswordNotSet": "رمز عبور تنظیم نشده",
+        "lanSharingPassword": "رمز عبور اشتراک VPN",
+        "copyLink": "کپی لینک",
+        "qrCode": "کد QR",
+        "lanIPError": "خطا در دریافت آدرس IP محلی"
       },
       "tlsTricks": {
         "title": "ترفندهای TLS",

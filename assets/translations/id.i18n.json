@@ -438,7 +438,12 @@
         "tproxyPort": "Port proksi transparan",
         "directPort": "Port direct",
         "redirectPort": "Port pengalihan",
-        "allowConnectionFromLan": "Bagikan VPN di jaringan lokal"
+        "lanSharing": "Berbagi VPN",
+        "lanSharingPasswordNotSet": "Kata sandi belum diatur",
+        "lanSharingPassword": "Kata sandi berbagi VPN",
+        "copyLink": "Salin tautan",
+        "qrCode": "Kode QR",
+        "lanIPError": "Gagal mendapatkan alamat IP lokal"
       },
       "tlsTricks": {
         "title": "Trik TLS",

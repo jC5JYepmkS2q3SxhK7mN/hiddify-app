@@ -442,7 +442,12 @@
         "tproxyPort": "Порт прозрачного прокси",
         "directPort": "Локальный порт direct",
         "redirectPort": "Порт перенаправления",
-        "allowConnectionFromLan": "Поделиться VPN в локальной сети"
+        "lanSharing": "Общий доступ к VPN",
+        "lanSharingPasswordNotSet": "Пароль не установлен",
+        "lanSharingPassword": "Пароль общего доступа VPN",
+        "copyLink": "Копировать ссылку",
+        "qrCode": "QR-код",
+        "lanIPError": "Не удалось получить локальный IP-адрес"
       },
       "tlsTricks": {
         "title": "Трюки TLS",
