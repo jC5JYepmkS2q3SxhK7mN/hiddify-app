@@ -627,6 +627,10 @@
       "addProfileByDeepLinkWarning": {
         "title": "Adicionar perfil?",
         "message": "Um link externo de \"${host}\" está solicitando adicionar um novo perfil. Deseja importá-lo?"
+      },
+      "importRouteRuleByDeepLinkWarning": {
+        "title": "Importar regra de roteamento?",
+        "message": "Importar regras de roteamento de fontes não confiáveis pode ser um risco de segurança\nProssiga apenas se você confiar neste link"
       }
     },
     "experimentalNotice": {
