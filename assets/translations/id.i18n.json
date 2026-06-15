@@ -627,6 +627,10 @@
       "addProfileByDeepLinkWarning": {
         "title": "Tambah Profil?",
         "message": "Tautan eksternal dari \"${host}\" meminta untuk menambahkan profil baru. Apakah Anda ingin mengimpornya?"
+      },
+      "importRouteRuleByDeepLinkWarning": {
+        "title": "Impor aturan rute?",
+        "message": "Mengimpor aturan rute dari sumber yang tidak tepercaya dapat menjadi risiko keamanan\nLanjutkan hanya jika Anda mempercayai tautan ini"
       }
     },
     "experimentalNotice": {

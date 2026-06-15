@@ -627,6 +627,10 @@
       "addProfileByDeepLinkWarning": {
         "title": "Profil ekle?",
         "message": "\"${host}\" adresinden bir dış bağlantı yeni bir profil eklemek istiyor. İçe aktarmak ister misiniz?"
+      },
+      "importRouteRuleByDeepLinkWarning": {
+        "title": "Rota kuralını içe aktar?",
+        "message": "Güvenilmeyen kaynaklardan rota kurallarını içe aktarmak bir güvenlik riski olabilir\nYalnızca bu bağlantıya güveniyorsanız devam edin"
       }
     },
     "experimentalNotice": {

@@ -633,6 +633,10 @@
       "addProfileByDeepLinkWarning": {
         "title": "إضافة ملف شخصي؟",
         "message": "رابط خارجي من \"${host}\" يطلب إضافة ملف شخصي جديد. هل تريد استيراده؟"
+      },
+      "importRouteRuleByDeepLinkWarning": {
+        "title": "استيراد قاعدة التوجيه؟",
+        "message": "قد يشكل استيراد قواعد التوجيه من مصادر غير موثوقة خطراً أمنياً\nتابع فقط إذا كنت تثق في هذا الرابط"
       }
     },
     "experimentalNotice": {

@@ -627,6 +627,10 @@
       "addProfileByDeepLinkWarning": {
         "title": "添加配置？",
         "message": "来自 \"${host}\" 的外部链接请求添加新配置。您想要导入吗？"
+      },
+      "importRouteRuleByDeepLinkWarning": {
+        "title": "导入路由规则？",
+        "message": "从不受信任的来源导入路由规则可能会存在安全风险\n仅当您信任此链接时才继续"
       }
     },
     "experimentalNotice": {
