@@ -71,32 +71,40 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
         // fix path-parameters for deep link
         String? url;
         if (LinkParser.protocols.contains(state.uri.scheme)) {
+          // Android & iOS deep link
           url = state.uri.toString();
         } else if (PlatformUtils.isDesktop && newUrlFromAppLink.isNotEmpty) {
+          // Desktops deep link
           url = newUrlFromAppLink;
           newUrlFromAppLink = '';
         } else if (state.uri.queryParameters['url'] != null) {
+          // Get the configured URL for intro
           url = state.uri.queryParameters['url'];
         }
 
         if (!ref.read(Preferences.introCompleted)) {
-          // Intro completed
+          // Intro is not completed
           return url != null ? '/intro?url=$url' : '/intro';
         } else if (state.matchedLocation == '/intro') {
-          // Is Intro Page
-          if (url != null) {
+          // Intro is completed
+          // Current page in '/intro'
+          if (url != null && Uri.parse(url).host == 'import') {
             WidgetsBinding.instance.addPostFrameCallback(
               (_) =>
                   ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile(url: url, triggeredByDeepLink: true),
             );
           }
           return '/home';
-        } else if (url != null) {
+        } else if (url != null && Uri.parse(url).host == 'import') {
           // Auto import profile from url
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => ref.read(bottomSheetsNotifierProvider.notifier).showAddProfile(url: url, triggeredByDeepLink: true),
           );
           return '/home';
+        } else if (url != null) {
+          final uri = Uri.parse(url);
+          final path = uri.path + (uri.hasQuery ? "?${uri.query}" : "");
+          return path;
         } else if (state.matchedLocation.contains('chain-options') &&
             (ref.watch(hasAnyProfileProvider).value == false)) {
           // Prevent showing chainOptions while hasAnyProfile == false
@@ -183,8 +191,11 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                     GoRoute(
                       name: 'routingOptions',
                       path: 'routing-options',
-                      pageBuilder: (_, state) =>
-                          customTransition(TransitionType.slide, state.pageKey, const RoutingOptionsPage()),
+                      pageBuilder: (_, state) => customTransition(
+                        TransitionType.slide,
+                        state.pageKey,
+                        RoutingOptionsPage(routeRule: state.uri.queryParameters['routeRule']),
+                      ),
                       routes: <GoRoute>[
                         GoRoute(
                           name: 'rule',
