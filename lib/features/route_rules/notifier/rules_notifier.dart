@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hiddify/core/directories/directories_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
+import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -73,7 +74,8 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
     final t = ref.read(translationsProvider).requireValue;
     try {
       final routeRules = RouteRule(rules: state);
-      await Clipboard.setData(ClipboardData(text: jsonEncode(routeRules.writeToJson())));
+      final base64Data = base64.encode(utf8.encode(jsonEncode(routeRules.writeToJson())));
+      await Clipboard.setData(ClipboardData(text: 'hiddify:///settings/routing-options?routeRule=$base64Data'));
       ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.export.clipboard.success);
       return true;
     } on PlatformException {
@@ -88,22 +90,52 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
     }
   }
 
-  //import Clipboard
+  //import clipboard
   Future<bool> importRulesFromClipboard() async {
     final t = ref.read(translationsProvider).requireValue;
     try {
-      final input = await Clipboard.getData(Clipboard.kTextPlain).then((value) => value?.text);
-      if (input == null) return false;
-      final routeRules = RouteRule.fromJson(jsonDecode(input) as String);
-      state = routeRules.rules;
-      await _updateFile();
-      ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.import.success);
-      return true;
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain).then((value) => value?.text);
+      if (clipboardData == null) return false;
+      final encodedBase64 = Uri.parse(clipboardData).queryParameters['routeRule'];
+      if (encodedBase64 == null) return false;
+      return await importRules(encodedBase64);
     } catch (e, st) {
       loggy.warning("error importing route rules from clipboard", e, st);
       ref.read(inAppNotificationControllerProvider).showErrorToast(t.common.msg.import.failure);
       return false;
     }
+  }
+
+  //import deep link
+  Future<bool> importRulesFromDeepLink(String encodedBase64) async {
+    final t = ref.read(translationsProvider).requireValue;
+    try {
+      final isConfirmed = await ref
+          .read(dialogNotifierProvider.notifier)
+          .showConfirmation(
+            title: t.dialogs.confirmation.importRouteRuleByDeepLinkWarning.title,
+            message: t.dialogs.confirmation.importRouteRuleByDeepLinkWarning.message,
+          );
+      if (isConfirmed) {
+        return await importRules(encodedBase64);
+      }
+      return false;
+    } catch (e, st) {
+      loggy.warning("error importing route rules from deep link", e, st);
+      ref.read(inAppNotificationControllerProvider).showErrorToast(t.common.msg.import.failure);
+      return false;
+    }
+  }
+
+  //import
+  Future<bool> importRules(String encodedBase64) async {
+    final t = ref.read(translationsProvider).requireValue;
+    final base64Content = base64.decode(encodedBase64);
+    final routeRules = RouteRule.fromJson(jsonDecode(utf8.decode(base64Content)) as String);
+    state = routeRules.rules;
+    await _updateFile();
+    ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.import.success);
+    return true;
   }
 
   //export JSON
