@@ -190,6 +190,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         if: startsWith(matrix.platform,'android')
+        with:
+          # default also installs the legacy 'tools' package, which no longer exists
+          packages: platform-tools
       # - name: Cache Android SDK
       #   uses: actions/cache@v5
       #   if: startsWith(matrix.platform,'android')
