@@ -386,7 +386,6 @@ jobs:
           rm ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision ||echo ok
   update-draft:
     permissions: write-all
-    contents: write
     if: ${{ inputs.upload-artifact }}
     needs: [build]
     runs-on: ubuntu-latest
