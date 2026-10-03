@@ -65,9 +65,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: android-apk
-            os: ubuntu-latest
-            targets: apk
+          # - platform: android-apk
+          #   os: ubuntu-latest
+          #   targets: apk
 
           # - platform: android-aab
           #   os: ubuntu-latest
@@ -264,15 +264,28 @@ jobs:
 
       - name: Code Sign
         if: ${{ inputs.upload-artifact && startsWith(matrix.platform,'windows') }}
-        uses: hiddify/signtool-code-sign-sha256@main
-        with:
-          certificate: '${{ secrets.WINDOWS_SIGNING_KEY }}'
-          cert-password: '${{ secrets.WINDOWS_SIGNING_PASSWORD }}'
-          cert-sha1: '${{ secrets.WINDOWS_SIGNING_SHA1 }}'
-          folder: 'dist'
-          timestamp-server: 'http://timestamp.digicert.com'
-          recursive: true
-          description: 'Hiddify'
+        # signtool-code-sign actions hardcode an SDK path (10.0.17763.0) missing on current runners,
+        # so locate signtool from whichever Windows SDK is installed.
+        env:
+          SIGN_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
+            Sort-Object { [version]$_.Directory.Parent.Name } -Descending | Select-Object -First 1
+          if (-not $signtool) { throw "signtool.exe not found" }
+          Write-Host "Using $($signtool.FullName)"
+          $pfx = Resolve-Path "windows\sign.pfx"
+          $exts = '.dll','.exe','.sys','.msix','.msixbundle','.appx','.appxbundle','.msi','.msp','.msm','.cab','.ps1','.psm1'
+          $files = Get-ChildItem dist -Recurse -File | Where-Object { $exts -contains $_.Extension.ToLower() }
+          foreach ($file in $files) {
+            Write-Host "Signing $($file.FullName)"
+            $ok = $false
+            foreach ($attempt in 1..5) {
+              & $signtool.FullName sign /fd SHA256 /td SHA256 /tr http://timestamp.digicert.com /d Hiddify /f $pfx /p $env:SIGN_PASSWORD $file.FullName
+              if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+              Start-Sleep -Seconds $attempt
+            }
+            if (-not $ok) { throw "failed to sign $($file.FullName)" }
+          }
 
       - name: Copy to out Windows
         if: matrix.platform == 'windows'
@@ -426,8 +439,10 @@ jobs:
       - name: Create or Update Draft Release
         uses: softprops/action-gh-release@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
-          GITHUB_REPOSITORY: hiddify/hiddify-app
+          #GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#          GITHUB_REPOSITORY: hiddify/hiddify-app
         with:
           files: ./out/*
           name: 'draft'
