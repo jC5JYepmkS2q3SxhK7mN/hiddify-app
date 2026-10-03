@@ -387,7 +387,6 @@ jobs:
   update-draft:
     permissions: write-all
     contents: write
-    discussions: write
     if: ${{ inputs.upload-artifact }}
     needs: [build]
     runs-on: ubuntu-latest
