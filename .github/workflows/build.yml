@@ -69,19 +69,19 @@ jobs:
             os: ubuntu-latest
             targets: apk
 
-          - platform: android-aab
-            os: ubuntu-latest
-            targets: aab
+          # - platform: android-aab
+          #   os: ubuntu-latest
+          #   targets: aab
 
           - platform: windows
             os: windows-latest
             aarch: amd64
             targets: exe,msix,zip
 
-          - platform: linux
-            os: ubuntu-22.04
-            aarch: amd64
-            targets: deb,gz,AppImage
+          # - platform: linux
+          #   os: ubuntu-22.04
+          #   aarch: amd64
+          #   targets: deb,gz,AppImage
 
           # - platform: linux-amd64
           #   os: ubuntu-22.04
@@ -103,10 +103,10 @@ jobs:
           #   aarch: arm64
           #   targets: deb,gz
             
-          - platform: macos
-            os: macos-15
-            aarch: universal
-            targets: dmg,pkg
+          # - platform: macos
+          #   os: macos-15
+          #   aarch: universal
+          #   targets: dmg,pkg
             
           # - platform: ios
           #   os: macos-15
@@ -233,7 +233,13 @@ jobs:
         run: |
             [IO.File]::WriteAllBytes("windows\sign.pfx", [Convert]::FromBase64String("${{ secrets.WINDOWS_SIGNING_KEY }}"))
             (Get-Content "windows\packaging\msix\make_config.yaml") -replace '^certificate_password:.*$', 'certificate_password: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}' | Set-Content "windows\packaging\msix\make_config.yaml"
-        
+            # Fail early with a readable reason instead of SignTool's "No certificates were found"
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2("windows\sign.pfx", "${{ secrets.WINDOWS_SIGNING_PASSWORD }}")
+            Write-Host "Signing cert: $($cert.Subject) thumbprint=$($cert.Thumbprint) valid $($cert.NotBefore) -> $($cert.NotAfter)"
+            if (-not $cert.HasPrivateKey) { throw "WINDOWS_SIGNING_KEY has no private key" }
+            if ($cert.NotAfter -lt (Get-Date)) { throw "Windows signing certificate expired on $($cert.NotAfter); update WINDOWS_SIGNING_KEY / WINDOWS_SIGNING_PASSWORD / WINDOWS_SIGNING_SHA1" }
+            if ("${{ secrets.WINDOWS_SIGNING_SHA1 }}" -and $cert.Thumbprint -ne "${{ secrets.WINDOWS_SIGNING_SHA1 }}".ToUpper()) { Write-Warning "WINDOWS_SIGNING_SHA1 does not match the certificate thumbprint" }
+
       # - name: Temporary disable Permission Handler for windows due to its issue in permission
       #   if: ${{ startsWith(matrix.platform,'windows') }}
       #   run: |
