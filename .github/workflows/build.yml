@@ -65,18 +65,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: android-apk
-            os: ubuntu-latest
-            targets: apk
+          # - platform: android-apk
+          #   os: ubuntu-latest
+          #   targets: apk
 
           # - platform: android-aab
           #   os: ubuntu-latest
           #   targets: aab
 
-          - platform: windows
-            os: windows-latest
-            aarch: amd64
-            targets: exe,msix,zip
+          # - platform: windows
+          #   os: windows-latest
+          #   aarch: amd64
+          #   targets: exe,msix,zip
 
           - platform: linux
             os: ubuntu-22.04
@@ -103,10 +103,10 @@ jobs:
           #   aarch: arm64
           #   targets: deb,gz
             
-          - platform: macos
-            os: macos-15
-            aarch: universal
-            targets: dmg,pkg
+          # - platform: macos
+          #   os: macos-15
+          #   aarch: universal
+          #   targets: dmg,pkg
             
           # - platform: ios
           #   os: macos-15
@@ -386,6 +386,8 @@ jobs:
           rm ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision ||echo ok
   update-draft:
     permissions: write-all
+    contents: write
+    discussions: write
     if: ${{ inputs.upload-artifact }}
     needs: [build]
     runs-on: ubuntu-latest
@@ -448,7 +450,7 @@ jobs:
           name: 'draft'
           tag_name: 'draft'
           body_path: './release.md'
-          # target_commitish: ${{ github.sha }}
+          target_commitish: ${{ github.sha }}
           # target_commitish: '530bf77839a74d4f13847ba244a20734ac7ab119'
           prerelease: true
           # repository: hiddify/hiddify-app
