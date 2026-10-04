@@ -9,6 +9,15 @@ While it is on the app cannot accept a real keyboard, so leave the flag off for 
 flutter run -d windows --dart-define=driver=true
 ```
 
+## Hot reload and code generation
+
+A running `flutter run` session applies changes through hot reload and hot restart, which is much
+faster than rebuilding the app. A rebuild is for the changes that don't take effect without one.
+
+`dart run build_runner watch -d` tracks changes and regenerates only what they affect instead of
+every generated file, which speeds development up a lot. It doesn't handle slang: translation
+changes take effect only after `dart run slang`.
+
 ## Localization / translations (slang)
 
 The app uses **slang** (v4.8.1) for i18n — a type-safe framework that turns the JSON translation files into Dart code, with tooling for analysis, applying translations, and structural key edits. Config is in `build.yaml` under `slang_build_runner`.
