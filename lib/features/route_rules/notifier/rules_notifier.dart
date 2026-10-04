@@ -79,9 +79,7 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
       ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.export.clipboard.success);
       return true;
     } on PlatformException {
-      ref
-          .read(inAppNotificationControllerProvider)
-          .showInfoToast(t.common.msg.export.clipboard.contentTooLarge, duration: const Duration(seconds: 5));
+      ref.read(inAppNotificationControllerProvider).showInfoToast(t.common.msg.export.clipboard.contentTooLarge);
       return false;
     } catch (e, st) {
       loggy.warning("error exporting route rules to clipboard", e, st);

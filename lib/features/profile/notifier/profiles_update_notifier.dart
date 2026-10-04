@@ -116,15 +116,12 @@ class ForegroundProfilesUpdateNotifier extends _$ForegroundProfilesUpdateNotifie
         if (failedNames.isEmpty) {
           notification.showSuccessToast(t.pages.profiles.msg.update.bulkSuccess(count: successCount));
         } else {
-          // Longer duration so the user has time to read the failed names.
-          final seconds = failedNames.length >= 5 ? 15 : 5 + failedNames.length * 2;
           notification.showErrorToast(
             t.pages.profiles.msg.update.bulkPartial(
               success: successCount,
               failed: failedNames.length,
               names: failedNames.join(", "),
             ),
-            duration: Duration(seconds: seconds),
           );
         }
       }
