@@ -155,35 +155,30 @@ interface PlatformInterfaceWrapper : PlatformInterface {
     override fun clearDNSCache() {
     }
 
-    override fun readWIFIState(): WIFIState? {
-        @Suppress("DEPRECATION")
-        val wifiInfo =
-            Application.wifiManager.connectionInfo ?: return null
-        var ssid = wifiInfo.ssid
-        if (ssid == "<unknown ssid>") {
-            return WIFIState("", "")
-        }
-        if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
-            ssid = ssid.substring(1, ssid.length - 1)
-        }
-        return WIFIState(ssid, wifiInfo.bssid)
-    }
+    // WiFi state (SSID/BSSID for wifi_ssid rules) is not read: it needs ACCESS_WIFI_STATE and, on newer
+    // Android, location permission; a SecurityException here would abort the process from the Go core.
+    override fun readWIFIState(): WIFIState? = null
 
     override fun localDNSTransport(): LocalDNSTransport? = LocalResolver
 
     @OptIn(ExperimentalEncodingApi::class)
     override fun systemCertificates(): StringIterator {
         val certificates = mutableListOf<String>()
-        val keyStore = KeyStore.getInstance("AndroidCAStore")
-        if (keyStore != null) {
-            keyStore.load(null, null)
-            val aliases = keyStore.aliases()
-            while (aliases.hasMoreElements()) {
-                val cert = keyStore.getCertificate(aliases.nextElement())
-                certificates.add(
-                    "-----BEGIN CERTIFICATE-----\n" + Base64.encode(cert.encoded) + "\n-----END CERTIFICATE-----",
-                )
+        // Called from the Go core without an error return: must not throw.
+        try {
+            val keyStore = KeyStore.getInstance("AndroidCAStore")
+            if (keyStore != null) {
+                keyStore.load(null, null)
+                val aliases = keyStore.aliases()
+                while (aliases.hasMoreElements()) {
+                    val cert = keyStore.getCertificate(aliases.nextElement()) ?: continue
+                    certificates.add(
+                        "-----BEGIN CERTIFICATE-----\n" + Base64.encode(cert.encoded) + "\n-----END CERTIFICATE-----",
+                    )
+                }
             }
+        } catch (e: Exception) {
+            Log.w("PlatformInterface", "systemCertificates", e)
         }
         return StringArray(certificates.iterator())
     }
