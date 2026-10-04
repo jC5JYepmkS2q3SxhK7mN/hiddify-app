@@ -83,10 +83,10 @@ jobs:
             aarch: amd64
             targets: deb,gz,AppImage
 
-          - platform: linux-amd64
-            os: ubuntu-22.04
-            aarch: amd64
-            targets: deb,gz
+          # - platform: linux-amd64
+          #   os: ubuntu-22.04
+          #   aarch: amd64
+          #   targets: deb,gz
 
           # - platform: linux-arm64
           #   os: ubuntu-24.04-arm
