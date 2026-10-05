@@ -7,8 +7,8 @@ import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_notifier.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/route_rules/widget/rule_tile.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -27,7 +27,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
     final theme = Theme.of(context);
-    final perAppProxy = ref.watch(Preferences.perAppProxyMode).enabled;
+    final appBasedRouting = ref.watch(Preferences.perAppProxyMode).enabled;
     final rules = ref.watch(rulesNotifierProvider);
     final showGeneralOptions = ref.watch(Preferences.showRouteGeneralOptions);
 
@@ -155,7 +155,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(t.pages.settings.routing.generalOptions.title),
+                                Text(t.pages.settings.routing.title),
                                 const Gap(4),
                                 Icon(
                                   showGeneralOptions ? Icons.arrow_drop_down_rounded : Icons.arrow_drop_up_rounded,
@@ -182,7 +182,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
                   selected: ref.watch(ConfigOptions.region),
                   preferences: ref.watch(ConfigOptions.region.notifier),
                   choices: Region.values,
-                  title: t.pages.settings.routing.generalOptions.region,
+                  title: t.pages.settings.routing.region,
                   showFlag: true,
                   icon: Icons.place_rounded,
                   presentChoice: (value) => value.present(t),
@@ -198,36 +198,34 @@ class RoutingOptionsPage extends HookConsumerWidget {
                       await ref
                           .read(dialogNotifierProvider.notifier)
                           .showOk(
-                            t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.dialog.title,
-                            t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.dialog.msg(
-                              region: val.name,
-                            ),
+                            t.pages.settings.routing.appBasedRouting.autoSelection.dialog.title,
+                            t.pages.settings.routing.appBasedRouting.autoSelection.dialog.msg(region: val.name),
                           );
-                      await ref.read(PerAppProxyProvider(mode).notifier).clearAutoSelected();
+                      await ref.read(AppListProvider(mode).notifier).clearAutoSelected();
                     }
                   },
                 ),
                 if (PlatformUtils.isAndroid)
                   ListTile(
-                    title: Text(t.pages.settings.routing.generalOptions.perAppProxy.title),
+                    title: Text(t.pages.settings.routing.appBasedRouting.title),
                     leading: const Icon(Icons.apps_rounded),
                     trailing: Switch(
-                      value: perAppProxy,
+                      value: appBasedRouting,
                       onChanged: (value) async {
-                        final newMode = perAppProxy ? PerAppProxyMode.off : PerAppProxyMode.exclude;
+                        final newMode = appBasedRouting ? PerAppProxyMode.off : PerAppProxyMode.exclude;
                         await ref.read(Preferences.perAppProxyMode.notifier).update(newMode);
-                        if (!perAppProxy && context.mounted) context.goNamed('perAppProxy');
+                        if (!appBasedRouting && context.mounted) context.goNamed('appList');
                       },
                     ),
                     onTap: () async {
-                      if (!perAppProxy) {
+                      if (!appBasedRouting) {
                         await ref.read(Preferences.perAppProxyMode.notifier).update(PerAppProxyMode.exclude);
                       }
-                      if (context.mounted) context.goNamed('perAppProxy');
+                      if (context.mounted) context.goNamed('appList');
                     },
                   ),
                 ChoicePreferenceWidget(
-                  title: t.pages.settings.routing.generalOptions.balancerStrategy.title,
+                  title: t.pages.settings.routing.balancerStrategy.title,
                   icon: Icons.balance_rounded,
                   selected: ref.watch(ConfigOptions.balancerStrategy),
                   preferences: ref.watch(ConfigOptions.balancerStrategy.notifier),
@@ -235,7 +233,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
                   presentChoice: (value) => value.present(t),
                 ),
                 SwitchListTile.adaptive(
-                  title: Text(t.pages.settings.routing.generalOptions.resolveDestination),
+                  title: Text(t.pages.settings.routing.resolveDestination),
                   secondary: const Icon(Icons.find_replace_rounded),
                   value: ref.watch(ConfigOptions.resolveDestination),
                   onChanged: ref.read(ConfigOptions.resolveDestination.notifier).update,
@@ -244,7 +242,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
                   selected: ref.watch(ConfigOptions.ipv6Mode),
                   preferences: ref.watch(ConfigOptions.ipv6Mode.notifier),
                   choices: IPv6Mode.values,
-                  title: t.pages.settings.routing.generalOptions.ipv6Route,
+                  title: t.pages.settings.routing.ipv6Route,
                   icon: Icons.looks_6_rounded,
                   presentChoice: (value) => value.present(t),
                 ),

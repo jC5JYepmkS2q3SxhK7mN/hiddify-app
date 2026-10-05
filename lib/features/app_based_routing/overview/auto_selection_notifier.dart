@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'per_app_proxy_loading_notifier.g.dart';
+part 'auto_selection_notifier.g.dart';
 
 @Riverpod()
-class AppProxyLoading extends _$AppProxyLoading {
+class AutoSelectionLoading extends _$AutoSelectionLoading {
   @override
   bool build() => false;
 

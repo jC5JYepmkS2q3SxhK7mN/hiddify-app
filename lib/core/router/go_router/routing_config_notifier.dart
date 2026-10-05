@@ -9,10 +9,10 @@ import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.
 import 'package:hiddify/core/router/go_router/helper/custom_transition.dart';
 import 'package:hiddify/core/router/go_router/refresh_listenable.dart';
 import 'package:hiddify/features/about/widget/about_page.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_list_page.dart';
 import 'package:hiddify/features/home/widget/home_page.dart';
 import 'package:hiddify/features/intro/widget/intro_page.dart';
 import 'package:hiddify/features/log/overview/logs_page.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_page.dart';
 import 'package:hiddify/features/profile/details/profile_details_page.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/profile/overview/profiles_page.dart';
@@ -230,10 +230,10 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
                           ],
                         ),
                         GoRoute(
-                          name: 'perAppProxy',
-                          path: 'per-app-proxy',
+                          name: 'appList',
+                          path: 'app-list',
                           pageBuilder: (_, state) =>
-                              customTransition(TransitionType.slide, state.pageKey, const PerAppProxyPage()),
+                              customTransition(TransitionType.slide, state.pageKey, const AppListPage()),
                         ),
                       ],
                     ),

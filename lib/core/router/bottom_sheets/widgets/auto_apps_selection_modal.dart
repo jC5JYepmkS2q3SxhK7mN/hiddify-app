@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_loading_notifier.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_notifier.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
+import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AutoAppsSelectionModal extends HookConsumerWidget {
@@ -25,7 +25,7 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
     final theme = Theme.of(context);
-    final loading = ref.watch(appProxyLoadingProvider);
+    final loading = ref.watch(autoSelectionLoadingProvider);
     final isAutoEnabled = ref.watch(Preferences.autoAppsSelectionRegion) != null;
     final updateInterval = ref.watch(Preferences.autoAppsSelectionUpdateInterval);
     final sliderFocusNode = useFocusNode(
@@ -45,8 +45,8 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
       if (!isAutoEnabled) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           await ref
-              .read(appProxyLoadingProvider.notifier)
-              .doAsync(ref.read(PerAppProxyProvider(mode).notifier).applyAutoSelection);
+              .read(autoSelectionLoadingProvider.notifier)
+              .doAsync(ref.read(AppListProvider(mode).notifier).applyAutoSelection);
         });
       }
       return null;
@@ -56,7 +56,7 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
         child: Column(
           children: [
             ListTile(
-              title: Text(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.title),
+              title: Text(t.pages.settings.routing.appBasedRouting.autoSelection.title),
               trailing: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: loading
@@ -67,11 +67,11 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
                     : Switch.adaptive(
                         value: isAutoEnabled,
                         onChanged: (value) async {
-                          final notifier = ref.read(appProxyLoadingProvider.notifier);
+                          final notifier = ref.read(autoSelectionLoadingProvider.notifier);
                           if (value) {
-                            await notifier.doAsync(ref.read(PerAppProxyProvider(mode).notifier).applyAutoSelection);
+                            await notifier.doAsync(ref.read(AppListProvider(mode).notifier).applyAutoSelection);
                           } else {
-                            await notifier.doAsync(ref.read(PerAppProxyProvider(mode).notifier).clearAutoSelected);
+                            await notifier.doAsync(ref.read(AppListProvider(mode).notifier).clearAutoSelected);
                             if (context.mounted) context.pop();
                           }
                         },
@@ -92,7 +92,7 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.autoUpdateInterval,
+                                  t.pages.settings.routing.appBasedRouting.autoSelection.autoUpdateInterval,
                                   style: theme.textTheme.titleSmall!.copyWith(color: theme.colorScheme.onSurface),
                                 ),
                               ),
@@ -128,10 +128,10 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
                                       ? null
                                       : () async {
                                           await ref
-                                              .read(appProxyLoadingProvider.notifier)
-                                              .doAsync(ref.read(PerAppProxyProvider(mode).notifier).applyAutoSelection);
+                                              .read(autoSelectionLoadingProvider.notifier)
+                                              .doAsync(ref.read(AppListProvider(mode).notifier).applyAutoSelection);
                                         },
-                                  child: Text(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.performNow),
+                                  child: Text(t.pages.settings.routing.appBasedRouting.autoSelection.performNow),
                                 ),
                               ),
                               const Gap(8),
@@ -140,12 +140,12 @@ class AutoAppsSelectionModal extends HookConsumerWidget {
                                     ? null
                                     : () async {
                                         await ref
-                                            .read(appProxyLoadingProvider.notifier)
+                                            .read(autoSelectionLoadingProvider.notifier)
                                             .doAsync(
-                                              ref.read(PerAppProxyProvider(mode).notifier).revertForceDeselection,
+                                              ref.read(AppListProvider(mode).notifier).revertForceDeselection,
                                             );
                                       },
-                                child: Text(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.resetToDefault),
+                                child: Text(t.pages.settings.routing.appBasedRouting.autoSelection.resetToDefault),
                               ),
                             ],
                           ),

@@ -229,7 +229,7 @@ class _BufferChip extends ConsumerWidget {
   }
 }
 
-/// Borrowed from the per-app-proxy page, so the whole app draws a dropdown the
+/// Borrowed from the app list page, so the whole app draws a dropdown the
 /// same way: a filled rounded rect with a hairline, not a pill.
 BoxDecoration _chipShape(ThemeData theme) => BoxDecoration(
   borderRadius: BorderRadius.circular(8),

@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/per_app_proxy/overview/per_app_proxy_notifier.dart';
+import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:installed_apps/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'per_app_proxy_service_notifier.g.dart';
+part 'app_based_routing_notifier.g.dart';
 
 @riverpod
-class PerAppProxyService extends _$PerAppProxyService {
+class AppBasedRouting extends _$AppBasedRouting {
   StreamSubscription? _includeSubscription;
   StreamSubscription? _excludeSubscription;
   Timer? _timer;
@@ -45,12 +45,12 @@ class PerAppProxyService extends _$PerAppProxyService {
     final days = ref.read(Preferences.autoAppsSelectionUpdateInterval).round();
     final interval = Duration(days: days);
     if (mode != null && (lastUpdate == null || DateTime.now().difference(lastUpdate) > interval)) {
-      final rs = await ref.read(PerAppProxyProvider(mode).notifier).applyAutoSelection();
+      final rs = await ref.read(AppListProvider(mode).notifier).applyAutoSelection();
       if (rs) {
         final t = ref.read(translationsProvider).requireValue;
         ref
             .read(inAppNotificationControllerProvider)
-            .showSuccessToast(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.success);
+            .showSuccessToast(t.pages.settings.routing.appBasedRouting.autoSelection.toast.success);
       }
     }
   }

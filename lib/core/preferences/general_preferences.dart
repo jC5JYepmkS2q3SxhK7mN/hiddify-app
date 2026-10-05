@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/actions_at_closing.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
 import 'package:hiddify/features/window/notifier/window_notifier.dart';
 import 'package:hiddify/utils/platform_utils.dart';

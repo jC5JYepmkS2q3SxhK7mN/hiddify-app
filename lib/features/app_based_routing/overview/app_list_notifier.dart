@@ -10,21 +10,21 @@ import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/per_app_proxy/data/auto_selection_repository.dart';
-import 'package:hiddify/features/per_app_proxy/data/auto_selection_repository_provider.dart';
-import 'package:hiddify/features/per_app_proxy/data/selected_data_provider.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_backup.dart';
-import 'package:hiddify/features/per_app_proxy/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/per_app_proxy/model/pkg_flag.dart';
+import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
+import 'package:hiddify/features/app_based_routing/data/auto_selection_repository_provider.dart';
+import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_backup.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:installed_apps/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'per_app_proxy_notifier.g.dart';
+part 'app_list_notifier.g.dart';
 
 @riverpod
-class PerAppProxy extends _$PerAppProxy with AppLogger {
+class AppList extends _$AppList with AppLogger {
   late final AppProxyMode? _mode;
 
   @override
@@ -62,13 +62,13 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
       case AutoSelectionResult.failure:
         ref
             .read(inAppNotificationControllerProvider)
-            .showErrorToast(t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.failure);
+            .showErrorToast(t.pages.settings.routing.appBasedRouting.autoSelection.toast.failure);
         return false;
       case AutoSelectionResult.notFound:
         ref
             .read(inAppNotificationControllerProvider)
             .showInfoToast(
-              t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.regionNotFound(
+              t.pages.settings.routing.appBasedRouting.autoSelection.toast.regionNotFound(
                 region: ref.watch(ConfigOptions.region).name,
               ),
               duration: const Duration(seconds: 5),
@@ -189,8 +189,8 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
       final agree = await ref
           .read(dialogNotifierProvider.notifier)
           .showConfirmation(
-            title: t.dialogs.confirmation.perAppProxy.shareOnGithub.title,
-            message: t.dialogs.confirmation.perAppProxy.shareOnGithub.msg,
+            title: t.dialogs.confirmation.appList.shareOnGithub.title,
+            message: t.dialogs.confirmation.appList.shareOnGithub.msg,
             positiveBtnTxt: t.common.kContinue,
           );
       if (agree != true) return false;
@@ -205,7 +205,7 @@ class PerAppProxy extends _$PerAppProxy with AppLogger {
       ref
           .read(inAppNotificationControllerProvider)
           .showInfoToast(
-            t.pages.settings.routing.generalOptions.perAppProxy.autoSelection.toast.alreadyInAuto,
+            t.pages.settings.routing.appBasedRouting.autoSelection.toast.alreadyInAuto,
             duration: const Duration(seconds: 5),
           );
       return false;
