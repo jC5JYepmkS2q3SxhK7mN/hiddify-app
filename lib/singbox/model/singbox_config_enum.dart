@@ -146,6 +146,16 @@ enum ChainMode {
 
   final String key;
 
+  // Modes offered in the UI. Using another profile as a chain hop is not supported by the core
+  // yet (it refuses "profile"), so it is hidden until then.
+  static const selectable = [psiphon, warp];
+
+  // A stored mode that is no longer selectable falls back to [fallback].
+  static ChainMode fromStored(String name, ChainMode fallback) {
+    final mode = ChainMode.values.asNameMap()[name];
+    return mode != null && selectable.contains(mode) ? mode : fallback;
+  }
+
   String present(Translations t) => switch (this) {
     psiphon => t.common.psiphon,
     warp => t.common.warp,
