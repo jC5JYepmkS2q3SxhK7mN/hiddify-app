@@ -41,18 +41,19 @@ class AppProxyDao extends DatabaseAccessor<Db> with _$AppProxyDaoMixin, InfraLog
       final flag = entry.flags;
       final isAutoSelection = PkgFlag.autoSelection.check(flag);
 
-      if (!isAutoSelection) {
+      if (!isAutoSelection && PkgFlag.userSelection.check(flag)) {
         await (delete(appProxyEntries)..where((tbl) => tbl.mode.equalsValue(mode) & tbl.pkgName.equals(pkg))).go();
         return;
       }
 
+      // auto: dash -> removed -> yours -> dash. A removed app left over from auto selection becomes yours.
       int newFlag;
-      if (PkgFlag.forceDeselection.check(flag)) {
-        newFlag = PkgFlag.forceDeselection.remove(PkgFlag.userSelection.remove(flag));
-      } else if (PkgFlag.userSelection.check(flag)) {
-        newFlag = PkgFlag.forceDeselection.add(flag);
-      } else {
+      if (!isAutoSelection || PkgFlag.forceDeselection.check(flag)) {
         newFlag = PkgFlag.userSelection.add(flag);
+      } else if (PkgFlag.userSelection.check(flag)) {
+        newFlag = PkgFlag.userSelection.remove(flag);
+      } else {
+        newFlag = PkgFlag.forceDeselection.add(flag);
       }
 
       await (update(appProxyEntries)..where((tbl) => tbl.mode.equalsValue(mode) & tbl.pkgName.equals(pkg))).write(
