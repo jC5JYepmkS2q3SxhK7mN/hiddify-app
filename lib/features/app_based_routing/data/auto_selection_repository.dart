@@ -45,7 +45,10 @@ class AutoSelectionRepositoryImpl with AppLogger implements AutoSelectionReposit
     try {
       final rs = await _getHttp().get(_genUrl(mode, region ?? _getRegion()));
       if (rs.statusCode == 200) {
-        return (_parseToListOfString(rs.data), AutoSelectionResult.success);
+        final list = _parseToListOfString(rs.data);
+        // some regions have an empty file (direct_cn, proxy_ru), which means no list
+        if (list.isEmpty) return (null, AutoSelectionResult.notFound);
+        return (list, AutoSelectionResult.success);
       }
       loggy.error("Auto selection failed. status code : ${rs.statusCode}");
       return (null, AutoSelectionResult.failure);
