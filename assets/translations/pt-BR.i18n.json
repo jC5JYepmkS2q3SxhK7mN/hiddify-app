@@ -6,6 +6,7 @@
     "ok": "OK",
     "cancel": "Cancelar",
     "kContinue": "Continuar",
+    "undo": "Desfazer",
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
     "filter": "Filtrar",
@@ -154,12 +155,12 @@
         },
         "update": {
           "success": "Perfil atualizado",
+          "failure": "Falha ao atualizar perfil",
+          "failureNamed": "Falha ao atualizar “${name}”",
           "bulkSuccess(plural, param=count)": {
             "one": "$count perfil atualizado",
             "other": "$count perfis atualizados"
           },
-          "failure": "Falha ao atualizar perfil",
-          "failureNamed": "Falha ao atualizar “${name}”",
           "bulkPartial": "${success} atualizados\n${failed} com falha: ${names}"
         },
         "delete": {
@@ -257,10 +258,8 @@
       "routing": {
         "title": "Roteamento",
         "routeRule": {
-          "empty": "Ainda não há regras de roteamento\n\nCrie uma nova regra ou escolha entre as regras predefinidas",
           "add": "Adicionar regra",
           "delete": "Excluir regra",
-          "create": "Criar nova regra",
           "options": {
             "import": {
               "clipboard": "Importar regras da área de transferência",
@@ -270,7 +269,7 @@
               "clipboard": "Copiar regras para a área de transferência",
               "file": "Salvar regras em um arquivo"
             },
-            "reset": "Redefinir regras"
+            "reset": "Redefinir para as regras padrão"
           },
           "rule": {
             "title": "Regra",
@@ -285,7 +284,7 @@
             "validProcessPath": "“Caminho do processo” válido como\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 ou 1:65000",
             "validPortRange": "“Porta” ou “Intervalo de portas” válido como\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 ou 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8, 10.0.0.0/24 ou fd00::/8",
             "validIpCidr": "IP CIDR válido como\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com ou dl.google.com",
             "validDomain": "“Domínio” válido como\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -337,23 +336,46 @@
             "clearListMsg": "Todos os itens serão excluídos"
           }
         },
-        "generalOptions": {
-          "title": "Opções gerais de rota"
-        },
-        "predefinedRules": {
-          "title": "Regras predefinidas",
-          "ads": {
-            "name": "Bloquear anúncios",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "Ignorar LAN",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "Integrada",
+          "bypassLan": "Ignorar rede local",
+          "blockAds": "Bloquear anúncios e sites nocivos",
+          "bypassRegion": "Ignorar sites da região $region"
         },
         "appBasedRouting": {
-          "title": "Proxy por aplicativo",
+          "title": "Roteamento por aplicativo",
           "hideSysApps": "Ocultar aplicativos do sistema",
+          "listTitle": {
+            "bypass": "Aplicativos ignorados",
+            "proxy": "Aplicativos com proxy"
+          },
+          "chooseApps": "Escolher aplicativos",
+          "apps": {
+            "one": "aplicativo",
+            "other": "aplicativos"
+          },
+          "moreApps": {
+            "one": "+$n aplicativo",
+            "other": "+$n aplicativos"
+          },
+          "autoTag": "Auto",
+          "outsideVpn": "Fora da VPN",
+          "ruleWontApply": "Fora da VPN · a regra não será aplicada",
+          "notInstalled": "Não instalado",
+          "share": {
+            "invite": "Ajude a melhorar a seleção automática",
+            "removed": {
+              "one": "$n removido",
+              "other": "$n removidos"
+            },
+            "added": {
+              "one": "$n adicionado",
+              "other": "$n adicionados"
+            },
+            "title": "Compartilhe suas alterações",
+            "where": "Abre uma issue pública no GitHub, já preenchida com os nomes destes aplicativos. Para compartilhá-los, envie-a por lá. Você precisa de uma conta do GitHub.",
+            "action": "Continuar no GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "Importar seleção da área de transferência",
@@ -364,31 +386,29 @@
               "clipboard": "Copiar seleção para a área de transferência",
               "file": "Exportar seleção para um arquivo"
             },
-            "shareToAll": "Compartilhar com todos",
             "clearAllSelections": "Limpar todas as seleções"
           },
           "modes": {
-            "all": "Todos",
-            "proxy": "Proxy",
-            "bypass": "Ignorar",
-            "allMsg": "Usar proxy para todos os aplicativos",
-            "proxyMsg": "Usar proxy apenas para aplicativos selecionados",
-            "bypassMsg": "Não usar proxy para aplicativos selecionados"
+            "proxy": "Apenas proxy",
+            "bypass": "Ignorar"
           },
           "autoSelection": {
-            "title": "Seleção automática",
-            "performNow": "Executar agora",
-            "resetToDefault": "Redefinir para o padrão",
-            "autoUpdateInterval": "Intervalo de atualização automática",
-            "toast": {
-              "success": "Seleção automática concluída",
-              "failure": "Falha na seleção automática",
-              "regionNotFound": "Nenhuma seleção automática para “${region}”",
-              "alreadyInAuto": "Suas seleções já estão na lista automática"
+            "title": "Seleção automática baseada na região $region",
+            "performNow": "Atualizar agora",
+            "updated": {
+              "zero": "Atualizada hoje",
+              "one": "Atualizada há $n dia",
+              "other": "Atualizada há $n dias"
             },
-            "dialog": {
-              "title": "Seleção automática de aplicativos",
-              "msg": "A seleção automática do proxy por aplicativo foi desativada porque a região mudou para “${region}”"
+            "noList": "Nenhuma lista para esta região",
+            "loadFailed": "Não foi possível carregar a lista",
+            "restore": {
+              "one": "Restaurar $n seleção automática",
+              "other": "Restaurar $n seleções automáticas"
+            },
+            "restored": {
+              "one": "$n seleção automática restaurada",
+              "other": "$n seleções automáticas restauradas"
             }
           }
         },
@@ -634,12 +654,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "Melhorando a seleção automática",
-          "msg": "Ao compartilhar os aplicativos selecionados, você ajuda a completar a lista de “seleção automática”"
-        },
         "import": {
-          "msg": "Isso substitui todas as suas seleções atuais de proxy por aplicativo. Continuar?"
+          "msg": "Isso substitui seus aplicativos de Ignorar e Apenas proxy. Continuar?"
         }
       },
       "routeRule": {

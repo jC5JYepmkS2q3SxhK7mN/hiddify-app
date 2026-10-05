@@ -6,6 +6,7 @@
     "ok": "Oke",
     "cancel": "Batal",
     "kContinue": "Lanjutkan",
+    "undo": "Urungkan",
     "showMore": "Tampilkan lebih banyak",
     "showLess": "Tampilkan lebih sedikit",
     "filter": "Filter",
@@ -256,10 +257,8 @@
       "routing": {
         "title": "Perutean",
         "routeRule": {
-          "empty": "Belum ada aturan perutean\n\nBuat aturan baru atau pilih dari aturan yang telah ditentukan sebelumnya",
           "add": "Tambah aturan",
           "delete": "Hapus aturan",
-          "create": "Buat aturan baru",
           "options": {
             "import": {
               "clipboard": "Impor aturan dari papan klip",
@@ -269,7 +268,7 @@
               "clipboard": "Salin aturan ke papan klip",
               "file": "Simpan aturan ke file"
             },
-            "reset": "Setel ulang aturan"
+            "reset": "Setel ulang ke aturan bawaan"
           },
           "rule": {
             "title": "Aturan",
@@ -284,7 +283,7 @@
             "validProcessPath": "“Jalur proses” yang valid seperti\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 atau 1:65000",
             "validPortRange": "“Port” atau “Rentang port” yang valid seperti\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 atau 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8, 10.0.0.0/24, atau fd00::/8",
             "validIpCidr": "IP CIDR yang valid seperti\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com atau dl.google.com",
             "validDomain": "“Domain” yang valid seperti\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -336,23 +335,46 @@
             "clearListMsg": "Semua item akan dihapus"
           }
         },
-        "generalOptions": {
-          "title": "Opsi umum perutean"
-        },
-        "predefinedRules": {
-          "title": "Aturan yang telah ditentukan",
-          "ads": {
-            "name": "Blokir iklan",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "Lewati LAN",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "Bawaan",
+          "bypassLan": "Lewati jaringan lokal",
+          "blockAds": "Blokir iklan dan situs berbahaya",
+          "bypassRegion": "Lewati situs di $region"
         },
         "appBasedRouting": {
-          "title": "Proxy per aplikasi",
+          "title": "Perutean berbasis aplikasi",
           "hideSysApps": "Sembunyikan aplikasi sistem",
+          "listTitle": {
+            "bypass": "Aplikasi yang dilewati",
+            "proxy": "Aplikasi dengan proxy"
+          },
+          "chooseApps": "Pilih aplikasi",
+          "apps": {
+            "one": "aplikasi",
+            "other": "aplikasi"
+          },
+          "moreApps": {
+            "one": "+$n aplikasi",
+            "other": "+$n aplikasi"
+          },
+          "autoTag": "Otomatis",
+          "outsideVpn": "Di luar VPN",
+          "ruleWontApply": "Di luar VPN · aturan tidak berlaku",
+          "notInstalled": "Tidak terpasang",
+          "share": {
+            "invite": "Bantu tingkatkan pilihan otomatis",
+            "removed": {
+              "one": "$n dihapus",
+              "other": "$n dihapus"
+            },
+            "added": {
+              "one": "$n ditambahkan",
+              "other": "$n ditambahkan"
+            },
+            "title": "Bagikan perubahan Anda",
+            "where": "Membuka issue publik di GitHub yang sudah berisi nama aplikasi ini. Untuk membagikannya, kirim issue itu di sana. Anda memerlukan akun GitHub.",
+            "action": "Lanjutkan di GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "Impor pilihan dari papan klip",
@@ -363,31 +385,29 @@
               "clipboard": "Salin pilihan ke papan klip",
               "file": "Ekspor pilihan ke file"
             },
-            "shareToAll": "Bagikan ke semua",
             "clearAllSelections": "Hapus semua pilihan"
           },
           "modes": {
-            "all": "Semua",
-            "proxy": "Proxy",
-            "bypass": "Lewati",
-            "allMsg": "Proxy semua aplikasi",
-            "proxyMsg": "Proxy hanya aplikasi yang dipilih",
-            "bypassMsg": "Jangan proxy aplikasi yang dipilih"
+            "proxy": "Hanya proxy",
+            "bypass": "Lewati"
           },
           "autoSelection": {
-            "title": "Pilihan otomatis",
-            "performNow": "Lakukan sekarang",
-            "resetToDefault": "Setel ulang ke default",
-            "autoUpdateInterval": "Interval pembaruan otomatis",
-            "toast": {
-              "success": "Pilihan otomatis selesai",
-              "failure": "Pilihan otomatis gagal",
-              "regionNotFound": "Tidak ada pilihan otomatis untuk “${region}”",
-              "alreadyInAuto": "Pilihan Anda sudah ada dalam daftar otomatis"
+            "title": "Pilihan otomatis berdasarkan $region",
+            "performNow": "Perbarui sekarang",
+            "updated": {
+              "zero": "Diperbarui hari ini",
+              "one": "Diperbarui $n hari lalu",
+              "other": "Diperbarui $n hari lalu"
             },
-            "dialog": {
-              "title": "Pilihan aplikasi otomatis",
-              "msg": "Pilihan otomatis proxy per aplikasi dinonaktifkan karena wilayah berubah menjadi “${region}”"
+            "noList": "Tidak ada daftar untuk wilayah ini",
+            "loadFailed": "Tidak dapat memuat daftar",
+            "restore": {
+              "one": "Pulihkan $n pilihan otomatis",
+              "other": "Pulihkan $n pilihan otomatis"
+            },
+            "restored": {
+              "one": "$n pilihan otomatis dipulihkan",
+              "other": "$n pilihan otomatis dipulihkan"
             }
           }
         },
@@ -632,12 +652,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "Meningkatkan pilihan otomatis",
-          "msg": "Dengan membagikan aplikasi yang dipilih, Anda membantu melengkapi daftar “pilihan otomatis”"
-        },
         "import": {
-          "msg": "Ini menggantikan semua pilihan proxy per aplikasi Anda saat ini. Lanjutkan?"
+          "msg": "Ini menggantikan aplikasi Lewati dan Hanya proxy Anda. Lanjutkan?"
         }
       },
       "routeRule": {

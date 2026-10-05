@@ -6,6 +6,7 @@
     "ok": "موافق",
     "cancel": "إلغاء",
     "kContinue": "متابعة",
+    "undo": "تراجع",
     "showMore": "عرض المزيد",
     "showLess": "عرض أقل",
     "filter": "تصفية",
@@ -61,18 +62,18 @@
       "day": {
         "zero": "",
         "one": "يوم واحد",
+        "other": "$n يوم",
         "two": "يومان",
         "few": "$n أيام",
-        "many": "$n يومًا",
-        "other": "$n يوم"
+        "many": "$n يومًا"
       },
       "hour": {
         "zero": "",
         "one": "ساعة واحدة",
+        "other": "$n ساعة",
         "two": "ساعتان",
         "few": "$n ساعات",
-        "many": "$n ساعة",
-        "other": "$n ساعة"
+        "many": "$n ساعة"
       }
     },
     "msg": {
@@ -163,12 +164,12 @@
           "failure": "فشل تحديث الملف الشخصي",
           "failureNamed": "فشل تحديث «${name}»",
           "bulkSuccess(plural, param=count)": {
-            "zero": "لم يتم تحديث أي ملف شخصي",
             "one": "تم تحديث ملف شخصي واحد",
+            "other": "تم تحديث $count ملف شخصي",
+            "zero": "لم يتم تحديث أي ملف شخصي",
             "two": "تم تحديث ملفين شخصيين",
             "few": "تم تحديث $count ملفات شخصية",
-            "many": "تم تحديث $count ملفًا شخصيًا",
-            "other": "تم تحديث $count ملف شخصي"
+            "many": "تم تحديث $count ملفًا شخصيًا"
           },
           "bulkPartial": "${success} تم تحديثها\n${failed} فشلت: ${names}"
         },
@@ -267,10 +268,8 @@
       "routing": {
         "title": "التوجيه",
         "routeRule": {
-          "empty": "لا توجد قواعد توجيه بعد\n\nأنشئ قاعدة جديدة أو اختر من القواعد المحددة مسبقًا",
           "add": "إضافة قاعدة",
           "delete": "حذف القاعدة",
-          "create": "إنشاء قاعدة جديدة",
           "options": {
             "import": {
               "clipboard": "استيراد القواعد من الحافظة",
@@ -280,7 +279,7 @@
               "clipboard": "نسخ القواعد إلى الحافظة",
               "file": "حفظ القواعد في ملف"
             },
-            "reset": "إعادة تعيين القواعد"
+            "reset": "إعادة التعيين إلى القواعد الافتراضية"
           },
           "rule": {
             "title": "قاعدة",
@@ -295,7 +294,7 @@
             "validProcessPath": "«مسار العملية» صالح مثل\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 or 1:65000",
             "validPortRange": "«منفذ» أو «نطاق منافذ» صالح مثل\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 or 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8 أو 10.0.0.0/24 أو fd00::/8",
             "validIpCidr": "IP CIDR صالح مثل\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com or dl.google.com",
             "validDomain": "«نطاق» صالح مثل\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -347,23 +346,58 @@
             "clearListMsg": "سيتم حذف جميع العناصر"
           }
         },
-        "generalOptions": {
-          "title": "الخيارات العامة للتوجيه"
-        },
-        "predefinedRules": {
-          "title": "القواعد المحددة مسبقًا",
-          "ads": {
-            "name": "حظر الإعلانات",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "تجاوز الشبكة المحلية",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "مدمجة",
+          "bypassLan": "تجاوز الشبكة المحلية",
+          "blockAds": "حظر الإعلانات والمواقع الضارة",
+          "bypassRegion": "تجاوز المواقع في $region"
         },
         "appBasedRouting": {
-          "title": "بروكسي لكل تطبيق",
+          "title": "التوجيه حسب التطبيق",
           "hideSysApps": "إخفاء تطبيقات النظام",
+          "listTitle": {
+            "bypass": "تطبيقات بدون بروكسي",
+            "proxy": "تطبيقات عبر البروكسي"
+          },
+          "chooseApps": "اختر التطبيقات",
+          "apps": {
+            "one": "تطبيق",
+            "other": "تطبيقات",
+            "two": "تطبيقان",
+            "few": "تطبيقات",
+            "many": "تطبيقات"
+          },
+          "moreApps": {
+            "one": "+$n تطبيق",
+            "other": "+$n تطبيق",
+            "two": "+$n تطبيق",
+            "few": "+$n تطبيقات",
+            "many": "+$n تطبيقًا"
+          },
+          "autoTag": "تلقائي",
+          "outsideVpn": "خارج VPN",
+          "ruleWontApply": "خارج VPN · لن تُطبَّق القاعدة",
+          "notInstalled": "غير مثبّت",
+          "share": {
+            "invite": "ساعد في تحسين الاختيار التلقائي",
+            "removed": {
+              "one": "تمت إزالة $n",
+              "other": "تمت إزالة $n",
+              "two": "تمت إزالة $n",
+              "few": "تمت إزالة $n",
+              "many": "تمت إزالة $n"
+            },
+            "added": {
+              "one": "تمت إضافة $n",
+              "other": "تمت إضافة $n",
+              "two": "تمت إضافة $n",
+              "few": "تمت إضافة $n",
+              "many": "تمت إضافة $n"
+            },
+            "title": "شارك تغييراتك",
+            "where": "يفتح مشكلة عامة على GitHub مُعبّأة مسبقًا بأسماء هذه التطبيقات. لمشاركتها، أرسلها هناك. تحتاج إلى حساب GitHub.",
+            "action": "المتابعة على GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "استيراد التحديد من الحافظة",
@@ -374,31 +408,38 @@
               "clipboard": "نسخ التحديد إلى الحافظة",
               "file": "تصدير التحديد إلى ملف"
             },
-            "shareToAll": "مشاركة مع الجميع",
             "clearAllSelections": "مسح جميع التحديدات"
           },
           "modes": {
-            "all": "الكل",
-            "proxy": "بروكسي",
-            "bypass": "تجاوز",
-            "allMsg": "استخدام البروكسي لجميع التطبيقات",
-            "proxyMsg": "استخدام البروكسي للتطبيقات المحددة فقط",
-            "bypassMsg": "عدم استخدام البروكسي للتطبيقات المحددة"
+            "proxy": "بروكسي فقط",
+            "bypass": "تجاوز"
           },
           "autoSelection": {
-            "title": "الاختيار التلقائي",
-            "performNow": "تنفيذ الآن",
-            "resetToDefault": "إعادة التعيين إلى الافتراضي",
-            "autoUpdateInterval": "فاصل التحديث التلقائي",
-            "toast": {
-              "success": "اكتمل الاختيار التلقائي",
-              "failure": "فشل الاختيار التلقائي",
-              "regionNotFound": "لا يوجد اختيار تلقائي لـ «${region}»",
-              "alreadyInAuto": "اختياراتك موجودة بالفعل في القائمة التلقائية"
+            "title": "الاختيار التلقائي بناءً على منطقة $region",
+            "performNow": "التحديث الآن",
+            "updated": {
+              "zero": "تم التحديث اليوم",
+              "one": "تم التحديث منذ يوم",
+              "other": "تم التحديث منذ $n يوم",
+              "two": "تم التحديث منذ يومين",
+              "few": "تم التحديث منذ $n أيام",
+              "many": "تم التحديث منذ $n يومًا"
             },
-            "dialog": {
-              "title": "الاختيار التلقائي للتطبيقات",
-              "msg": "تم إيقاف الاختيار التلقائي لبروكسي التطبيقات لأن المنطقة تغيّرت إلى «${region}»"
+            "noList": "لا توجد قائمة لهذه المنطقة",
+            "loadFailed": "تعذّر تحميل القائمة",
+            "restore": {
+              "one": "استعادة اختيار تلقائي واحد",
+              "other": "استعادة $n اختيار تلقائي",
+              "two": "استعادة اختيارين تلقائيين",
+              "few": "استعادة $n اختيارات تلقائية",
+              "many": "استعادة $n اختيارًا تلقائيًا"
+            },
+            "restored": {
+              "one": "تمت استعادة اختيار تلقائي واحد",
+              "other": "تمت استعادة $n اختيار تلقائي",
+              "two": "تمت استعادة اختيارين تلقائيين",
+              "few": "تمت استعادة $n اختيارات تلقائية",
+              "many": "تمت استعادة $n اختيارًا تلقائيًا"
             }
           }
         },
@@ -592,12 +633,12 @@
       "expired": "منتهي الصلاحية",
       "noTraffic": "نفدت الباقة",
       "remainingDuration(plural, param=days)": {
-        "zero": "لم يتبق أي يوم",
         "one": "يتبقى يوم واحد",
+        "other": "يتبقى $days يوم",
+        "zero": "لم يتبق أي يوم",
         "two": "يتبقى يومان",
         "few": "تتبقى $days أيام",
-        "many": "يتبقى $days يومًا",
-        "other": "يتبقى $days يوم"
+        "many": "يتبقى $days يومًا"
       },
       "remainingUnlimited": "غير محدود",
       "remainingTrafficSemanticLabel": "تم استهلاك ${consumed} من ${total}",
@@ -648,12 +689,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "تحسين الاختيار التلقائي",
-          "msg": "بمشاركة التطبيقات التي اخترتها، فإنك تساعد في إكمال قائمة «الاختيار التلقائي»"
-        },
         "import": {
-          "msg": "يستبدل هذا جميع تحديداتك الحالية لبروكسي التطبيقات. هل تريد المتابعة؟"
+          "msg": "يستبدل هذا تطبيقات «تجاوز» و«بروكسي فقط». هل تريد المتابعة؟"
         }
       },
       "routeRule": {

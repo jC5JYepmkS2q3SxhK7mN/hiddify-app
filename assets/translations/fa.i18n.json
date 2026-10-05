@@ -6,6 +6,7 @@
     "ok": "باشه",
     "cancel": "لغو",
     "kContinue": "ادامه",
+    "undo": "واگرد",
     "showMore": "نمایش بیشتر",
     "showLess": "نمایش کمتر",
     "filter": "فیلتر",
@@ -257,10 +258,8 @@
       "routing": {
         "title": "مسیریابی",
         "routeRule": {
-          "empty": "هنوز قانون مسیریابی وجود ندارد\n\nقانون جدیدی ایجاد کنید یا از قوانین پیش‌فرض انتخاب کنید",
           "add": "افزودن قانون",
           "delete": "حذف قانون",
-          "create": "ایجاد قانون جدید",
           "options": {
             "import": {
               "clipboard": "وارد کردن قوانین از کلیپ‌بورد",
@@ -270,7 +269,7 @@
               "clipboard": "کپی قوانین در کلیپ‌بورد",
               "file": "ذخیره قوانین در فایل"
             },
-            "reset": "بازنشانی قوانین"
+            "reset": "بازنشانی به قوانین پیش‌فرض"
           },
           "rule": {
             "title": "قانون",
@@ -285,7 +284,7 @@
             "validProcessPath": "«مسیر فرآیند» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 یا 1:65000",
             "validPortRange": "«پورت» یا «محدوده پورت» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 یا 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8، 10.0.0.0/24 یا fd00::/8",
             "validIpCidr": "IP CIDR معتبر مانند\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com یا dl.google.com",
             "validDomain": "«دامنه» معتبر مانند\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -337,23 +336,46 @@
             "clearListMsg": "تمام موارد حذف خواهند شد"
           }
         },
-        "generalOptions": {
-          "title": "تنظیمات عمومی مسیریابی"
-        },
-        "predefinedRules": {
-          "title": "قوانین پیش‌فرض",
-          "ads": {
-            "name": "مسدودسازی تبلیغات",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "دور زدن LAN",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "توکار",
+          "bypassLan": "دور زدن شبکه محلی",
+          "blockAds": "مسدودسازی تبلیغات و سایت‌های مخرب",
+          "bypassRegion": "دور زدن سایت‌های $region"
         },
         "appBasedRouting": {
-          "title": "پروکسی برای هر برنامه",
+          "title": "مسیریابی بر اساس برنامه",
           "hideSysApps": "پنهان کردن برنامه‌های سیستمی",
+          "listTitle": {
+            "bypass": "برنامه‌های بدون پروکسی",
+            "proxy": "برنامه‌های با پروکسی"
+          },
+          "chooseApps": "انتخاب برنامه‌ها",
+          "apps": {
+            "one": "برنامه",
+            "other": "برنامه‌ها"
+          },
+          "moreApps": {
+            "one": "+$n برنامه",
+            "other": "+$n برنامه"
+          },
+          "autoTag": "خودکار",
+          "outsideVpn": "خارج از VPN",
+          "ruleWontApply": "خارج از VPN · قانون اعمال نمی‌شود",
+          "notInstalled": "نصب نشده",
+          "share": {
+            "invite": "به بهبود انتخاب خودکار کمک کنید",
+            "removed": {
+              "one": "$n حذف‌شده",
+              "other": "$n حذف‌شده"
+            },
+            "added": {
+              "one": "$n اضافه‌شده",
+              "other": "$n اضافه‌شده"
+            },
+            "title": "تغییراتتان را به اشتراک بگذارید",
+            "where": "یک گزارش عمومی در GitHub باز می‌کند که از قبل با نام این برنامه‌ها پر شده است. برای اشتراک‌گذاری، آن را همان‌جا ثبت کنید. به حساب GitHub نیاز دارید.",
+            "action": "ادامه در GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "وارد کردن انتخاب‌ها از کلیپ‌بورد",
@@ -364,31 +386,29 @@
               "clipboard": "کپی انتخاب‌ها به کلیپ‌بورد",
               "file": "خروجی انتخاب‌ها به فایل"
             },
-            "shareToAll": "اشتراک‌گذاری با همه",
             "clearAllSelections": "پاک کردن تمام انتخاب‌ها"
           },
           "modes": {
-            "all": "همه",
-            "proxy": "پروکسی",
-            "bypass": "دور زدن",
-            "allMsg": "پروکسی کردن تمام برنامه‌ها",
-            "proxyMsg": "فقط برنامه‌های انتخاب‌شده پروکسی شوند",
-            "bypassMsg": "برنامه‌های انتخاب‌شده پروکسی نشوند"
+            "proxy": "فقط پروکسی",
+            "bypass": "دور زدن"
           },
           "autoSelection": {
-            "title": "انتخاب خودکار",
-            "performNow": "اکنون انجام بده",
-            "resetToDefault": "بازنشانی به پیش‌فرض",
-            "autoUpdateInterval": "فاصله زمانی به‌روزرسانی خودکار",
-            "toast": {
-              "success": "انتخاب خودکار انجام شد",
-              "failure": "انتخاب خودکار ناموفق بود",
-              "regionNotFound": "انتخاب خودکاری برای «${region}» وجود ندارد",
-              "alreadyInAuto": "انتخاب‌های شما از قبل در لیست خودکار موجود است"
+            "title": "انتخاب خودکار بر پایهٔ $region",
+            "performNow": "اکنون به‌روزرسانی کن",
+            "updated": {
+              "zero": "امروز به‌روزرسانی شد",
+              "one": "$n روز پیش به‌روزرسانی شد",
+              "other": "$n روز پیش به‌روزرسانی شد"
             },
-            "dialog": {
-              "title": "انتخاب خودکار برنامه‌ها",
-              "msg": "انتخاب خودکار پروکسی هر برنامه غیرفعال شد، چون منطقه به «${region}» تغییر کرد"
+            "noList": "برای این منطقه لیستی وجود ندارد",
+            "loadFailed": "دریافت لیست ناموفق بود",
+            "restore": {
+              "one": "بازگرداندن $n انتخاب خودکار",
+              "other": "بازگرداندن $n انتخاب خودکار"
+            },
+            "restored": {
+              "one": "$n انتخاب خودکار بازگردانده شد",
+              "other": "$n انتخاب خودکار بازگردانده شد"
             }
           }
         },
@@ -634,12 +654,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "بهبود انتخاب خودکار",
-          "msg": "با اشتراک‌گذاری برنامه‌های انتخاب‌شده، به تکمیل لیست «انتخاب خودکار» کمک می‌کنید"
-        },
         "import": {
-          "msg": "این کار تمام انتخاب‌های فعلی پروکسی هر برنامه را جایگزین می‌کند. ادامه می‌دهید؟"
+          "msg": "این کار برنامه‌های «دور زدن» و «فقط پروکسی» شما را جایگزین می‌کند. ادامه می‌دهید؟"
         }
       },
       "routeRule": {

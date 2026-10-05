@@ -6,6 +6,7 @@
     "ok": "確定",
     "cancel": "取消",
     "kContinue": "繼續",
+    "undo": "復原",
     "showMore": "顯示更多",
     "showLess": "顯示較少",
     "filter": "篩選",
@@ -154,11 +155,11 @@
         },
         "update": {
           "success": "設定檔已更新",
+          "failure": "更新設定檔失敗",
+          "failureNamed": "更新「${name}」失敗",
           "bulkSuccess(plural, param=count)": {
             "other": "已更新 $count 個設定檔"
           },
-          "failure": "更新設定檔失敗",
-          "failureNamed": "更新「${name}」失敗",
           "bulkPartial": "${success} 個已更新\n${failed} 個失敗：${names}"
         },
         "delete": {
@@ -256,10 +257,8 @@
       "routing": {
         "title": "路由",
         "routeRule": {
-          "empty": "尚無路由規則\n\n建立新規則，或從預設規則中選擇",
           "add": "新增規則",
           "delete": "刪除規則",
-          "create": "建立新規則",
           "options": {
             "import": {
               "clipboard": "從剪貼簿匯入規則",
@@ -269,7 +268,7 @@
               "clipboard": "複製規則到剪貼簿",
               "file": "儲存規則到檔案"
             },
-            "reset": "重設規則"
+            "reset": "重設為預設規則"
           },
           "rule": {
             "title": "規則",
@@ -284,7 +283,7 @@
             "validProcessPath": "有效的「處理程序路徑」，例如\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 或 1:65000",
             "validPortRange": "有效的「連接埠」或「連接埠範圍」，例如\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 或 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8、10.0.0.0/24 或 fd00::/8",
             "validIpCidr": "有效的 IP CIDR，例如\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com 或 dl.google.com",
             "validDomain": "有效的「網域」，例如\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -336,23 +335,46 @@
             "clearListMsg": "所有項目將被刪除"
           }
         },
-        "generalOptions": {
-          "title": "路由一般選項"
-        },
-        "predefinedRules": {
-          "title": "預設規則",
-          "ads": {
-            "name": "攔截廣告",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "繞過區域網路",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "內建",
+          "bypassLan": "繞過區域網路",
+          "blockAds": "攔截廣告和有害網站",
+          "bypassRegion": "繞過${region}的網站"
         },
         "appBasedRouting": {
-          "title": "依應用程式代理",
+          "title": "依應用程式路由",
           "hideSysApps": "隱藏系統應用程式",
+          "listTitle": {
+            "bypass": "繞過的應用程式",
+            "proxy": "代理的應用程式"
+          },
+          "chooseApps": "選擇應用程式",
+          "apps": {
+            "one": "應用程式",
+            "other": "應用程式"
+          },
+          "moreApps": {
+            "one": "+$n 個應用程式",
+            "other": "+$n 個應用程式"
+          },
+          "autoTag": "自動",
+          "outsideVpn": "不經過 VPN",
+          "ruleWontApply": "不經過 VPN · 規則不會生效",
+          "notInstalled": "未安裝",
+          "share": {
+            "invite": "協助改善自動選擇",
+            "removed": {
+              "one": "已移除 $n 個",
+              "other": "已移除 $n 個"
+            },
+            "added": {
+              "one": "已新增 $n 個",
+              "other": "已新增 $n 個"
+            },
+            "title": "分享您的變更",
+            "where": "將在 GitHub 開啟一個已填好這些應用程式名稱的公開 issue。送出後即可分享。需要 GitHub 帳號。",
+            "action": "在 GitHub 繼續"
+          },
           "options": {
             "import": {
               "clipboard": "從剪貼簿匯入選擇",
@@ -363,31 +385,29 @@
               "clipboard": "複製選擇到剪貼簿",
               "file": "匯出選擇到檔案"
             },
-            "shareToAll": "分享給所有人",
             "clearAllSelections": "清除所有選擇"
           },
           "modes": {
-            "all": "全部",
-            "proxy": "代理",
-            "bypass": "繞過",
-            "allMsg": "代理所有應用程式",
-            "proxyMsg": "僅代理選定應用程式",
-            "bypassMsg": "不代理選定應用程式"
+            "proxy": "僅代理",
+            "bypass": "繞過"
           },
           "autoSelection": {
-            "title": "自動選擇",
-            "performNow": "立即執行",
-            "resetToDefault": "重設為預設",
-            "autoUpdateInterval": "自動更新間隔",
-            "toast": {
-              "success": "自動選擇已完成",
-              "failure": "自動選擇失敗",
-              "regionNotFound": "沒有「${region}」的自動選擇",
-              "alreadyInAuto": "您的選擇已在自動清單中"
+            "title": "依據${region}自動選擇",
+            "performNow": "立即更新",
+            "updated": {
+              "zero": "今天已更新",
+              "one": "$n 天前更新",
+              "other": "$n 天前更新"
             },
-            "dialog": {
-              "title": "自動選擇應用程式",
-              "msg": "依應用程式代理的自動選擇已關閉，因為地區變更為「${region}」"
+            "noList": "此地區沒有清單",
+            "loadFailed": "無法載入清單",
+            "restore": {
+              "one": "還原 $n 個自動選擇項目",
+              "other": "還原 $n 個自動選擇項目"
+            },
+            "restored": {
+              "one": "已還原 $n 個自動選擇項目",
+              "other": "已還原 $n 個自動選擇項目"
             }
           }
         },
@@ -632,12 +652,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "改進自動選擇",
-          "msg": "透過分享您選擇的應用程式，可以幫助完善「自動選擇」清單"
-        },
         "import": {
-          "msg": "這會取代您目前所有的依應用程式代理選擇。要繼續嗎？"
+          "msg": "這會取代您「繞過」和「僅代理」中的應用程式。要繼續嗎？"
         }
       },
       "routeRule": {

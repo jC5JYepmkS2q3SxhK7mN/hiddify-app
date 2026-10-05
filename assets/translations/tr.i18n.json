@@ -6,6 +6,7 @@
     "ok": "Tamam",
     "cancel": "İptal",
     "kContinue": "Devam et",
+    "undo": "Geri al",
     "showMore": "Daha fazla göster",
     "showLess": "Daha az göster",
     "filter": "Filtrele",
@@ -154,11 +155,11 @@
         },
         "update": {
           "success": "Profil güncellendi",
+          "failure": "Profil güncellenemedi",
+          "failureNamed": "“${name}” güncellenemedi",
           "bulkSuccess(plural, param=count)": {
             "other": "$count profil güncellendi"
           },
-          "failure": "Profil güncellenemedi",
-          "failureNamed": "“${name}” güncellenemedi",
           "bulkPartial": "${success} güncellendi\n${failed} başarısız: ${names}"
         },
         "delete": {
@@ -256,10 +257,8 @@
       "routing": {
         "title": "Yönlendirme",
         "routeRule": {
-          "empty": "Henüz yönlendirme kuralı yok\n\nYeni bir kural oluşturun veya önceden tanımlanmış kurallardan birini seçin",
           "add": "Kural ekle",
           "delete": "Kuralı sil",
-          "create": "Yeni kural oluştur",
           "options": {
             "import": {
               "clipboard": "Kuralları panodan içe aktar",
@@ -269,7 +268,7 @@
               "clipboard": "Kuralları panoya kopyala",
               "file": "Kuralları dosyaya kaydet"
             },
-            "reset": "Kuralları sıfırla"
+            "reset": "Varsayılan kurallara sıfırla"
           },
           "rule": {
             "title": "Kural",
@@ -284,7 +283,7 @@
             "validProcessPath": "Geçerli “İşlem yolu”, örn.\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 veya 1:65000",
             "validPortRange": "Geçerli “Port” veya “Port aralığı”, örn.\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 veya 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8, 10.0.0.0/24 veya fd00::/8",
             "validIpCidr": "Geçerli IP CIDR, örn.\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com veya dl.google.com",
             "validDomain": "Geçerli “Alan adı”, örn.\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -336,23 +335,46 @@
             "clearListMsg": "Tüm öğeler silinecek"
           }
         },
-        "generalOptions": {
-          "title": "Genel yönlendirme seçenekleri"
-        },
-        "predefinedRules": {
-          "title": "Önceden tanımlanmış kurallar",
-          "ads": {
-            "name": "Reklamları engelle",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "LAN'ı atla",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "Yerleşik",
+          "bypassLan": "Yerel ağı atla",
+          "blockAds": "Reklamları ve zararlı siteleri engelle",
+          "bypassRegion": "$region sitelerini atla"
         },
         "appBasedRouting": {
-          "title": "Uygulama bazlı proxy",
+          "title": "Uygulama bazlı yönlendirme",
           "hideSysApps": "Sistem uygulamalarını gizle",
+          "listTitle": {
+            "bypass": "Proxy'siz uygulamalar",
+            "proxy": "Proxy'li uygulamalar"
+          },
+          "chooseApps": "Uygulama seç",
+          "apps": {
+            "one": "uygulama",
+            "other": "uygulamalar"
+          },
+          "moreApps": {
+            "one": "+$n uygulama",
+            "other": "+$n uygulama"
+          },
+          "autoTag": "Otomatik",
+          "outsideVpn": "VPN dışında",
+          "ruleWontApply": "VPN dışında · kural uygulanmaz",
+          "notInstalled": "Yüklü değil",
+          "share": {
+            "invite": "Otomatik seçimi geliştirmeye yardım edin",
+            "removed": {
+              "one": "$n kaldırıldı",
+              "other": "$n kaldırıldı"
+            },
+            "added": {
+              "one": "$n eklendi",
+              "other": "$n eklendi"
+            },
+            "title": "Değişikliklerinizi paylaşın",
+            "where": "GitHub'da bu uygulama adlarıyla önceden doldurulmuş herkese açık bir issue açar. Paylaşmak için orada gönderin. Bir GitHub hesabı gerekir.",
+            "action": "GitHub'da devam et"
+          },
           "options": {
             "import": {
               "clipboard": "Seçimi panodan içe aktar",
@@ -363,31 +385,29 @@
               "clipboard": "Seçimi panoya kopyala",
               "file": "Seçimi dosyaya aktar"
             },
-            "shareToAll": "Herkesle paylaş",
             "clearAllSelections": "Tüm seçimleri temizle"
           },
           "modes": {
-            "all": "Tümü",
-            "proxy": "Proxy",
-            "bypass": "Bypass",
-            "allMsg": "Tüm uygulamaları proxy'le",
-            "proxyMsg": "Yalnızca seçili uygulamaları proxy'le",
-            "bypassMsg": "Seçili uygulamaları proxy'leme"
+            "proxy": "Yalnızca proxy",
+            "bypass": "Bypass"
           },
           "autoSelection": {
-            "title": "Otomatik seçim",
-            "performNow": "Şimdi gerçekleştir",
-            "resetToDefault": "Varsayılana sıfırla",
-            "autoUpdateInterval": "Otomatik güncelleme aralığı",
-            "toast": {
-              "success": "Otomatik seçim tamamlandı",
-              "failure": "Otomatik seçim başarısız oldu",
-              "regionNotFound": "“${region}” için otomatik seçim yok",
-              "alreadyInAuto": "Seçimleriniz zaten otomatik listede"
+            "title": "$region bölgesine göre otomatik seçim",
+            "performNow": "Şimdi güncelle",
+            "updated": {
+              "zero": "Bugün güncellendi",
+              "one": "$n gün önce güncellendi",
+              "other": "$n gün önce güncellendi"
             },
-            "dialog": {
-              "title": "Otomatik uygulama seçimi",
-              "msg": "Uygulama bazlı proxy için otomatik seçim kapatıldı, çünkü bölge “${region}” olarak değişti"
+            "noList": "Bu bölge için liste yok",
+            "loadFailed": "Liste yüklenemedi",
+            "restore": {
+              "one": "$n otomatik seçimi geri getir",
+              "other": "$n otomatik seçimi geri getir"
+            },
+            "restored": {
+              "one": "$n otomatik seçim geri getirildi",
+              "other": "$n otomatik seçim geri getirildi"
             }
           }
         },
@@ -632,12 +652,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "Otomatik seçimi iyileştirme",
-          "msg": "Seçili uygulamaları paylaşarak “otomatik seçim” listesini tamamlamaya yardımcı olursunuz"
-        },
         "import": {
-          "msg": "Bu işlem mevcut tüm uygulama bazlı proxy seçimlerinizi değiştirir. Devam edilsin mi?"
+          "msg": "Bu işlem Bypass ve Yalnızca proxy uygulamalarınızı değiştirir. Devam edilsin mi?"
         }
       },
       "routeRule": {

@@ -6,6 +6,7 @@
     "ok": "Aceptar",
     "cancel": "Cancelar",
     "kContinue": "Continuar",
+    "undo": "Deshacer",
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos",
     "filter": "Filtrar",
@@ -257,10 +258,8 @@
       "routing": {
         "title": "Enrutamiento",
         "routeRule": {
-          "empty": "Aún no hay reglas de enrutamiento\n\nCrea una nueva regla o elige de las reglas predefinidas",
           "add": "Añadir regla",
           "delete": "Eliminar regla",
-          "create": "Crear nueva regla",
           "options": {
             "import": {
               "clipboard": "Importar reglas desde el portapapeles",
@@ -270,7 +269,7 @@
               "clipboard": "Copiar reglas al portapapeles",
               "file": "Guardar reglas en un archivo"
             },
-            "reset": "Restablecer reglas"
+            "reset": "Restablecer reglas predeterminadas"
           },
           "rule": {
             "title": "Regla",
@@ -285,7 +284,7 @@
             "validProcessPath": "“Ruta de proceso” válida como\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 or 1:65000",
             "validPortRange": "“Puerto” o “Rango de puertos” válido como\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 or 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8, 10.0.0.0/24 o fd00::/8",
             "validIpCidr": "IP CIDR válido como\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com or dl.google.com",
             "validDomain": "“Dominio” válido como\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -337,23 +336,46 @@
             "clearListMsg": "Se eliminarán todos los elementos"
           }
         },
-        "generalOptions": {
-          "title": "Opciones generales de enrutamiento"
-        },
-        "predefinedRules": {
-          "title": "Reglas predefinidas",
-          "ads": {
-            "name": "Bloquear anuncios",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "Omitir LAN",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "Integrada",
+          "bypassLan": "Omitir red local",
+          "blockAds": "Bloquear anuncios y sitios dañinos",
+          "bypassRegion": "Omitir sitios de $region"
         },
         "appBasedRouting": {
-          "title": "Proxy por aplicación",
+          "title": "Enrutamiento por aplicación",
           "hideSysApps": "Ocultar aplicaciones del sistema",
+          "listTitle": {
+            "bypass": "Aplicaciones omitidas",
+            "proxy": "Aplicaciones con proxy"
+          },
+          "chooseApps": "Elegir aplicaciones",
+          "apps": {
+            "one": "aplicación",
+            "other": "aplicaciones"
+          },
+          "moreApps": {
+            "one": "+$n aplicación",
+            "other": "+$n aplicaciones"
+          },
+          "autoTag": "Auto",
+          "outsideVpn": "Fuera de la VPN",
+          "ruleWontApply": "Fuera de la VPN · la regla no se aplicará",
+          "notInstalled": "No instalada",
+          "share": {
+            "invite": "Ayuda a mejorar la selección automática",
+            "removed": {
+              "one": "$n eliminada",
+              "other": "$n eliminadas"
+            },
+            "added": {
+              "one": "$n añadida",
+              "other": "$n añadidas"
+            },
+            "title": "Comparte tus cambios",
+            "where": "Abre una incidencia pública en GitHub, ya rellenada con los nombres de estas aplicaciones. Para compartirlos, envíala allí. Necesitas una cuenta de GitHub.",
+            "action": "Continuar en GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "Importar selección desde el portapapeles",
@@ -364,31 +386,29 @@
               "clipboard": "Copiar selección al portapapeles",
               "file": "Exportar selección a un archivo"
             },
-            "shareToAll": "Compartir con todos",
             "clearAllSelections": "Borrar todas las selecciones"
           },
           "modes": {
-            "all": "Todo",
-            "proxy": "Proxy",
-            "bypass": "Omitir",
-            "allMsg": "Usar proxy en todas las aplicaciones",
-            "proxyMsg": "Usar proxy solo en aplicaciones seleccionadas",
-            "bypassMsg": "No usar proxy en aplicaciones seleccionadas"
+            "proxy": "Solo proxy",
+            "bypass": "Omitir"
           },
           "autoSelection": {
-            "title": "Selección automática",
-            "performNow": "Ejecutar ahora",
-            "resetToDefault": "Restablecer por defecto",
-            "autoUpdateInterval": "Intervalo de actualización automática",
-            "toast": {
-              "success": "Selección automática completada",
-              "failure": "Fallo en la selección automática",
-              "regionNotFound": "No hay selección automática para “${region}”",
-              "alreadyInAuto": "Tus selecciones ya están en la lista automática"
+            "title": "Selección automática basada en $region",
+            "performNow": "Actualizar ahora",
+            "updated": {
+              "zero": "Actualizada hoy",
+              "one": "Actualizada hace $n día",
+              "other": "Actualizada hace $n días"
             },
-            "dialog": {
-              "title": "Selección automática de aplicaciones",
-              "msg": "La selección automática del proxy por aplicación se desactivó porque la región cambió a “${region}”"
+            "noList": "No hay lista para esta región",
+            "loadFailed": "No se pudo cargar la lista",
+            "restore": {
+              "one": "Restaurar $n selección automática",
+              "other": "Restaurar $n selecciones automáticas"
+            },
+            "restored": {
+              "one": "$n selección automática restaurada",
+              "other": "$n selecciones automáticas restauradas"
             }
           }
         },
@@ -634,12 +654,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "Mejorando la selección automática",
-          "msg": "Al compartir las aplicaciones seleccionadas, ayudas a completar la lista de “selección automática”"
-        },
         "import": {
-          "msg": "Esto reemplaza todas tus selecciones actuales de proxy por aplicación. ¿Continuar?"
+          "msg": "Esto reemplaza tus aplicaciones de Omitir y Solo proxy. ¿Continuar?"
         }
       },
       "routeRule": {
