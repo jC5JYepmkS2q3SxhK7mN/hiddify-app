@@ -6,13 +6,76 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:hiddify/core/directories/directories_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
+import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/hiddifycore/generated/v2/config/route_rule.pb.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'rules_notifier.g.dart';
+
+const _geoUrl = 'https://raw.githubusercontent.com/hiddify/hiddify-geo/rule-set';
+
+/// Rules the app ships with, in the order a new list starts with. They are always in the list: the user can
+/// only switch and move them, and their content comes from here, so an update can change it.
+enum BuiltinRule {
+  bypassLan(enabledByDefault: true),
+  blockAds(enabledByDefault: false),
+  bypassRegion(enabledByDefault: true);
+
+  const BuiltinRule({required this.enabledByDefault});
+
+  final bool enabledByDefault;
+
+  /// Saved as the rule's name; the list shows [present] instead.
+  String get key => 'builtin:$name';
+
+  static BuiltinRule? of(Rule rule) => values.where((builtin) => builtin.key == rule.name).firstOrNull;
+
+  String present(Translations t, Region region) => switch (this) {
+    bypassLan => t.pages.settings.routing.builtinRules.bypassLan,
+    blockAds => t.pages.settings.routing.builtinRules.blockAds,
+    bypassRegion => t.pages.settings.routing.builtinRules.bypassRegion(region: region.presentName(t)),
+  };
+
+  Rule get rule => switch (this) {
+    bypassLan => Rule(
+      outbound: Outbound.direct,
+      // the ranges sing-box treats as private (ip_is_private)
+      ipCidrs: [
+        '10.0.0.0/8',
+        '172.16.0.0/12',
+        '192.168.0.0/16',
+        '127.0.0.0/8',
+        '169.254.0.0/16',
+        '224.0.0.0/4',
+        '0.0.0.0/32',
+        'fc00::/7',
+        'fe80::/10',
+        '::1/128',
+        'ff00::/8',
+        '::/128',
+      ],
+    ),
+    blockAds => Rule(
+      outbound: Outbound.block,
+      ruleSets: [
+        '$_geoUrl/block/geosite-category-ads-all.srs',
+        '$_geoUrl/block/geosite-malware.srs',
+        '$_geoUrl/block/geosite-phishing.srs',
+        '$_geoUrl/block/geosite-cryptominers.srs',
+        '$_geoUrl/block/geoip-malware.srs',
+        '$_geoUrl/block/geoip-phishing.srs',
+      ],
+    ),
+    bypassRegion => Rule(
+      outbound: Outbound.direct,
+      ruleSets: ['$_geoUrl/country/geosite-{region}.srs', '$_geoUrl/country/geoip-{region}.srs'],
+    ),
+  }..name = key;
+}
 
 @riverpod
 class RulesNotifier extends _$RulesNotifier with AppLogger {
@@ -22,20 +85,43 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
   List<Rule> build() {
     final directories = ref.watch(appDirectoriesProvider).requireValue;
     file = File('${directories.baseDir.path}/route_rule.proto');
-    if (file.existsSync()) {
-      return RouteRule.fromBuffer(file.readAsBytesSync()).rules;
-    } else {
-      return <Rule>[];
-    }
+    // the region rule goes with Other and comes back with any other region
+    ref.listen(ConfigOptions.region, (_, _) async {
+      state = _withBuiltins(state);
+      await _updateFile();
+    });
+    return _withBuiltins(file.existsSync() ? RouteRule.fromBuffer(file.readAsBytesSync()).rules : []);
   }
 
+  /// Every built-in rule once, with the app's content and the user's switch and place; the ones missing go
+  /// first, as in a new list. The region rule does nothing while the region is Other, so it's left out then.
+  List<Rule> _withBuiltins(List<Rule> saved) {
+    final region = ref.read(ConfigOptions.region);
+    final builtins = BuiltinRule.values.where(
+      (builtin) => builtin != BuiltinRule.bypassRegion || region != Region.other,
+    );
+    final rules = <Rule>[];
+    final found = <BuiltinRule>{};
+    for (final rule in saved) {
+      final builtin = BuiltinRule.of(rule);
+      if (builtin == null) {
+        rules.add(rule);
+      } else if (builtins.contains(builtin) && found.add(builtin)) {
+        rules.add(builtin.rule..enabled = rule.enabled);
+      }
+    }
+    return _updateListOrder([
+      for (final builtin in builtins)
+        if (!found.contains(builtin)) builtin.rule..enabled = builtin.enabledByDefault,
+      ...rules,
+    ]);
+  }
+
+  /// A new rule goes first, so it's checked before every other rule.
   Future<void> addRule(Rule rule) async {
-    final current = state;
     assert(rule.hasName() && rule.hasOutbound());
-    rule
-      ..listOrder = current.length
-      ..enabled = true;
-    state = [...current, rule];
+    rule.enabled = true;
+    state = _updateListOrder([rule, ...state]);
     await _updateFile();
   }
 
@@ -130,7 +216,7 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
     final t = ref.read(translationsProvider).requireValue;
     final base64Content = base64.decode(encodedBase64);
     final routeRules = RouteRule.fromJson(jsonDecode(utf8.decode(base64Content)) as String);
-    state = routeRules.rules;
+    state = _withBuiltins(routeRules.rules);
     await _updateFile();
     ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.import.success);
     return true;
@@ -173,7 +259,7 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
       if (!await file.exists()) return false;
       final bytes = await file.readAsBytes();
       final routeRules = RouteRule.fromJson(utf8.decode(bytes));
-      state = routeRules.rules;
+      state = _withBuiltins(routeRules.rules);
       await _updateFile();
       ref.read(inAppNotificationControllerProvider).showSuccessToast(t.common.msg.import.success);
       return true;
@@ -187,7 +273,7 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
   Future<void> resetRules() async {
     if (await file.exists()) {
       await file.delete(recursive: true);
-      state = <Rule>[];
+      state = _withBuiltins([]);
     }
   }
 

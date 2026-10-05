@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
-import 'package:hiddify/core/router/bottom_sheets/widgets/auto_apps_selection_modal.dart';
 import 'package:hiddify/core/router/bottom_sheets/widgets/quick_settings_modal.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/core/router/go_router/go_router_notifier.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/log/overview/logs_modals.dart';
 import 'package:hiddify/features/profile/add/add_profile_modal.dart';
 import 'package:hiddify/features/profile/overview/profiles_modal.dart';
-import 'package:hiddify/features/route_rules/overview/predefined_rules_modal.dart';
 import 'package:hiddify/utils/link_parsers.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -77,12 +74,6 @@ class BottomSheetsNotifier extends _$BottomSheetsNotifier {
   Future<void> showProfilesOverview() async => await _show(isScrollControlled: true, child: const ProfilesModal());
 
   Future<void> showQuickSettings() async => await _show(isScrollControlled: false, child: const QuickSettingsModal());
-
-  Future<void> showAutoAppsSelection({required AppProxyMode mode}) async =>
-      await _show(isScrollControlled: false, child: AutoAppsSelectionModal(mode: mode));
-
-  Future<void> showPredefinedRules() async =>
-      await _show(isScrollControlled: true, child: const PredefinedRulesModal());
 
   Future<void> showLogsShare() async => await _show(isScrollControlled: false, child: const LogsShareModal());
 
