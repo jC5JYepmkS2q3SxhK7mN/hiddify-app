@@ -6,6 +6,7 @@
     "ok": "OK",
     "cancel": "Cancel",
     "kContinue": "Continue",
+    "undo": "Undo",
     "showMore": "Show more",
     "showLess": "Show less",
     "filter": "Filter",
@@ -257,10 +258,8 @@
       "routing": {
         "title": "Routing",
         "routeRule": {
-          "empty": "No routing rules yet\n\nCreate a new rule or choose from the predefined rules",
           "add": "Add rule",
           "delete": "Delete rule",
-          "create": "Create new rule",
           "options": {
             "import": {
               "clipboard": "Import rules from clipboard",
@@ -270,7 +269,7 @@
               "clipboard": "Copy rules to clipboard",
               "file": "Save rules to file"
             },
-            "reset": "Reset rules"
+            "reset": "Reset to default rules"
           },
           "rule": {
             "title": "Rule",
@@ -285,7 +284,7 @@
             "validProcessPath": "Valid “Process path” like\n@:pages.settings.routing.routeRule.rule.validProcessPathEx",
             "validPortRangeEx": "80 or 1:65000",
             "validPortRange": "Valid “Port” or “Port range” like\n@:pages.settings.routing.routeRule.rule.validPortRangeEx",
-            "validIpCidrEx": "8.8.8.8 or 10.0.0.0/24",
+            "validIpCidrEx": "8.8.8.8, 10.0.0.0/24, or fd00::/8",
             "validIpCidr": "Valid IP CIDR like\n@:pages.settings.routing.routeRule.rule.validIpCidrEx",
             "validDomainEx": "Google.com or dl.google.com",
             "validDomain": "Valid “Domain” like\n@:pages.settings.routing.routeRule.rule.validDomainEx",
@@ -337,23 +336,46 @@
             "clearListMsg": "All items will be deleted"
           }
         },
-        "generalOptions": {
-          "title": "General routing options"
-        },
-        "predefinedRules": {
-          "title": "Predefined rules",
-          "ads": {
-            "name": "Block ads",
-            "description": ""
-          },
-          "bypassLan": {
-            "name": "Bypass LAN",
-            "description": ""
-          }
+        "builtinRules": {
+          "tag": "Built-in",
+          "bypassLan": "Bypass local network",
+          "blockAds": "Block ads and harmful sites",
+          "bypassRegion": "Bypass sites in $region"
         },
         "appBasedRouting": {
-          "title": "Per-app proxy",
+          "title": "App-based routing",
           "hideSysApps": "Hide system apps",
+          "listTitle": {
+            "bypass": "Bypassed apps",
+            "proxy": "Proxied apps"
+          },
+          "chooseApps": "Choose apps",
+          "apps": {
+            "one": "app",
+            "other": "apps"
+          },
+          "moreApps": {
+            "one": "+$n app",
+            "other": "+$n apps"
+          },
+          "autoTag": "Auto",
+          "outsideVpn": "Outside the VPN",
+          "ruleWontApply": "Outside the VPN · rule won’t apply",
+          "notInstalled": "Not installed",
+          "share": {
+            "invite": "Help improve auto selection",
+            "removed": {
+              "one": "$n removed",
+              "other": "$n removed"
+            },
+            "added": {
+              "one": "$n added",
+              "other": "$n added"
+            },
+            "title": "Share your changes",
+            "where": "Opens a public issue on GitHub, already filled in with these app names. To share them, submit it there. You need a GitHub account.",
+            "action": "Continue on GitHub"
+          },
           "options": {
             "import": {
               "clipboard": "Import selection from clipboard",
@@ -364,31 +386,29 @@
               "clipboard": "Copy selection to clipboard",
               "file": "Export selection to file"
             },
-            "shareToAll": "Share to all",
             "clearAllSelections": "Clear all selections"
           },
           "modes": {
-            "all": "All",
-            "proxy": "Proxy",
-            "bypass": "Bypass",
-            "allMsg": "Proxy all apps",
-            "proxyMsg": "Proxy only selected apps",
-            "bypassMsg": "Do not proxy selected apps"
+            "proxy": "Proxy only",
+            "bypass": "Bypass"
           },
           "autoSelection": {
-            "title": "Auto selection",
-            "performNow": "Perform now",
-            "resetToDefault": "Reset to default",
-            "autoUpdateInterval": "Auto update interval",
-            "toast": {
-              "success": "Auto selection complete",
-              "failure": "Auto selection failed",
-              "regionNotFound": "No auto selection for “${region}”",
-              "alreadyInAuto": "Your selections are already in the auto-list"
+            "title": "Auto selection based on $region",
+            "performNow": "Update now",
+            "updated": {
+              "zero": "Updated today",
+              "one": "Updated $n day ago",
+              "other": "Updated $n days ago"
             },
-            "dialog": {
-              "title": "Auto apps selection",
-              "msg": "Auto selection for per-app proxy was turned off because the region changed to “${region}”"
+            "noList": "No list for this region",
+            "loadFailed": "Couldn’t load the list",
+            "restore": {
+              "one": "Restore $n auto pick",
+              "other": "Restore $n auto picks"
+            },
+            "restored": {
+              "one": "$n auto pick restored",
+              "other": "$n auto picks restored"
             }
           }
         },
@@ -634,12 +654,8 @@
         }
       },
       "appList": {
-        "shareOnGithub": {
-          "title": "Improving auto selection",
-          "msg": "By sharing selected apps, you help complete the “auto selection” list"
-        },
         "import": {
-          "msg": "This replaces all your current per-app proxy selections. Continue?"
+          "msg": "This replaces your Bypass and Proxy only apps. Continue?"
         }
       },
       "routeRule": {
