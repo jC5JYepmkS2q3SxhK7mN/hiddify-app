@@ -338,73 +338,7 @@
           }
         },
         "generalOptions": {
-          "title": "تنظیمات عمومی مسیریابی",
-          "region": "منطقه",
-          "regions": {
-            "ir": "ایران (ir)",
-            "cn": "چین (cn)",
-            "ru": "روسیه (ru)",
-            "af": "افغانستان (af)",
-            "id": "اندونزی (id)",
-            "tr": "ترکیه (tr)",
-            "br": "برزیل (br)",
-            "other": "سایر"
-          },
-          "balancerStrategy": {
-            "title": "استراتژی Balancer",
-            "roundRobin": "Round robin",
-            "consistentHash": "Consistent hash",
-            "stickySession": "Sticky session"
-          },
-          "resolveDestination": "تحلیل آدرس مقصد",
-          "ipv6Route": "مسیریابی IPv6",
-          "ipv6Modes": {
-            "disable": "غیرفعال",
-            "enable": "فعال",
-            "prefer": "ترجیحی",
-            "only": "انحصاری"
-          },
-          "perAppProxy": {
-            "title": "پروکسی برای هر برنامه",
-            "hideSysApps": "پنهان کردن برنامه‌های سیستمی",
-            "options": {
-              "import": {
-                "clipboard": "وارد کردن انتخاب‌ها از کلیپ‌بورد",
-                "file": "وارد کردن انتخاب‌ها از فایل",
-                "msg": "وارد کردن، انتخاب‌های فعلی شما را جایگزین می‌کند. ادامه می‌دهید؟"
-              },
-              "export": {
-                "clipboard": "کپی انتخاب‌ها به کلیپ‌بورد",
-                "file": "خروجی انتخاب‌ها به فایل"
-              },
-              "shareToAll": "اشتراک‌گذاری با همه",
-              "clearAllSelections": "پاک کردن تمام انتخاب‌ها"
-            },
-            "modes": {
-              "all": "همه",
-              "proxy": "پروکسی",
-              "bypass": "دور زدن",
-              "allMsg": "پروکسی کردن تمام برنامه‌ها",
-              "proxyMsg": "فقط برنامه‌های انتخاب‌شده پروکسی شوند",
-              "bypassMsg": "برنامه‌های انتخاب‌شده پروکسی نشوند"
-            },
-            "autoSelection": {
-              "title": "انتخاب خودکار",
-              "performNow": "اکنون انجام بده",
-              "resetToDefault": "بازنشانی به پیش‌فرض",
-              "autoUpdateInterval": "فاصله زمانی به‌روزرسانی خودکار",
-              "toast": {
-                "success": "انتخاب خودکار انجام شد",
-                "failure": "انتخاب خودکار ناموفق بود",
-                "regionNotFound": "انتخاب خودکاری برای «${region}» وجود ندارد",
-                "alreadyInAuto": "انتخاب‌های شما از قبل در لیست خودکار موجود است"
-              },
-              "dialog": {
-                "title": "انتخاب خودکار برنامه‌ها",
-                "msg": "انتخاب خودکار پروکسی هر برنامه غیرفعال شد، چون منطقه به «${region}» تغییر کرد"
-              }
-            }
-          }
+          "title": "تنظیمات عمومی مسیریابی"
         },
         "predefinedRules": {
           "title": "قوانین پیش‌فرض",
@@ -416,6 +350,72 @@
             "name": "دور زدن LAN",
             "description": ""
           }
+        },
+        "appBasedRouting": {
+          "title": "پروکسی برای هر برنامه",
+          "hideSysApps": "پنهان کردن برنامه‌های سیستمی",
+          "options": {
+            "import": {
+              "clipboard": "وارد کردن انتخاب‌ها از کلیپ‌بورد",
+              "file": "وارد کردن انتخاب‌ها از فایل",
+              "msg": "وارد کردن، انتخاب‌های فعلی شما را جایگزین می‌کند. ادامه می‌دهید؟"
+            },
+            "export": {
+              "clipboard": "کپی انتخاب‌ها به کلیپ‌بورد",
+              "file": "خروجی انتخاب‌ها به فایل"
+            },
+            "shareToAll": "اشتراک‌گذاری با همه",
+            "clearAllSelections": "پاک کردن تمام انتخاب‌ها"
+          },
+          "modes": {
+            "all": "همه",
+            "proxy": "پروکسی",
+            "bypass": "دور زدن",
+            "allMsg": "پروکسی کردن تمام برنامه‌ها",
+            "proxyMsg": "فقط برنامه‌های انتخاب‌شده پروکسی شوند",
+            "bypassMsg": "برنامه‌های انتخاب‌شده پروکسی نشوند"
+          },
+          "autoSelection": {
+            "title": "انتخاب خودکار",
+            "performNow": "اکنون انجام بده",
+            "resetToDefault": "بازنشانی به پیش‌فرض",
+            "autoUpdateInterval": "فاصله زمانی به‌روزرسانی خودکار",
+            "toast": {
+              "success": "انتخاب خودکار انجام شد",
+              "failure": "انتخاب خودکار ناموفق بود",
+              "regionNotFound": "انتخاب خودکاری برای «${region}» وجود ندارد",
+              "alreadyInAuto": "انتخاب‌های شما از قبل در لیست خودکار موجود است"
+            },
+            "dialog": {
+              "title": "انتخاب خودکار برنامه‌ها",
+              "msg": "انتخاب خودکار پروکسی هر برنامه غیرفعال شد، چون منطقه به «${region}» تغییر کرد"
+            }
+          }
+        },
+        "region": "منطقه",
+        "regions": {
+          "ir": "ایران (ir)",
+          "cn": "چین (cn)",
+          "ru": "روسیه (ru)",
+          "af": "افغانستان (af)",
+          "id": "اندونزی (id)",
+          "tr": "ترکیه (tr)",
+          "br": "برزیل (br)",
+          "other": "سایر"
+        },
+        "balancerStrategy": {
+          "title": "استراتژی Balancer",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "resolveDestination": "تحلیل آدرس مقصد",
+        "ipv6Route": "مسیریابی IPv6",
+        "ipv6Modes": {
+          "disable": "غیرفعال",
+          "enable": "فعال",
+          "prefer": "ترجیحی",
+          "only": "انحصاری"
         }
       },
       "dns": {
@@ -633,7 +633,7 @@
           "msg": "این پروفایل حذف شود؟ این کار قابل بازگشت نیست."
         }
       },
-      "perAppProxy": {
+      "appList": {
         "shareOnGithub": {
           "title": "بهبود انتخاب خودکار",
           "msg": "با اشتراک‌گذاری برنامه‌های انتخاب‌شده، به تکمیل لیست «انتخاب خودکار» کمک می‌کنید"

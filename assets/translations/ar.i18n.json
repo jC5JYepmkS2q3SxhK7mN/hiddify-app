@@ -348,73 +348,7 @@
           }
         },
         "generalOptions": {
-          "title": "الخيارات العامة للتوجيه",
-          "region": "المنطقة",
-          "regions": {
-            "ir": "إيران (ir)",
-            "cn": "الصين (cn)",
-            "ru": "روسيا (ru)",
-            "af": "أفغانستان (af)",
-            "id": "إندونيسيا (id)",
-            "tr": "تركيا (tr)",
-            "br": "البرازيل (br)",
-            "other": "أخرى"
-          },
-          "balancerStrategy": {
-            "title": "استراتيجية Balancer",
-            "roundRobin": "Round robin",
-            "consistentHash": "Consistent hash",
-            "stickySession": "Sticky session"
-          },
-          "resolveDestination": "تحديد وجهة الاتصال",
-          "ipv6Route": "توجيه IPv6",
-          "ipv6Modes": {
-            "disable": "إيقاف",
-            "enable": "تشغيل",
-            "prefer": "مفضل",
-            "only": "حصري"
-          },
-          "perAppProxy": {
-            "title": "بروكسي لكل تطبيق",
-            "hideSysApps": "إخفاء تطبيقات النظام",
-            "options": {
-              "import": {
-                "clipboard": "استيراد التحديد من الحافظة",
-                "file": "استيراد التحديد من ملف",
-                "msg": "يستبدل الاستيراد تحديداتك الحالية. هل تريد المتابعة؟"
-              },
-              "export": {
-                "clipboard": "نسخ التحديد إلى الحافظة",
-                "file": "تصدير التحديد إلى ملف"
-              },
-              "shareToAll": "مشاركة مع الجميع",
-              "clearAllSelections": "مسح جميع التحديدات"
-            },
-            "modes": {
-              "all": "الكل",
-              "proxy": "بروكسي",
-              "bypass": "تجاوز",
-              "allMsg": "استخدام البروكسي لجميع التطبيقات",
-              "proxyMsg": "استخدام البروكسي للتطبيقات المحددة فقط",
-              "bypassMsg": "عدم استخدام البروكسي للتطبيقات المحددة"
-            },
-            "autoSelection": {
-              "title": "الاختيار التلقائي",
-              "performNow": "تنفيذ الآن",
-              "resetToDefault": "إعادة التعيين إلى الافتراضي",
-              "autoUpdateInterval": "فاصل التحديث التلقائي",
-              "toast": {
-                "success": "اكتمل الاختيار التلقائي",
-                "failure": "فشل الاختيار التلقائي",
-                "regionNotFound": "لا يوجد اختيار تلقائي لـ «${region}»",
-                "alreadyInAuto": "اختياراتك موجودة بالفعل في القائمة التلقائية"
-              },
-              "dialog": {
-                "title": "الاختيار التلقائي للتطبيقات",
-                "msg": "تم إيقاف الاختيار التلقائي لبروكسي التطبيقات لأن المنطقة تغيّرت إلى «${region}»"
-              }
-            }
-          }
+          "title": "الخيارات العامة للتوجيه"
         },
         "predefinedRules": {
           "title": "القواعد المحددة مسبقًا",
@@ -426,6 +360,72 @@
             "name": "تجاوز الشبكة المحلية",
             "description": ""
           }
+        },
+        "appBasedRouting": {
+          "title": "بروكسي لكل تطبيق",
+          "hideSysApps": "إخفاء تطبيقات النظام",
+          "options": {
+            "import": {
+              "clipboard": "استيراد التحديد من الحافظة",
+              "file": "استيراد التحديد من ملف",
+              "msg": "يستبدل الاستيراد تحديداتك الحالية. هل تريد المتابعة؟"
+            },
+            "export": {
+              "clipboard": "نسخ التحديد إلى الحافظة",
+              "file": "تصدير التحديد إلى ملف"
+            },
+            "shareToAll": "مشاركة مع الجميع",
+            "clearAllSelections": "مسح جميع التحديدات"
+          },
+          "modes": {
+            "all": "الكل",
+            "proxy": "بروكسي",
+            "bypass": "تجاوز",
+            "allMsg": "استخدام البروكسي لجميع التطبيقات",
+            "proxyMsg": "استخدام البروكسي للتطبيقات المحددة فقط",
+            "bypassMsg": "عدم استخدام البروكسي للتطبيقات المحددة"
+          },
+          "autoSelection": {
+            "title": "الاختيار التلقائي",
+            "performNow": "تنفيذ الآن",
+            "resetToDefault": "إعادة التعيين إلى الافتراضي",
+            "autoUpdateInterval": "فاصل التحديث التلقائي",
+            "toast": {
+              "success": "اكتمل الاختيار التلقائي",
+              "failure": "فشل الاختيار التلقائي",
+              "regionNotFound": "لا يوجد اختيار تلقائي لـ «${region}»",
+              "alreadyInAuto": "اختياراتك موجودة بالفعل في القائمة التلقائية"
+            },
+            "dialog": {
+              "title": "الاختيار التلقائي للتطبيقات",
+              "msg": "تم إيقاف الاختيار التلقائي لبروكسي التطبيقات لأن المنطقة تغيّرت إلى «${region}»"
+            }
+          }
+        },
+        "region": "المنطقة",
+        "regions": {
+          "ir": "إيران (ir)",
+          "cn": "الصين (cn)",
+          "ru": "روسيا (ru)",
+          "af": "أفغانستان (af)",
+          "id": "إندونيسيا (id)",
+          "tr": "تركيا (tr)",
+          "br": "البرازيل (br)",
+          "other": "أخرى"
+        },
+        "balancerStrategy": {
+          "title": "استراتيجية Balancer",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "resolveDestination": "تحديد وجهة الاتصال",
+        "ipv6Route": "توجيه IPv6",
+        "ipv6Modes": {
+          "disable": "إيقاف",
+          "enable": "تشغيل",
+          "prefer": "مفضل",
+          "only": "حصري"
         }
       },
       "dns": {
@@ -647,7 +647,7 @@
           "msg": "حذف هذا الملف الشخصي؟ لا يمكن التراجع عن هذا الإجراء."
         }
       },
-      "perAppProxy": {
+      "appList": {
         "shareOnGithub": {
           "title": "تحسين الاختيار التلقائي",
           "msg": "بمشاركة التطبيقات التي اخترتها، فإنك تساعد في إكمال قائمة «الاختيار التلقائي»"

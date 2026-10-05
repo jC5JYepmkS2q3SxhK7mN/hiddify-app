@@ -337,73 +337,7 @@
           }
         },
         "generalOptions": {
-          "title": "Genel yönlendirme seçenekleri",
-          "region": "Bölge",
-          "regions": {
-            "ir": "İran (ir)",
-            "cn": "Çin (cn)",
-            "ru": "Rusya (ru)",
-            "af": "Afganistan (af)",
-            "id": "Endonezya (id)",
-            "tr": "Türkiye (tr)",
-            "br": "Brezilya (br)",
-            "other": "Diğer"
-          },
-          "balancerStrategy": {
-            "title": "Balancer stratejisi",
-            "roundRobin": "Round robin",
-            "consistentHash": "Consistent hash",
-            "stickySession": "Sticky session"
-          },
-          "resolveDestination": "Hedefi çözümle",
-          "ipv6Route": "IPv6 rotası",
-          "ipv6Modes": {
-            "disable": "Kapalı",
-            "enable": "Açık",
-            "prefer": "Tercih edilen",
-            "only": "Özel"
-          },
-          "perAppProxy": {
-            "title": "Uygulama bazlı proxy",
-            "hideSysApps": "Sistem uygulamalarını gizle",
-            "options": {
-              "import": {
-                "clipboard": "Seçimi panodan içe aktar",
-                "file": "Seçimi dosyadan içe aktar",
-                "msg": "İçe aktarma mevcut seçimlerinizi değiştirir. Devam edilsin mi?"
-              },
-              "export": {
-                "clipboard": "Seçimi panoya kopyala",
-                "file": "Seçimi dosyaya aktar"
-              },
-              "shareToAll": "Herkesle paylaş",
-              "clearAllSelections": "Tüm seçimleri temizle"
-            },
-            "modes": {
-              "all": "Tümü",
-              "proxy": "Proxy",
-              "bypass": "Bypass",
-              "allMsg": "Tüm uygulamaları proxy'le",
-              "proxyMsg": "Yalnızca seçili uygulamaları proxy'le",
-              "bypassMsg": "Seçili uygulamaları proxy'leme"
-            },
-            "autoSelection": {
-              "title": "Otomatik seçim",
-              "performNow": "Şimdi gerçekleştir",
-              "resetToDefault": "Varsayılana sıfırla",
-              "autoUpdateInterval": "Otomatik güncelleme aralığı",
-              "toast": {
-                "success": "Otomatik seçim tamamlandı",
-                "failure": "Otomatik seçim başarısız oldu",
-                "regionNotFound": "“${region}” için otomatik seçim yok",
-                "alreadyInAuto": "Seçimleriniz zaten otomatik listede"
-              },
-              "dialog": {
-                "title": "Otomatik uygulama seçimi",
-                "msg": "Uygulama bazlı proxy için otomatik seçim kapatıldı, çünkü bölge “${region}” olarak değişti"
-              }
-            }
-          }
+          "title": "Genel yönlendirme seçenekleri"
         },
         "predefinedRules": {
           "title": "Önceden tanımlanmış kurallar",
@@ -415,6 +349,72 @@
             "name": "LAN'ı atla",
             "description": ""
           }
+        },
+        "appBasedRouting": {
+          "title": "Uygulama bazlı proxy",
+          "hideSysApps": "Sistem uygulamalarını gizle",
+          "options": {
+            "import": {
+              "clipboard": "Seçimi panodan içe aktar",
+              "file": "Seçimi dosyadan içe aktar",
+              "msg": "İçe aktarma mevcut seçimlerinizi değiştirir. Devam edilsin mi?"
+            },
+            "export": {
+              "clipboard": "Seçimi panoya kopyala",
+              "file": "Seçimi dosyaya aktar"
+            },
+            "shareToAll": "Herkesle paylaş",
+            "clearAllSelections": "Tüm seçimleri temizle"
+          },
+          "modes": {
+            "all": "Tümü",
+            "proxy": "Proxy",
+            "bypass": "Bypass",
+            "allMsg": "Tüm uygulamaları proxy'le",
+            "proxyMsg": "Yalnızca seçili uygulamaları proxy'le",
+            "bypassMsg": "Seçili uygulamaları proxy'leme"
+          },
+          "autoSelection": {
+            "title": "Otomatik seçim",
+            "performNow": "Şimdi gerçekleştir",
+            "resetToDefault": "Varsayılana sıfırla",
+            "autoUpdateInterval": "Otomatik güncelleme aralığı",
+            "toast": {
+              "success": "Otomatik seçim tamamlandı",
+              "failure": "Otomatik seçim başarısız oldu",
+              "regionNotFound": "“${region}” için otomatik seçim yok",
+              "alreadyInAuto": "Seçimleriniz zaten otomatik listede"
+            },
+            "dialog": {
+              "title": "Otomatik uygulama seçimi",
+              "msg": "Uygulama bazlı proxy için otomatik seçim kapatıldı, çünkü bölge “${region}” olarak değişti"
+            }
+          }
+        },
+        "region": "Bölge",
+        "regions": {
+          "ir": "İran (ir)",
+          "cn": "Çin (cn)",
+          "ru": "Rusya (ru)",
+          "af": "Afganistan (af)",
+          "id": "Endonezya (id)",
+          "tr": "Türkiye (tr)",
+          "br": "Brezilya (br)",
+          "other": "Diğer"
+        },
+        "balancerStrategy": {
+          "title": "Balancer stratejisi",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "resolveDestination": "Hedefi çözümle",
+        "ipv6Route": "IPv6 rotası",
+        "ipv6Modes": {
+          "disable": "Kapalı",
+          "enable": "Açık",
+          "prefer": "Tercih edilen",
+          "only": "Özel"
         }
       },
       "dns": {
@@ -631,7 +631,7 @@
           "msg": "Bu profil silinsin mi? Bu işlem geri alınamaz."
         }
       },
-      "perAppProxy": {
+      "appList": {
         "shareOnGithub": {
           "title": "Otomatik seçimi iyileştirme",
           "msg": "Seçili uygulamaları paylaşarak “otomatik seçim” listesini tamamlamaya yardımcı olursunuz"

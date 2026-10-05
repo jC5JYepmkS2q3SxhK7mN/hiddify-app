@@ -338,73 +338,7 @@
           }
         },
         "generalOptions": {
-          "title": "Opciones generales de enrutamiento",
-          "region": "Región",
-          "regions": {
-            "ir": "Irán (ir)",
-            "cn": "China (cn)",
-            "ru": "Rusia (ru)",
-            "af": "Afganistán (af)",
-            "id": "Indonesia (id)",
-            "tr": "Turquía (tr)",
-            "br": "Brasil (br)",
-            "other": "Otro"
-          },
-          "balancerStrategy": {
-            "title": "Estrategia de Balancer",
-            "roundRobin": "Round robin",
-            "consistentHash": "Consistent hash",
-            "stickySession": "Sticky session"
-          },
-          "resolveDestination": "Resolver destino",
-          "ipv6Route": "Ruta IPv6",
-          "ipv6Modes": {
-            "disable": "Desactivado",
-            "enable": "Activado",
-            "prefer": "Preferido",
-            "only": "Exclusivo"
-          },
-          "perAppProxy": {
-            "title": "Proxy por aplicación",
-            "hideSysApps": "Ocultar aplicaciones del sistema",
-            "options": {
-              "import": {
-                "clipboard": "Importar selección desde el portapapeles",
-                "file": "Importar selección desde un archivo",
-                "msg": "La importación reemplaza tus selecciones actuales. ¿Continuar?"
-              },
-              "export": {
-                "clipboard": "Copiar selección al portapapeles",
-                "file": "Exportar selección a un archivo"
-              },
-              "shareToAll": "Compartir con todos",
-              "clearAllSelections": "Borrar todas las selecciones"
-            },
-            "modes": {
-              "all": "Todo",
-              "proxy": "Proxy",
-              "bypass": "Omitir",
-              "allMsg": "Usar proxy en todas las aplicaciones",
-              "proxyMsg": "Usar proxy solo en aplicaciones seleccionadas",
-              "bypassMsg": "No usar proxy en aplicaciones seleccionadas"
-            },
-            "autoSelection": {
-              "title": "Selección automática",
-              "performNow": "Ejecutar ahora",
-              "resetToDefault": "Restablecer por defecto",
-              "autoUpdateInterval": "Intervalo de actualización automática",
-              "toast": {
-                "success": "Selección automática completada",
-                "failure": "Fallo en la selección automática",
-                "regionNotFound": "No hay selección automática para “${region}”",
-                "alreadyInAuto": "Tus selecciones ya están en la lista automática"
-              },
-              "dialog": {
-                "title": "Selección automática de aplicaciones",
-                "msg": "La selección automática del proxy por aplicación se desactivó porque la región cambió a “${region}”"
-              }
-            }
-          }
+          "title": "Opciones generales de enrutamiento"
         },
         "predefinedRules": {
           "title": "Reglas predefinidas",
@@ -416,6 +350,72 @@
             "name": "Omitir LAN",
             "description": ""
           }
+        },
+        "appBasedRouting": {
+          "title": "Proxy por aplicación",
+          "hideSysApps": "Ocultar aplicaciones del sistema",
+          "options": {
+            "import": {
+              "clipboard": "Importar selección desde el portapapeles",
+              "file": "Importar selección desde un archivo",
+              "msg": "La importación reemplaza tus selecciones actuales. ¿Continuar?"
+            },
+            "export": {
+              "clipboard": "Copiar selección al portapapeles",
+              "file": "Exportar selección a un archivo"
+            },
+            "shareToAll": "Compartir con todos",
+            "clearAllSelections": "Borrar todas las selecciones"
+          },
+          "modes": {
+            "all": "Todo",
+            "proxy": "Proxy",
+            "bypass": "Omitir",
+            "allMsg": "Usar proxy en todas las aplicaciones",
+            "proxyMsg": "Usar proxy solo en aplicaciones seleccionadas",
+            "bypassMsg": "No usar proxy en aplicaciones seleccionadas"
+          },
+          "autoSelection": {
+            "title": "Selección automática",
+            "performNow": "Ejecutar ahora",
+            "resetToDefault": "Restablecer por defecto",
+            "autoUpdateInterval": "Intervalo de actualización automática",
+            "toast": {
+              "success": "Selección automática completada",
+              "failure": "Fallo en la selección automática",
+              "regionNotFound": "No hay selección automática para “${region}”",
+              "alreadyInAuto": "Tus selecciones ya están en la lista automática"
+            },
+            "dialog": {
+              "title": "Selección automática de aplicaciones",
+              "msg": "La selección automática del proxy por aplicación se desactivó porque la región cambió a “${region}”"
+            }
+          }
+        },
+        "region": "Región",
+        "regions": {
+          "ir": "Irán (ir)",
+          "cn": "China (cn)",
+          "ru": "Rusia (ru)",
+          "af": "Afganistán (af)",
+          "id": "Indonesia (id)",
+          "tr": "Turquía (tr)",
+          "br": "Brasil (br)",
+          "other": "Otro"
+        },
+        "balancerStrategy": {
+          "title": "Estrategia de Balancer",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "resolveDestination": "Resolver destino",
+        "ipv6Route": "Ruta IPv6",
+        "ipv6Modes": {
+          "disable": "Desactivado",
+          "enable": "Activado",
+          "prefer": "Preferido",
+          "only": "Exclusivo"
         }
       },
       "dns": {
@@ -633,7 +633,7 @@
           "msg": "¿Eliminar este perfil? No se puede deshacer."
         }
       },
-      "perAppProxy": {
+      "appList": {
         "shareOnGithub": {
           "title": "Mejorando la selección automática",
           "msg": "Al compartir las aplicaciones seleccionadas, ayudas a completar la lista de “selección automática”"

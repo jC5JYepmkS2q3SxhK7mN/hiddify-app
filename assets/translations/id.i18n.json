@@ -337,73 +337,7 @@
           }
         },
         "generalOptions": {
-          "title": "Opsi umum perutean",
-          "region": "Wilayah",
-          "regions": {
-            "ir": "Iran (ir)",
-            "cn": "Tiongkok (cn)",
-            "ru": "Rusia (ru)",
-            "af": "Afghanistan (af)",
-            "id": "Indonesia (id)",
-            "tr": "Turki (tr)",
-            "br": "Brasil (br)",
-            "other": "Lainnya"
-          },
-          "balancerStrategy": {
-            "title": "Strategi Balancer",
-            "roundRobin": "Round robin",
-            "consistentHash": "Consistent hash",
-            "stickySession": "Sticky session"
-          },
-          "resolveDestination": "Resolusi tujuan",
-          "ipv6Route": "Rute IPv6",
-          "ipv6Modes": {
-            "disable": "Nonaktif",
-            "enable": "Aktif",
-            "prefer": "Prioritaskan",
-            "only": "Eksklusif"
-          },
-          "perAppProxy": {
-            "title": "Proxy per aplikasi",
-            "hideSysApps": "Sembunyikan aplikasi sistem",
-            "options": {
-              "import": {
-                "clipboard": "Impor pilihan dari papan klip",
-                "file": "Impor pilihan dari file",
-                "msg": "Mengimpor menggantikan pilihan Anda saat ini. Lanjutkan?"
-              },
-              "export": {
-                "clipboard": "Salin pilihan ke papan klip",
-                "file": "Ekspor pilihan ke file"
-              },
-              "shareToAll": "Bagikan ke semua",
-              "clearAllSelections": "Hapus semua pilihan"
-            },
-            "modes": {
-              "all": "Semua",
-              "proxy": "Proxy",
-              "bypass": "Lewati",
-              "allMsg": "Proxy semua aplikasi",
-              "proxyMsg": "Proxy hanya aplikasi yang dipilih",
-              "bypassMsg": "Jangan proxy aplikasi yang dipilih"
-            },
-            "autoSelection": {
-              "title": "Pilihan otomatis",
-              "performNow": "Lakukan sekarang",
-              "resetToDefault": "Setel ulang ke default",
-              "autoUpdateInterval": "Interval pembaruan otomatis",
-              "toast": {
-                "success": "Pilihan otomatis selesai",
-                "failure": "Pilihan otomatis gagal",
-                "regionNotFound": "Tidak ada pilihan otomatis untuk “${region}”",
-                "alreadyInAuto": "Pilihan Anda sudah ada dalam daftar otomatis"
-              },
-              "dialog": {
-                "title": "Pilihan aplikasi otomatis",
-                "msg": "Pilihan otomatis proxy per aplikasi dinonaktifkan karena wilayah berubah menjadi “${region}”"
-              }
-            }
-          }
+          "title": "Opsi umum perutean"
         },
         "predefinedRules": {
           "title": "Aturan yang telah ditentukan",
@@ -415,6 +349,72 @@
             "name": "Lewati LAN",
             "description": ""
           }
+        },
+        "appBasedRouting": {
+          "title": "Proxy per aplikasi",
+          "hideSysApps": "Sembunyikan aplikasi sistem",
+          "options": {
+            "import": {
+              "clipboard": "Impor pilihan dari papan klip",
+              "file": "Impor pilihan dari file",
+              "msg": "Mengimpor menggantikan pilihan Anda saat ini. Lanjutkan?"
+            },
+            "export": {
+              "clipboard": "Salin pilihan ke papan klip",
+              "file": "Ekspor pilihan ke file"
+            },
+            "shareToAll": "Bagikan ke semua",
+            "clearAllSelections": "Hapus semua pilihan"
+          },
+          "modes": {
+            "all": "Semua",
+            "proxy": "Proxy",
+            "bypass": "Lewati",
+            "allMsg": "Proxy semua aplikasi",
+            "proxyMsg": "Proxy hanya aplikasi yang dipilih",
+            "bypassMsg": "Jangan proxy aplikasi yang dipilih"
+          },
+          "autoSelection": {
+            "title": "Pilihan otomatis",
+            "performNow": "Lakukan sekarang",
+            "resetToDefault": "Setel ulang ke default",
+            "autoUpdateInterval": "Interval pembaruan otomatis",
+            "toast": {
+              "success": "Pilihan otomatis selesai",
+              "failure": "Pilihan otomatis gagal",
+              "regionNotFound": "Tidak ada pilihan otomatis untuk “${region}”",
+              "alreadyInAuto": "Pilihan Anda sudah ada dalam daftar otomatis"
+            },
+            "dialog": {
+              "title": "Pilihan aplikasi otomatis",
+              "msg": "Pilihan otomatis proxy per aplikasi dinonaktifkan karena wilayah berubah menjadi “${region}”"
+            }
+          }
+        },
+        "region": "Wilayah",
+        "regions": {
+          "ir": "Iran (ir)",
+          "cn": "Tiongkok (cn)",
+          "ru": "Rusia (ru)",
+          "af": "Afghanistan (af)",
+          "id": "Indonesia (id)",
+          "tr": "Turki (tr)",
+          "br": "Brasil (br)",
+          "other": "Lainnya"
+        },
+        "balancerStrategy": {
+          "title": "Strategi Balancer",
+          "roundRobin": "Round robin",
+          "consistentHash": "Consistent hash",
+          "stickySession": "Sticky session"
+        },
+        "resolveDestination": "Resolusi tujuan",
+        "ipv6Route": "Rute IPv6",
+        "ipv6Modes": {
+          "disable": "Nonaktif",
+          "enable": "Aktif",
+          "prefer": "Prioritaskan",
+          "only": "Eksklusif"
         }
       },
       "dns": {
@@ -631,7 +631,7 @@
           "msg": "Hapus profil ini? Tindakan ini tidak dapat dibatalkan."
         }
       },
-      "perAppProxy": {
+      "appList": {
         "shareOnGithub": {
           "title": "Meningkatkan pilihan otomatis",
           "msg": "Dengan membagikan aplikasi yang dipilih, Anda membantu melengkapi daftar “pilihan otomatis”"
