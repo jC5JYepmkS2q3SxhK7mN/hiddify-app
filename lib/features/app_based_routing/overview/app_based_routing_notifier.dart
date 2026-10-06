@@ -130,7 +130,6 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
     loggy.info('Clearing auto selected');
     await ref.read(appProxyDataSourceProvider).clearAutoSelected(mode: mode);
     await ref.read(Preferences.autoAppsSelectionRegion.notifier).update(null);
-    await ref.read(Preferences.autoAppsSelectionLastUpdate.notifier).update(null);
   }
 
   Future<void> _loading(Future<void> Function() operation) =>
