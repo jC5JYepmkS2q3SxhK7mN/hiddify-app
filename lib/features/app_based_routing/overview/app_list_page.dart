@@ -11,7 +11,6 @@ import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
 import 'package:hiddify/features/app_based_routing/model/app_package_info.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
-import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -128,17 +127,16 @@ class AppListPage extends HookConsumerWidget with PresLogger {
     Future<void> restoreRemoved() async {
       final dataSource = ref.read(appProxyDataSourceProvider);
       final restoredMode = mode!;
-      final restored = removed;
-      await ref.read(appBasedRoutingProvider.notifier).restoreRemoved();
+      await dataSource.revertForceDeselection(mode: restoredMode);
       ref
           .read(inAppNotificationControllerProvider)
           .showSuccessToast(
-            appBasedRouting.autoSelection.restored(n: restored.length),
+            appBasedRouting.autoSelection.restored(n: removed.length),
             action: (
               label: t.common.undo,
               // removes them again, as a tap on each would
               onPressed: () async {
-                for (final pkg in restored) {
+                for (final pkg in removed) {
                   await dataSource.updatePkg(pkg: pkg, mode: restoredMode);
                 }
               },

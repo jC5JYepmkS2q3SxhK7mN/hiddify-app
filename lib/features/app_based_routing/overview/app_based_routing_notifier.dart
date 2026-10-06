@@ -21,9 +21,7 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
   Timer? _timer;
   @override
   Future<void> build() async {
-    ref.listen(ConfigOptions.region, (previous, next) async {
-      if (previous != null && previous != next) await _onRegionChanged();
-    });
+    ref.listen(ConfigOptions.region, (_, _) => _onRegionChanged());
     final phonePkgs = (await InstalledApps.getInstalledApps(false)).map((e) => e.packageName).toSet();
     _includeSubscription = ref
         .read(appProxyDataSourceProvider)
@@ -85,12 +83,6 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
   Future<void> updateAutoSelection() async {
     final mode = _mode;
     if (mode != null) await _loading(() => _applyAutoSelection(mode));
-  }
-
-  /// Ticks again the auto apps the user removed.
-  Future<void> restoreRemoved() async {
-    final mode = _mode;
-    if (mode != null) await ref.read(appProxyDataSourceProvider).revertForceDeselection(mode: mode);
   }
 
   /// The new region's list isn't applied by itself: auto selection turns off, as with its switch.
