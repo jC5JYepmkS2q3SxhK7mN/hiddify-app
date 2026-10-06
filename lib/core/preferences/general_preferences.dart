@@ -26,11 +26,6 @@ abstract class Preferences {
     mapTo: (value) => value == null ? '' : value.name,
   );
 
-  static final autoAppsSelectionUpdateInterval = PreferencesNotifier.create<double, double>(
-    "auto_apps_selection_update_interval",
-    1.0,
-  );
-
   static final autoAppsSelectionLastUpdate = PreferencesNotifier.create<DateTime?, String?>(
     "auto_apps_selection_last_update",
     null,

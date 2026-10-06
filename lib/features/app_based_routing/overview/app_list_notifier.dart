@@ -16,6 +16,7 @@ import 'package:hiddify/features/app_based_routing/data/selected_data_provider.d
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_backup.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
+import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:installed_apps/index.dart';
@@ -47,52 +48,11 @@ class AppList extends _$AppList with AppLogger {
     await ref.read(appProxyDataSourceProvider).updatePkg(pkg: pkg, mode: _mode!);
   }
 
-  Future<bool> applyAutoSelection() async {
-    loggy.info('Performming auto selection');
-    final t = ref.watch(translationsProvider).requireValue;
-    final region = ref.watch(ConfigOptions.region);
-    final rs = await ref.watch(autoSelectionRepoProvider).getByAppProxyMode(mode: _mode);
-    switch (rs.$2) {
-      case AutoSelectionResult.success:
-        final autoList = rs.$1!;
-        await ref.read(appProxyDataSourceProvider).applyAutoSelection(autoList: autoList, mode: _mode!);
-        await ref.read(Preferences.autoAppsSelectionRegion.notifier).update(region);
-        await ref.read(Preferences.autoAppsSelectionLastUpdate.notifier).update(DateTime.now());
-        return true;
-      case AutoSelectionResult.failure:
-        ref
-            .read(inAppNotificationControllerProvider)
-            .showErrorToast(t.pages.settings.routing.appBasedRouting.autoSelection.toast.failure);
-        return false;
-      case AutoSelectionResult.notFound:
-        ref
-            .read(inAppNotificationControllerProvider)
-            .showInfoToast(
-              t.pages.settings.routing.appBasedRouting.autoSelection.toast.regionNotFound(
-                region: ref.watch(ConfigOptions.region).name,
-              ),
-              duration: const Duration(seconds: 5),
-            );
-        return false;
-    }
-  }
-
-  Future<void> revertForceDeselection() async {
-    loggy.info('Reverting force deselection');
-    await ref.read(appProxyDataSourceProvider).revertForceDeselection(mode: _mode!);
-  }
-
-  Future<void> clearAutoSelected() async {
-    loggy.info('Clearing auto selected');
-    await ref.read(appProxyDataSourceProvider).clearAutoSelected(mode: _mode!);
-    await ref.watch(Preferences.autoAppsSelectionRegion.notifier).update(null);
-    await ref.read(Preferences.autoAppsSelectionLastUpdate.notifier).update(null);
-  }
-
   Future<void> clearAll() async {
     loggy.info('Clearing all items');
     await ref.read(appProxyDataSourceProvider).clearAll(mode: _mode!);
-    await ref.watch(Preferences.autoAppsSelectionRegion.notifier).update(null);
+    await ref.read(Preferences.autoAppsSelectionRegion.notifier).update(null);
+    ref.read(autoSelectionIssueProvider.notifier).update(null);
   }
 
   Future<bool> importClipboard() async {
