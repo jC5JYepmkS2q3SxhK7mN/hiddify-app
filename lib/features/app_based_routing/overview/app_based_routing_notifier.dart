@@ -40,7 +40,7 @@ class AppBasedRouting extends _$AppBasedRouting {
   Future<void> _autoSelectionUpdate() async {
     final autoRegion = ref.read(Preferences.autoAppsSelectionRegion);
     if (autoRegion == null) return;
-    final mode = ref.read(Preferences.perAppProxyMode).toAppProxy();
+    final mode = ref.read(Preferences.perAppProxyModeInUse);
     final lastUpdate = ref.read(Preferences.autoAppsSelectionLastUpdate);
     final days = ref.read(Preferences.autoAppsSelectionUpdateInterval).round();
     final interval = Duration(days: days);

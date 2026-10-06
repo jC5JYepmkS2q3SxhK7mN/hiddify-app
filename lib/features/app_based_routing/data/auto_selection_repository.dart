@@ -74,7 +74,7 @@ class AutoSelectionRepositoryImpl with AppLogger implements AutoSelectionReposit
   Set<String> _parseToListOfString(dynamic data) =>
       data.toString().split('\n').map((e) => e.trim()).where((element) => element.isNotEmpty).toSet();
 
-  AppProxyMode _getMode() => _ref.read(Preferences.perAppProxyMode).toAppProxy()!;
+  AppProxyMode _getMode() => _ref.read(Preferences.perAppProxyMode);
 
   Region _getRegion() => _ref.read(ConfigOptions.region);
 

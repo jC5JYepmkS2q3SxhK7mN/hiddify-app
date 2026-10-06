@@ -7,6 +7,7 @@ import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart
 import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
 import 'package:hiddify/features/window/notifier/window_notifier.dart';
 import 'package:hiddify/utils/platform_utils.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 bool _debugIntroPage = false;
 
@@ -81,11 +82,19 @@ abstract class Preferences {
     PlatformUtils.isDesktop,
   );
 
-  static final perAppProxyMode = PreferencesNotifier.create<PerAppProxyMode, String>(
+  static final perAppProxyEnabled = PreferencesNotifier.create<bool, bool>("per_app_proxy_enabled", false);
+
+  // Kept while App-based routing is off, for when it is turned on again.
+  static final perAppProxyMode = PreferencesNotifier.create<AppProxyMode, String>(
     "per_app_proxy_mode",
-    PerAppProxyMode.off,
-    mapFrom: PerAppProxyMode.values.byName,
+    AppProxyMode.exclude,
+    mapFrom: AppProxyMode.values.byName,
     mapTo: (value) => value.name,
+  );
+
+  // The mode in use, or null while App-based routing is off.
+  static final perAppProxyModeInUse = Provider<AppProxyMode?>(
+    (ref) => ref.watch(perAppProxyEnabled) ? ref.watch(perAppProxyMode) : null,
   );
 
   static final markNewProfileActive = PreferencesNotifier.create<bool, bool>("mark_new_profile_active", true);

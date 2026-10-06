@@ -67,16 +67,16 @@ class PackageNamesPage extends HookConsumerWidget {
         )
         .toList();
 
-    final appBasedRoutingMode = ref.watch(Preferences.perAppProxyMode);
+    final appBasedRoutingMode = ref.watch(Preferences.perAppProxyModeInUse);
     final listedApps = switch (appBasedRoutingMode) {
-      PerAppProxyMode.include => ref.watch(Preferences.includeApps).toSet(),
-      PerAppProxyMode.exclude => ref.watch(Preferences.excludeApps).toSet(),
-      PerAppProxyMode.off => const <String>{},
+      AppProxyMode.include => ref.watch(Preferences.includeApps).toSet(),
+      AppProxyMode.exclude => ref.watch(Preferences.excludeApps).toSet(),
+      null => const <String>{},
     };
     bool outsideVpn(String pkg) => switch (appBasedRoutingMode) {
-      PerAppProxyMode.include => !listedApps.contains(pkg),
-      PerAppProxyMode.exclude => listedApps.contains(pkg),
-      PerAppProxyMode.off => false,
+      AppProxyMode.include => !listedApps.contains(pkg),
+      AppProxyMode.exclude => listedApps.contains(pkg),
+      null => false,
     };
 
     void save(List<String> packages) => ref.read(rule.notifier).update<List<dynamic>>(RuleEnum.packageName, packages);

@@ -173,7 +173,7 @@ class AppList extends _$AppList with AppLogger {
   Future<bool> shareOnGithub() async {
     final t = ref.watch(translationsProvider).requireValue;
     final region = ref.watch(ConfigOptions.region);
-    final mode = ref.watch(Preferences.perAppProxyMode).toAppProxy()!;
+    final mode = ref.watch(Preferences.perAppProxyMode);
     assert(region != Region.other);
     final rs = await ref.read(autoSelectionRepoProvider).getByAppProxyMode(mode: mode, region: region);
     if (rs.$2 != AutoSelectionResult.success) return false;
