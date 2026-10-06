@@ -5,15 +5,19 @@ part 'auto_selection_notifier.g.dart';
 
 @Riverpod(keepAlive: true)
 class AutoSelectionLoading extends _$AutoSelectionLoading {
+  int _running = 0;
+
   @override
   bool build() => false;
 
-  Future<T?> doAsync<T>(Future<T> Function() operation) async {
+  /// Loading lasts until the last run ends: a mode change can start one while another still loads.
+  Future<void> doAsync(Future<void> Function() operation) async {
+    _running++;
     state = true;
     try {
-      return await operation();
+      await operation();
     } finally {
-      state = false;
+      if (--_running == 0) state = false;
     }
   }
 }
