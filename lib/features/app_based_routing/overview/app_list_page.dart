@@ -78,8 +78,9 @@ class AppListPage extends HookConsumerWidget with PresLogger {
           });
           return AsyncValue.data(appsList);
         }
+        final query = searchQuery.value.toLowerCase();
         final filteredAppsList = appsList
-            .filter((e) => e.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
+            .filter((e) => e.name.toLowerCase().contains(query) || e.packageName.toLowerCase().contains(query))
             .toList();
         return AsyncValue.data(filteredAppsList);
       },
