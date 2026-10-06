@@ -19,8 +19,8 @@ class RoutingOptionsPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
-    final theme = Theme.of(context);
     final rules = ref.watch(rulesNotifierProvider);
+
     final menuItems = <PopupMenuEntry>[
       PopupMenuItem(
         onTap: ref.read(rulesNotifierProvider.notifier).importRulesFromClipboard,
@@ -58,42 +58,17 @@ class RoutingOptionsPage extends HookConsumerWidget {
         title: Text(t.pages.settings.routing.title),
         actions: [
           const _RegionChip(),
-          PopupMenuButton(
-            icon: const Icon(Icons.more_vert_rounded),
-            itemBuilder: (_) => rules.isEmpty ? menuItems.getRange(0, 2).toList() : menuItems,
-          ),
+          PopupMenuButton(icon: const Icon(Icons.more_vert_rounded), itemBuilder: (_) => menuItems),
           const Gap(8),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                if (rules.isNotEmpty)
-                  Positioned.fill(
-                    child: ReorderableListView.builder(
-                      padding: const EdgeInsets.only(bottom: 56 + 16 + 16),
-                      buildDefaultDragHandles: false,
-                      onReorder: ref.read(rulesNotifierProvider.notifier).reorder,
-                      itemBuilder: (context, index) => RuleTile(key: Key('$index'), index: index, rule: rules[index]),
-                      itemCount: rules.length,
-                    ),
-                  )
-                else
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        t.pages.settings.routing.routeRule.empty,
-                        style: theme.textTheme.bodyLarge!.copyWith(color: theme.colorScheme.onSurface),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+      // the built-in rules are always there, so the list is never empty
+      body: ReorderableListView.builder(
+        padding: const EdgeInsets.only(bottom: 56 + 16 + 16),
+        buildDefaultDragHandles: false,
+        onReorder: ref.read(rulesNotifierProvider.notifier).reorder,
+        itemBuilder: (context, index) => RuleTile(key: Key('$index'), index: index, rule: rules[index]),
+        itemCount: rules.length,
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: t.pages.settings.routing.routeRule.add,
