@@ -312,12 +312,11 @@ class AppListPage extends HookConsumerWidget with PresLogger {
               title: Row(
                 children: [
                   Flexible(child: Text(package.name, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  if (flag != null && PkgFlag.forceDeselection.check(flag)) ...[
+                  if (flag != null && PkgFlag.autoSelection.check(flag)) ...[
                     const Gap(6),
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(color: theme.colorScheme.error, shape: BoxShape.circle),
+                    Text(
+                      t.pages.settings.routing.appBasedRouting.autoTag,
+                      style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.primary),
                     ),
                   ],
                 ],
