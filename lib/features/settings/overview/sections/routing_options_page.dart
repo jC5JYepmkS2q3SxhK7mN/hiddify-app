@@ -5,10 +5,14 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
+import 'package:hiddify/core/preferences/general_preferences.dart';
+import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/route_rules/widget/rule_tile.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/singbox/model/singbox_config_enum.dart';
+import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class RoutingOptionsPage extends HookConsumerWidget {
@@ -67,7 +71,14 @@ class RoutingOptionsPage extends HookConsumerWidget {
       body: ReorderableListView.builder(
         padding: const EdgeInsets.only(bottom: 56 + 16 + 16),
         buildDefaultDragHandles: false,
-        header: const Column(mainAxisSize: MainAxisSize.min, children: [_PinnedOptions()]),
+        header: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // native, so it applies before every rule
+            if (PlatformUtils.isAndroid) const _AppBasedRoutingSection(),
+            const _PinnedOptions(),
+          ],
+        ),
         onReorder: ref.read(rulesNotifierProvider.notifier).reorder,
         itemBuilder: (context, index) => RuleTile(key: Key('$index'), index: index, rule: rules[index]),
         itemCount: rules.length,
@@ -172,6 +183,84 @@ class _RegionFlag extends StatelessWidget {
       region == Region.ir ? 'ir-shir' : region.name,
       size: size,
       shape: RoundedRectangleBorder(borderRadius: borderRadius),
+    );
+  }
+}
+
+/// App-based routing works through the Android VPN app list, so it sits above the rules and can't be moved.
+class _AppBasedRoutingSection extends ConsumerWidget {
+  const _AppBasedRoutingSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final appBasedRouting = t.pages.settings.routing.appBasedRouting;
+    final mode = ref.watch(Preferences.perAppProxyModeInUse);
+    final service = ref.read(appBasedRoutingProvider.notifier);
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // both modes sit under the name, the other one a tap away; only the switch turns it off
+          ListTile(
+            title: Text(appBasedRouting.title),
+            subtitle: mode == null
+                ? null
+                // the pills start where the title starts, a little below it
+                : Transform.translate(
+                    offset: const Offset(0, 2),
+                    child: Wrap(
+                      spacing: 4,
+                      children: [
+                        for (final option in const [AppProxyMode.exclude, AppProxyMode.include])
+                          _ModeOption(
+                            label: option.present(t),
+                            selected: option == mode,
+                            onTap: () => service.changeMode(option),
+                          ),
+                      ],
+                    ),
+                  ),
+            onTap: mode == null ? () => service.setEnabled(true) : null,
+            trailing: Switch(value: mode != null, onChanged: service.setEnabled),
+          ),
+          const Divider(height: 3, thickness: 3),
+        ],
+      ),
+    );
+  }
+}
+
+/// A mode under the section's name: the current one sits in a tinted pill, the other is a tap away.
+class _ModeOption extends StatelessWidget {
+  const _ModeOption({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    const radius = BorderRadius.all(Radius.circular(12));
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        onTap: selected ? null : onTap,
+        borderRadius: radius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: selected ? BoxDecoration(color: colorScheme.secondaryContainer, borderRadius: radius) : null,
+          child: Text(
+            label,
+            style: TextStyle(color: selected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant),
+          ),
+        ),
+      ),
     );
   }
 }
