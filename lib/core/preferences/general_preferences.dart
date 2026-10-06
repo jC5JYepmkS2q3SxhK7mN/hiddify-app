@@ -120,8 +120,6 @@ abstract class Preferences {
 
   static final psiphonConsentGiven = PreferencesNotifier.create<bool, bool>("psiphon-consent-given", false);
 
-  static final showRouteGeneralOptions = PreferencesNotifier.create<bool, bool>("show-route-general-options", true);
-
   /// How many records the in-memory log ring keeps. Saved, so a size picked
   /// once while chasing a bug is still there on the next run.
   static final logBufferSize = PreferencesNotifier.create<int, int>("log-buffer-size", 1000);
