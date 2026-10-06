@@ -277,13 +277,10 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
     }
   }
 
+  /// The list is always in its order: every change renumbers it or keeps each rule's place.
   Future<void> _updateFile() async {
-    if (!await file.exists()) {
-      await file.parent.create(recursive: true);
-    }
-    final sortedRules = state..sort((a, b) => a.listOrder.compareTo(b.listOrder));
-    final routeRules = RouteRule(rules: sortedRules);
-    await file.writeAsBytes(routeRules.writeToBuffer());
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(RouteRule(rules: state).writeToBuffer());
   }
 
   List<Rule> _updateListOrder(List<Rule> rules) {
