@@ -19,10 +19,17 @@ import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
 import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/utils/utils.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:installed_apps/index.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_list_notifier.g.dart';
+
+/// An app's logo, fetched once per run: the plugin lists every installed app for each lookup. Each logo stays in
+/// memory until the app closes, so this is for a few logos, like the routing page's apps row, not for whole lists.
+@Riverpod(keepAlive: true)
+Future<Uint8List?> appLogo(Ref ref, String packageName) async =>
+    (await InstalledApps.getAppInfo(packageName, BuiltWith.flutter))?.icon;
 
 @riverpod
 class AppList extends _$AppList with AppLogger {
