@@ -112,7 +112,7 @@ class AppList extends _$AppList with AppLogger {
       final json = await _exportJson();
       final bytes = utf8.encode(jsonEncode(json));
       final outputFile = await FilePicker.platform.saveFile(
-        fileName: 'per-app proxy.json',
+        fileName: 'app-based routing.json',
         type: FileType.custom,
         allowedExtensions: ['json'],
         bytes: bytes,
