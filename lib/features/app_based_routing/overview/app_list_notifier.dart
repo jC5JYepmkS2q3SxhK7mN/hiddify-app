@@ -6,12 +6,8 @@ import 'package:dartx/dartx_io.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:hiddify/core/localization/translations.dart';
-import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
-import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
-import 'package:hiddify/features/app_based_routing/data/auto_selection_repository_provider.dart';
 import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_backup.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
@@ -137,46 +133,18 @@ class AppList extends _$AppList with AppLogger {
     }
   }
 
-  Future<bool> shareOnGithub() async {
-    final t = ref.watch(translationsProvider).requireValue;
-    final region = ref.watch(ConfigOptions.region);
-    final mode = ref.watch(Preferences.perAppProxyMode);
-    assert(region != Region.other);
-    final rs = await ref.read(autoSelectionRepoProvider).getByAppProxyMode(mode: mode, region: region);
-    if (rs.$2 != AutoSelectionResult.success) return false;
-    final autoList = rs.$1!;
-    final userSelected =
-        (await ref.read(appProxyDataSourceProvider).getPkgsByFlag(mode: mode, flag: PkgFlag.userSelection))
-          ..removeWhere((pkg) => autoList.contains(pkg));
-    final forceDeselected =
-        (await ref.read(appProxyDataSourceProvider).getPkgsByFlag(mode: mode, flag: PkgFlag.forceDeselection))
-          ..removeWhere((pkg) => !autoList.contains(pkg));
-
-    if (userSelected.isNotEmpty || forceDeselected.isNotEmpty) {
-      final agree = await ref
-          .read(dialogNotifierProvider.notifier)
-          .showConfirmation(
-            title: t.dialogs.confirmation.appList.shareOnGithub.title,
-            message: t.dialogs.confirmation.appList.shareOnGithub.msg,
-            positiveBtnTxt: t.common.kContinue,
-          );
-      if (agree != true) return false;
-      final title = '${region.name} | ${mode.present(t).title}';
-      var body = const JsonEncoder.withIndent(
-        '  ',
-      ).convert({'addedPkgs': userSelected.toList(), 'removedPkgs': forceDeselected.toList()});
-      body = '```\n$body\n```';
-      UriUtils.tryLaunch(Uri.parse('https://github.com/hiddify/Android-GFW-Apps/issues/new?title=$title&body=$body'));
-      return true;
-    } else {
-      ref
-          .read(inAppNotificationControllerProvider)
-          .showInfoToast(
-            t.pages.settings.routing.appBasedRouting.autoSelection.toast.alreadyInAuto,
-            duration: const Duration(seconds: 5),
-          );
-      return false;
-    }
+  /// Opens a new issue for the region's list, filled with the apps you added to it and the auto picks
+  /// you removed. The share sheet has already shown both lists, so nothing asks again here.
+  Future<void> shareOnGithub({required List<String> added, required List<String> removed}) async {
+    final t = ref.read(translationsProvider).requireValue;
+    final region = ref.read(ConfigOptions.region);
+    final mode = ref.read(Preferences.perAppProxyMode);
+    final title = '${region.name} | ${mode.present(t)}';
+    final body =
+        '```\n${const JsonEncoder.withIndent('  ').convert({'addedPkgs': added, 'removedPkgs': removed})}\n```';
+    await UriUtils.tryLaunch(
+      Uri.https('github.com', '/hiddify/Android-GFW-Apps/issues/new', {'title': title, 'body': body}),
+    );
   }
 
   Future<void> _importJson(String input) async {
