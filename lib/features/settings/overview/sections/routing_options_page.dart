@@ -7,10 +7,12 @@ import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/widget/shimmer_skeleton.dart';
+import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
+import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/route_rules/widget/rule_tile.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -199,6 +201,7 @@ class _AppBasedRoutingSection extends ConsumerWidget {
     final t = ref.watch(translationsProvider).requireValue;
     final appBasedRouting = t.pages.settings.routing.appBasedRouting;
     final mode = ref.watch(Preferences.perAppProxyModeInUse);
+    final region = ref.watch(ConfigOptions.region);
     final service = ref.read(appBasedRoutingProvider.notifier);
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
@@ -230,7 +233,13 @@ class _AppBasedRoutingSection extends ConsumerWidget {
             onTap: mode == null ? () => service.setEnabled(true) : null,
             trailing: Switch(value: mode != null, onChanged: service.setEnabled),
           ),
-          if (mode != null) ...[_AppListRow(mode: mode)],
+          if (mode != null) ...[
+            _AppListRow(mode: mode),
+            if (region != Region.other) ...[
+              const Divider(height: 1, indent: 16, endIndent: 16),
+              _AutoSelection(region: region),
+            ],
+          ],
           const Divider(height: 3, thickness: 3),
         ],
       ),
@@ -385,6 +394,102 @@ class _LogoStack extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _AutoSelection extends ConsumerWidget {
+  const _AutoSelection({required this.region});
+
+  final Region region;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final autoSelection = t.pages.settings.routing.appBasedRouting.autoSelection;
+    final theme = Theme.of(context);
+    final service = ref.read(appBasedRoutingProvider.notifier);
+    final loading = ref.watch(autoSelectionLoadingProvider);
+    final isOn = ref.watch(Preferences.autoAppsSelectionRegion) != null;
+    final lastUpdate = ref.watch(Preferences.autoAppsSelectionLastUpdate);
+    final issue = ref.watch(autoSelectionIssueProvider);
+
+    final Widget? status = switch (issue) {
+      AutoSelectionResult.notFound => _AutoSelectionIssue(
+        icon: Icons.cloud_off_rounded,
+        text: autoSelection.noList,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+      AutoSelectionResult.failure => _AutoSelectionIssue(
+        icon: Icons.error_outline_rounded,
+        text: autoSelection.loadFailed,
+        color: theme.colorScheme.error,
+      ),
+      _ when isOn && lastUpdate != null => Text(
+        autoSelection.updated(n: DateUtils.dateOnly(DateTime.now()).difference(DateUtils.dateOnly(lastUpdate)).inDays),
+      ),
+      _ => null,
+    };
+
+    // the switch already spaces the row, so the status is its subtitle and refresh sits beside it;
+    // smaller text and padding keep the row 48 dp with or without the status, so turning it on moves nothing
+    return ListTile(
+      minTileHeight: 48,
+      minVerticalPadding: 6,
+      titleTextStyle: theme.textTheme.bodyMedium,
+      subtitleTextStyle: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      title: Text(autoSelection.title(region: region.presentName(t))),
+      subtitle: status,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isOn)
+            IconButton(
+              tooltip: autoSelection.performNow,
+              onPressed: loading ? null : service.updateAutoSelection,
+              icon: const Icon(Icons.sync_rounded),
+            ),
+          // the bar takes the switch's place and keeps its space, so nothing moves
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Visibility(
+                visible: !loading,
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
+                child: Switch(value: isOn, onChanged: service.setAutoSelection),
+              ),
+              if (loading)
+                const SizedBox(
+                  width: 52,
+                  child: LinearProgressIndicator(borderRadius: BorderRadius.all(Radius.circular(2))),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AutoSelectionIssue extends StatelessWidget {
+  const _AutoSelectionIssue({required this.icon, required this.text, required this.color});
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: color),
+        const Gap(4),
+        Flexible(
+          child: Text(text, style: TextStyle(color: color)),
+        ),
+      ],
     );
   }
 }
