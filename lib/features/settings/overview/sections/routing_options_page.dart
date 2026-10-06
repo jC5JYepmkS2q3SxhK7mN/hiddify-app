@@ -428,7 +428,10 @@ class _AutoSelection extends ConsumerWidget {
         color: theme.colorScheme.error,
       ),
       _ when isOn && lastUpdate != null => Text(
-        autoSelection.updated(n: DateUtils.dateOnly(DateTime.now()).difference(DateUtils.dateOnly(lastUpdate)).inDays),
+        // in hours, since the day a clock change falls in has 23 or 25 of them
+        autoSelection.updated(
+          n: (DateUtils.dateOnly(DateTime.now()).difference(DateUtils.dateOnly(lastUpdate)).inHours / 24).round(),
+        ),
       ),
       _ => null,
     };
