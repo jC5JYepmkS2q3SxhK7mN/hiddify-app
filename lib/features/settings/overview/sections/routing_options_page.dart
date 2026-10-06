@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
+import 'package:hiddify/core/widget/shimmer_skeleton.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
+import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/route_rules/widget/rule_tile.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -227,6 +230,7 @@ class _AppBasedRoutingSection extends ConsumerWidget {
             onTap: mode == null ? () => service.setEnabled(true) : null,
             trailing: Switch(value: mode != null, onChanged: service.setEnabled),
           ),
+          if (mode != null) ...[_AppListRow(mode: mode)],
           const Divider(height: 3, thickness: 3),
         ],
       ),
@@ -260,6 +264,126 @@ class _ModeOption extends StatelessWidget {
             style: TextStyle(color: selected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AppListRow extends ConsumerWidget {
+  const _AppListRow({required this.mode});
+
+  final AppProxyMode mode;
+
+  static const _maxLogos = 10;
+  static const _loadingLogo = ClipOval(child: ShimmerSkeleton(width: 24, height: 24));
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final theme = Theme.of(context);
+    final appBasedRouting = t.pages.settings.routing.appBasedRouting;
+    final flags = ref.watch(AppListProvider(mode)).valueOrNull;
+    // the text sits close to the logos and is smaller than a list title; the row is 48 dp, like auto selection
+    ListTile row({required Widget leading, required Widget title}) => ListTile(
+      minTileHeight: 48,
+      horizontalTitleGap: 8,
+      titleTextStyle: theme.textTheme.bodyMedium,
+      leading: leading,
+      title: title,
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () => context.goNamed('appList'),
+    );
+
+    // placeholders until the list loads, at the loaded row's height, so nothing jumps
+    if (flags == null) {
+      return row(
+        leading: _LogoStack(children: List.filled(3, _loadingLogo)),
+        title: const Align(alignment: AlignmentDirectional.centerStart, child: ShimmerSkeleton(width: 56, height: 14)),
+      );
+    }
+    bool active(int flag) => !PkgFlag.forceDeselection.check(flag);
+    // your own picks get a logo first
+    final apps = [
+      for (final entry in flags.entries)
+        if (active(entry.value) && PkgFlag.userSelection.check(entry.value)) entry.key,
+      for (final entry in flags.entries)
+        if (active(entry.value) && !PkgFlag.userSelection.check(entry.value)) entry.key,
+    ];
+    if (apps.isEmpty) {
+      final color = theme.colorScheme.primary;
+      return row(
+        // an empty slot the size of a logo
+        leading: _LogoStack(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 1.5),
+              ),
+              child: Icon(Icons.add_rounded, size: 16, color: color),
+            ),
+          ],
+        ),
+        title: Text(appBasedRouting.chooseApps, style: TextStyle(color: color)),
+      );
+    }
+    final logoApps = apps.take(_maxLogos).toList();
+    return row(
+      // each logo fills its place when it loads; the text is final already
+      leading: _LogoStack(
+        children: [
+          for (final pkg in logoApps)
+            switch (ref.watch(appLogoProvider(pkg))) {
+              AsyncData(value: final icon?) => ClipOval(
+                child: Image.memory(icon, width: 24, height: 24, cacheWidth: 48, cacheHeight: 48),
+              ),
+              AsyncLoading() => _loadingLogo,
+              _ => const Icon(Icons.android_rounded),
+            },
+        ],
+      ),
+      // the logos stand for the first apps, so the text counts only the rest
+      title: Text(
+        apps.length > logoApps.length
+            ? appBasedRouting.moreApps(n: apps.length - logoApps.length)
+            : appBasedRouting.apps(n: apps.length),
+      ),
+    );
+  }
+}
+
+/// App logos laid over each other, each in a ring of the page color so it stays clear.
+class _LogoStack extends StatelessWidget {
+  const _LogoStack({required this.children});
+
+  final List<Widget> children;
+
+  // a 24 dp logo in a 2 dp ring
+  static const _size = 28.0;
+  static const _step = 16.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final ring = Theme.of(context).scaffoldBackgroundColor;
+    return SizedBox(
+      width: _size + (children.length - 1) * _step,
+      height: _size,
+      child: Stack(
+        children: [
+          for (final (index, child) in children.indexed)
+            PositionedDirectional(
+              start: index * _step,
+              child: Container(
+                width: _size,
+                height: _size,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: ring, shape: BoxShape.circle),
+                child: child,
+              ),
+            ),
+        ],
       ),
     );
   }
