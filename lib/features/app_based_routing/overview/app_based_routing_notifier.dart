@@ -43,6 +43,23 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
 
   bool get _autoOn => ref.read(Preferences.autoAppsSelectionRegion) != null;
 
+  /// Turning it on again brings back its mode and list.
+  Future<void> setEnabled(bool enabled) async {
+    await ref.read(Preferences.perAppProxyEnabled.notifier).update(enabled);
+  }
+
+  /// Each mode keeps its own list. Auto selection moves to the new mode with its own region list.
+  Future<void> changeMode(AppProxyMode next) async {
+    final current = _mode;
+    if (current == next) return;
+    await ref.read(Preferences.perAppProxyMode.notifier).update(next);
+    if (!_autoOn) return;
+    await _loading(() async {
+      if (current != null) await ref.read(appProxyDataSourceProvider).clearAutoSelected(mode: current);
+      await _applyAutoSelection(next);
+    });
+  }
+
   Future<void> setAutoSelection(bool enabled) async {
     final mode = _mode;
     if (mode == null) return;
