@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
@@ -113,22 +112,6 @@ class RoutingOptionsPage extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                _ExpandableFab(
-                  tooltip: t.pages.settings.routing.routeRule.add,
-                  closeTooltip: t.common.close,
-                  children: [
-                    _FabMenuItem(
-                      icon: Icons.rule_rounded,
-                      label: t.pages.settings.routing.routeRule.create,
-                      onTap: () => context.goNamed('rule', pathParameters: {'orderId': 'new'}),
-                    ),
-                    _FabMenuItem(
-                      icon: Icons.view_list_rounded,
-                      label: t.pages.settings.routing.predefinedRules.title,
-                      onTap: ref.read(bottomSheetsNotifierProvider.notifier).showPredefinedRules,
-                    ),
-                  ],
-                ),
                 Positioned(
                   right: 0,
                   left: 0,
@@ -251,212 +234,10 @@ class RoutingOptionsPage extends HookConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _FabMenuItem {
-  const _FabMenuItem({required this.icon, required this.label, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-}
-
-class _ExpandableFab extends StatefulWidget {
-  const _ExpandableFab({
-    // ignore: unused_element_parameter
-    this.isExtended = false,
-    // ignore: unused_element_parameter
-    this.extendedLabel = '',
-    required this.tooltip,
-    required this.closeTooltip,
-    required this.children,
-  });
-
-  final bool isExtended;
-  final String extendedLabel;
-  final String tooltip;
-  final String closeTooltip;
-  final List<_FabMenuItem> children;
-
-  @override
-  State<_ExpandableFab> createState() => _ExpandableFabState();
-}
-
-class _ExpandableFabState extends State<_ExpandableFab> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _isOpen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggle() {
-    setState(() {
-      _isOpen = !_isOpen;
-      if (_isOpen) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    });
-  }
-
-  void _close() {
-    if (_isOpen) _toggle();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
-
-    return Positioned.fill(
-      child: Stack(
-        alignment: isRtl ? AlignmentDirectional.bottomStart : AlignmentDirectional.bottomEnd,
-        clipBehavior: Clip.none,
-        children: [
-          // Scrim
-          if (_isOpen)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: _close,
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) =>
-                      ColoredBox(color: Colors.black.withValues(alpha: 0.50 * _controller.value)),
-                ),
-              ),
-            ),
-          // Mini FABs
-          ..._buildMenuItems(theme, isRtl),
-          // Main FAB
-          Positioned(
-            bottom: 16,
-            right: isRtl ? null : 16,
-            left: isRtl ? 16 : null,
-            child: widget.isExtended
-                ? FloatingActionButton.extended(
-                    onPressed: _toggle,
-                    tooltip: _isOpen ? widget.closeTooltip : widget.tooltip,
-                    label: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, _) =>
-                          Text(_isOpen ? '' : widget.extendedLabel, maxLines: 1, overflow: TextOverflow.clip),
-                    ),
-                    icon: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, _) => Transform.rotate(
-                        angle: _controller.value * 0.75 * 3.14159,
-                        child: const Icon(Icons.add_rounded),
-                      ),
-                    ),
-                  )
-                : FloatingActionButton(
-                    onPressed: _toggle,
-                    tooltip: _isOpen ? widget.closeTooltip : widget.tooltip,
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, _) => Transform.rotate(
-                        angle: _controller.value * 0.75 * 3.14159,
-                        child: const Icon(Icons.add_rounded),
-                      ),
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildMenuItems(ThemeData theme, bool isRtl) {
-    final items = <Widget>[];
-    for (var i = 0; i < widget.children.length; i++) {
-      final child = widget.children[i];
-      final reverseIndex = widget.children.length - 1 - i;
-      final intervalStart = reverseIndex * 0.1;
-      final intervalEnd = (intervalStart + 0.6).clamp(0.0, 1.0);
-
-      final animation = CurvedAnimation(
-        parent: _controller,
-        curve: Interval(intervalStart, intervalEnd, curve: Curves.easeOutCubic),
-      );
-
-      items.add(
-        Positioned(
-          bottom: 16 + 56 + 12 + (i * (40 + 12)),
-          right: isRtl ? null : 16 + 4,
-          left: isRtl ? 16 + 4 : null,
-          child: AnimatedBuilder(
-            animation: animation,
-            builder: (context, _) {
-              return IgnorePointer(
-                ignoring: !_isOpen,
-                child: ExcludeSemantics(
-                  excluding: !_isOpen,
-                  child: Opacity(
-                    opacity: animation.value,
-                    child: Transform.translate(
-                      offset: Offset(0, 20 * (1 - animation.value)),
-                      child: MergeSemantics(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!isRtl) _buildLabel(theme, child.label, animation),
-                            if (!isRtl) const Gap(12),
-                            SizedBox(
-                              width: 48,
-                              height: 40,
-                              child: Material(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
-                                elevation: 3,
-                                shadowColor: theme.colorScheme.shadow,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () {
-                                    _close();
-                                    child.onTap();
-                                  },
-                                  child: Icon(child.icon, color: theme.colorScheme.onPrimaryContainer),
-                                ),
-                              ),
-                            ),
-                            if (isRtl) const Gap(12),
-                            if (isRtl) _buildLabel(theme, child.label, animation),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-    }
-    return items;
-  }
-
-  Widget _buildLabel(ThemeData theme, String label, Animation<double> animation) {
-    return Material(
-      color: theme.colorScheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(8),
-      elevation: 2,
-      shadowColor: theme.colorScheme.shadow,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Text(label, style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurface)),
+      floatingActionButton: FloatingActionButton(
+        tooltip: t.pages.settings.routing.routeRule.add,
+        onPressed: () => context.goNamed('rule', pathParameters: {'orderId': 'new'}),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }
