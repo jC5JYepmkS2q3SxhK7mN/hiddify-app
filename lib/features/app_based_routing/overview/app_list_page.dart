@@ -3,14 +3,12 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_based_routing/model/app_package_info.dart';
-import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
@@ -48,7 +46,7 @@ class AppListPage extends HookConsumerWidget with PresLogger {
     final t = ref.watch(translationsProvider).requireValue;
     final localizations = MaterialLocalizations.of(context);
 
-    final mode = ref.watch(Preferences.perAppProxyMode).toAppProxy();
+    final mode = ref.watch(Preferences.perAppProxyModeInUse);
     final selectedApps = ref.watch(AppListProvider(mode));
 
     final hideSystemApps = useState(false);
@@ -149,7 +147,7 @@ class AppListPage extends HookConsumerWidget with PresLogger {
               ),
             )
           : AppBar(
-              title: Text(t.pages.settings.routing.appBasedRouting.title),
+              title: Text(mode?.listTitle(t) ?? t.pages.settings.routing.appBasedRouting.title),
               actions: [
                 IconButton(
                   icon: const Icon(FluentIcons.search_24_regular),
@@ -240,39 +238,6 @@ class AppListPage extends HookConsumerWidget with PresLogger {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     children: [
-                      PopupMenuButton(
-                        borderRadius: BorderRadius.circular(8),
-                        position: PopupMenuPosition.under,
-                        tooltip: (mode?.toPerAppProxy() ?? PerAppProxyMode.off).present(t).message,
-                        initialValue: mode?.toPerAppProxy() ?? PerAppProxyMode.off,
-                        onSelected: (e) async {
-                          if (ref.read(Preferences.autoAppsSelectionRegion) != null) {
-                            await ref.read(AppListProvider(mode).notifier).clearAutoSelected();
-                          }
-                          if (e == PerAppProxyMode.off && context.mounted) context.pop();
-                          await ref.read(Preferences.perAppProxyMode.notifier).update(e);
-                        },
-                        itemBuilder: (context) => PerAppProxyMode.values
-                            .map((e) => PopupMenuItem(value: e, child: Text(e.present(t).message)))
-                            .toList(),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: theme.colorScheme.surface,
-                            border: Border.all(color: theme.colorScheme.outlineVariant),
-                          ),
-                          child: Row(
-                            children: [
-                              const Gap(16),
-                              Text(mode?.present(t).title ?? ''),
-                              const Gap(4),
-                              Icon(Icons.arrow_drop_down_rounded, color: theme.colorScheme.onSurfaceVariant),
-                              const Gap(8),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const Gap(8),
                       ChoiceChip(
                         label: Text(t.pages.settings.routing.appBasedRouting.hideSysApps),
                         selected: hideSystemApps.value,
