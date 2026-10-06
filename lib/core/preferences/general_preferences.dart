@@ -33,6 +33,13 @@ abstract class Preferences {
     mapTo: (value) => value?.toIso8601String(),
   );
 
+  // Set when the user turns auto selection off by hand. Until then it comes on by itself when App-based routing
+  // is turned on or its mode changes.
+  static final autoAppsSelectionOffByUser = PreferencesNotifier.create<bool, bool>(
+    "auto_apps_selection_off_by_user",
+    false,
+  );
+
   static final includeApps = PreferencesNotifier.create<List<String>, List<String>>(
     "per_app_proxy_include_list",
     <String>[],

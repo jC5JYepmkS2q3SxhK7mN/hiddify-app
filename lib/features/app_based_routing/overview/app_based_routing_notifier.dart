@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/features/app_based_routing/data/auto_selection_repository.dart';
 import 'package:hiddify/features/app_based_routing/data/auto_selection_repository_provider.dart';
@@ -46,9 +47,15 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
 
   bool get _autoOn => ref.read(Preferences.autoAppsSelectionRegion) != null;
 
+  /// Auto selection comes with turning App-based routing on and with a mode change, until the user turns it off.
+  bool get _autoFollows =>
+      !ref.read(Preferences.autoAppsSelectionOffByUser) && ref.read(ConfigOptions.region) != Region.other;
+
   /// Turning it on again brings back its mode and list.
   Future<void> setEnabled(bool enabled) async {
     await ref.read(Preferences.perAppProxyEnabled.notifier).update(enabled);
+    if (!enabled || !_autoFollows) return;
+    await _loading(() => _applyAutoSelection(ref.read(Preferences.perAppProxyMode)));
   }
 
   /// Each mode keeps its own list. Auto selection moves to the new mode with its own region list.
@@ -56,7 +63,7 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
     final current = _mode;
     if (current == next) return;
     await ref.read(Preferences.perAppProxyMode.notifier).update(next);
-    if (!_autoOn) return;
+    if (!_autoFollows) return;
     await _loading(() async {
       if (current != null) await ref.read(appProxyDataSourceProvider).clearAutoSelected(mode: current);
       await _applyAutoSelection(next);
@@ -66,6 +73,7 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
   Future<void> setAutoSelection(bool enabled) async {
     final mode = _mode;
     if (mode == null) return;
+    await ref.read(Preferences.autoAppsSelectionOffByUser.notifier).update(!enabled);
     if (enabled) {
       await _loading(() => _applyAutoSelection(mode));
     } else {
