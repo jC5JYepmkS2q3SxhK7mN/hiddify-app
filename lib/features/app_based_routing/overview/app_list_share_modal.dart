@@ -22,6 +22,8 @@ class AppListShareModal extends ConsumerWidget {
     final theme = Theme.of(context);
     final region = ref.watch(ConfigOptions.region);
     final mode = ref.watch(Preferences.perAppProxyMode);
+    // decoded at the screen's density, so the icons stay sharp
+    final iconPx = (32 * MediaQuery.devicePixelRatioOf(context)).round();
 
     Widget section(String title, List<String> pkgs) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +38,7 @@ class AppListShareModal extends ConsumerWidget {
             contentPadding: const EdgeInsetsDirectional.symmetric(horizontal: 24),
             leading: apps[pkg]?.icon == null
                 ? const Icon(Icons.android_rounded)
-                : Image.memory(apps[pkg]!.icon!, width: 32, height: 32, cacheWidth: 64, cacheHeight: 64),
+                : Image.memory(apps[pkg]!.icon!, width: 32, height: 32, cacheWidth: iconPx, cacheHeight: iconPx),
             title: Text(apps[pkg]?.name ?? pkg),
             subtitle: Text(pkg),
           ),

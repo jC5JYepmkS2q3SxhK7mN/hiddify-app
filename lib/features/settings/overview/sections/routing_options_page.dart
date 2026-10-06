@@ -341,6 +341,8 @@ class _AppListRow extends ConsumerWidget {
       );
     }
     final logoApps = apps.take(_maxLogos).toList();
+    // decoded at the screen's density, so the logos stay sharp
+    final logoPx = (24 * MediaQuery.devicePixelRatioOf(context)).round();
     return row(
       // each logo fills its place when it loads; the text is final already
       leading: _LogoStack(
@@ -348,7 +350,7 @@ class _AppListRow extends ConsumerWidget {
           for (final pkg in logoApps)
             switch (ref.watch(appLogoProvider(pkg))) {
               AsyncData(value: final icon?) => ClipOval(
-                child: Image.memory(icon, width: 24, height: 24, cacheWidth: 48, cacheHeight: 48),
+                child: Image.memory(icon, width: 24, height: 24, cacheWidth: logoPx, cacheHeight: logoPx),
               ),
               AsyncLoading() => _loadingLogo,
               _ => const Icon(Icons.android_rounded),
