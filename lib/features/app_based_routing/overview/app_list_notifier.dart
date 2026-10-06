@@ -29,16 +29,13 @@ Future<Uint8List?> appLogo(Ref ref, String packageName) async =>
 
 @riverpod
 class AppList extends _$AppList with AppLogger {
-  late final AppProxyMode? _mode;
-
   @override
   Stream<Map<String, int>> build(AppProxyMode? mode) {
-    _mode = mode;
-    if (_mode == null) return Stream.value({});
+    if (mode == null) return Stream.value({});
     final appsInfo = InstalledApps.getInstalledApps(false);
     return Stream.fromFuture(appsInfo).asyncExpand((appsInfo) {
       final phonePkgs = appsInfo.map((e) => e.packageName).toSet();
-      return ref.watch(appProxyDataSourceProvider).watchFilterForDisplay(phonePkgs: phonePkgs, mode: _mode).map((
+      return ref.watch(appProxyDataSourceProvider).watchFilterForDisplay(phonePkgs: phonePkgs, mode: mode).map((
         entryList,
       ) {
         return {for (final entry in entryList) entry.pkgName: entry.flags};
@@ -48,12 +45,12 @@ class AppList extends _$AppList with AppLogger {
 
   Future<void> updatePkg(String pkg) async {
     loggy.info('Updationg $pkg status');
-    await ref.read(appProxyDataSourceProvider).updatePkg(pkg: pkg, mode: _mode!);
+    await ref.read(appProxyDataSourceProvider).updatePkg(pkg: pkg, mode: mode!);
   }
 
   Future<void> clearAll() async {
     loggy.info('Clearing all items');
-    await ref.read(appProxyDataSourceProvider).clearAll(mode: _mode!);
+    await ref.read(appProxyDataSourceProvider).clearAll(mode: mode!);
     await ref.read(Preferences.autoAppsSelectionRegion.notifier).update(null);
     ref.read(autoSelectionIssueProvider.notifier).update(null);
   }
@@ -90,7 +87,7 @@ class AppList extends _$AppList with AppLogger {
   }
 
   Future<bool> exportClipboard() async {
-    final t = ref.watch(translationsProvider).requireValue;
+    final t = ref.read(translationsProvider).requireValue;
     try {
       final json = await _exportJson();
       await Clipboard.setData(ClipboardData(text: json));
@@ -107,7 +104,7 @@ class AppList extends _$AppList with AppLogger {
   }
 
   Future<bool> exportFile() async {
-    final t = ref.watch(translationsProvider).requireValue;
+    final t = ref.read(translationsProvider).requireValue;
     try {
       final json = await _exportJson();
       final bytes = utf8.encode(jsonEncode(json));
