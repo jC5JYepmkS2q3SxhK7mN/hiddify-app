@@ -31,31 +31,6 @@ class RoutingOptionsPage extends HookConsumerWidget {
     final t = ref.watch(translationsProvider).requireValue;
     final rules = ref.watch(rulesNotifierProvider);
 
-    final menuItems = <PopupMenuEntry>[
-      PopupMenuItem(
-        onTap: ref.read(rulesNotifierProvider.notifier).importRulesFromClipboard,
-        child: Text(t.pages.settings.routing.routeRule.options.import.clipboard),
-      ),
-      PopupMenuItem(
-        onTap: ref.read(rulesNotifierProvider.notifier).importRulesFromJsonFile,
-        child: Text(t.pages.settings.routing.routeRule.options.import.file),
-      ),
-      const PopupMenuDivider(),
-      PopupMenuItem(
-        onTap: () async => await ref.read(rulesNotifierProvider.notifier).exportJsonToClipboard(),
-        child: Text(t.pages.settings.routing.routeRule.options.export.clipboard),
-      ),
-      PopupMenuItem(
-        onTap: () async => await ref.read(rulesNotifierProvider.notifier).saveRulesAsJsonFile(),
-        child: Text(t.pages.settings.routing.routeRule.options.export.file),
-      ),
-      const PopupMenuDivider(),
-      PopupMenuItem(
-        onTap: ref.read(rulesNotifierProvider.notifier).resetRules,
-        child: Text(t.pages.settings.routing.routeRule.options.reset),
-      ),
-    ];
-
     useMemoized(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (routeRule != null && context.mounted) {
@@ -68,7 +43,22 @@ class RoutingOptionsPage extends HookConsumerWidget {
         title: Text(t.pages.settings.routing.title),
         actions: [
           const _RegionChip(),
-          PopupMenuButton(icon: const Icon(Icons.more_vert_rounded), itemBuilder: (_) => menuItems),
+          PopupMenuButton(
+            icon: const Icon(Icons.more_vert_rounded),
+            itemBuilder: (_) {
+              final notifier = ref.read(rulesNotifierProvider.notifier);
+              final options = t.pages.settings.routing.routeRule.options;
+              return <PopupMenuEntry>[
+                PopupMenuItem(onTap: notifier.importRulesFromClipboard, child: Text(options.import.clipboard)),
+                PopupMenuItem(onTap: notifier.importRulesFromJsonFile, child: Text(options.import.file)),
+                const PopupMenuDivider(),
+                PopupMenuItem(onTap: notifier.exportJsonToClipboard, child: Text(options.export.clipboard)),
+                PopupMenuItem(onTap: notifier.saveRulesAsJsonFile, child: Text(options.export.file)),
+                const PopupMenuDivider(),
+                PopupMenuItem(onTap: notifier.resetRules, child: Text(options.reset)),
+              ];
+            },
+          ),
           const Gap(8),
         ],
       ),
