@@ -116,9 +116,11 @@ class _RegionChip extends ConsumerWidget {
       borderRadius: _radius,
       onSelected: (value) async {
         if (value == region) return;
+        // taken before the wait: the page may be gone after it
+        final directDns = ref.read(ConfigOptions.directDnsAddress.notifier);
         await ref.read(ConfigOptions.region.notifier).update(value);
         // the direct DNS server's default depends on the region
-        await ref.read(ConfigOptions.directDnsAddress.notifier).reset();
+        await directDns.reset();
       },
       itemBuilder: (_) => [
         for (final option in Region.values)
