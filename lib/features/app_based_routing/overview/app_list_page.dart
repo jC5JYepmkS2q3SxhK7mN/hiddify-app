@@ -5,10 +5,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
+import 'package:hiddify/features/app_based_routing/data/selected_data_provider.dart';
 import 'package:hiddify/features/app_based_routing/model/app_package_info.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
+import 'package:hiddify/features/app_based_routing/overview/app_based_routing_notifier.dart';
 import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/features/app_based_routing/overview/auto_selection_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -118,6 +121,67 @@ class AppListPage extends HookConsumerWidget with PresLogger {
       return null;
     }, [displayedApps]);
 
+    final appBasedRouting = t.pages.settings.routing.appBasedRouting;
+    // the auto picks you removed: the chip brings them back, and the toast can take that back
+    final removed = [
+      for (final entry in (selectedApps.valueOrNull ?? const <String, int>{}).entries)
+        if (PkgFlag.autoSelection.check(entry.value) && PkgFlag.forceDeselection.check(entry.value)) entry.key,
+    ];
+    Future<void> restoreRemoved() async {
+      final dataSource = ref.read(appProxyDataSourceProvider);
+      final restoredMode = mode!;
+      final restored = removed;
+      await ref.read(appBasedRoutingProvider.notifier).restoreRemoved();
+      ref
+          .read(inAppNotificationControllerProvider)
+          .showSuccessToast(
+            appBasedRouting.autoSelection.restored(n: restored.length),
+            action: (
+              label: t.common.undo,
+              // removes them again, as a tap on each would
+              onPressed: () async {
+                for (final pkg in restored) {
+                  await dataSource.updatePkg(pkg: pkg, mode: restoredMode);
+                }
+              },
+            ),
+          );
+    }
+
+    final chips = PreferredSize(
+      preferredSize: const Size.fromHeight(48),
+      child: SizedBox(
+        height: 48,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          // centered rather than stretched to the row: a chip squeezed or stretched draws its label off center;
+          // 6 dp above and below the label makes the 32 dp chip of M3, where Flutter's 8 dp gives about 37
+          children: [
+            Center(
+              child: ChoiceChip(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                label: Text(appBasedRouting.hideSysApps),
+                selected: hideSystemApps.value,
+                onSelected: (value) => hideSystemApps.value = value,
+              ),
+            ),
+            if (removed.isNotEmpty) ...[
+              const Gap(8),
+              Center(
+                child: ActionChip(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  avatar: const Icon(Icons.undo_rounded),
+                  label: Text(appBasedRouting.autoSelection.restore(n: removed.length)),
+                  onPressed: restoreRemoved,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
     return Scaffold(
       appBar: isSearching.value
           ? AppBar(
@@ -144,6 +208,7 @@ class AppListPage extends HookConsumerWidget with PresLogger {
                 icon: const Icon(Icons.close),
                 tooltip: localizations.cancelButtonLabel,
               ),
+              bottom: chips,
             )
           : AppBar(
               title: Text(mode?.listTitle(t) ?? t.pages.settings.routing.appBasedRouting.title),
@@ -222,22 +287,7 @@ class AppListPage extends HookConsumerWidget with PresLogger {
                   ),
                 ),
               ],
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(48),
-                child: Expanded(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    children: [
-                      ChoiceChip(
-                        label: Text(t.pages.settings.routing.appBasedRouting.hideSysApps),
-                        selected: hideSystemApps.value,
-                        onSelected: (value) => hideSystemApps.value = value,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              bottom: chips,
             ),
       floatingActionButton: showScrollToTop.value
           ? FloatingActionButton(
