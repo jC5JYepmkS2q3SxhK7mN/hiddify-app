@@ -97,22 +97,22 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
   /// first, as in a new list. The region rule does nothing while the region is Other, so it's left out then.
   List<Rule> _withBuiltins(List<Rule> saved) {
     final region = ref.read(ConfigOptions.region);
-    final builtins = BuiltinRule.values.where(
-      (builtin) => builtin != BuiltinRule.bypassRegion || region != Region.other,
-    );
+    // the built-ins the list needs, in their own order; each one found in the saved list is crossed off
+    final missing = {
+      for (final builtin in BuiltinRule.values)
+        if (builtin != BuiltinRule.bypassRegion || region != Region.other) builtin,
+    };
     final rules = <Rule>[];
-    final found = <BuiltinRule>{};
     for (final rule in saved) {
       final builtin = BuiltinRule.of(rule);
       if (builtin == null) {
         rules.add(rule);
-      } else if (builtins.contains(builtin) && found.add(builtin)) {
+      } else if (missing.remove(builtin)) {
         rules.add(builtin.rule..enabled = rule.enabled);
       }
     }
     return _updateListOrder([
-      for (final builtin in builtins)
-        if (!found.contains(builtin)) builtin.rule..enabled = builtin.enabledByDefault,
+      for (final builtin in missing) builtin.rule..enabled = builtin.enabledByDefault,
       ...rules,
     ]);
   }
