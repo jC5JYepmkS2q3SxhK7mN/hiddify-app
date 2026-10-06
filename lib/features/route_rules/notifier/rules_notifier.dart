@@ -85,9 +85,10 @@ class RulesNotifier extends _$RulesNotifier with AppLogger {
   List<Rule> build() {
     final directories = ref.watch(appDirectoriesProvider).requireValue;
     file = File('${directories.baseDir.path}/route_rule.proto');
-    // the region rule goes with Other and comes back with any other region
+    // the region rule goes with Other and comes back with any other region; a list never saved is still the
+    // default one, so it keeps the default order (the intro sets the region on a new install)
     ref.listen(ConfigOptions.region, (_, _) async {
-      state = _withBuiltins(state);
+      state = _withBuiltins(file.existsSync() ? state : []);
       await _updateFile();
     });
     return _withBuiltins(file.existsSync() ? RouteRule.fromBuffer(file.readAsBytesSync()).rules : []);
