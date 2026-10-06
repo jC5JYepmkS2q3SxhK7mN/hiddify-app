@@ -65,7 +65,7 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
     await ref.read(Preferences.perAppProxyMode.notifier).update(next);
     if (!_autoFollows) return;
     await _loading(() async {
-      if (current != null) await ref.read(appProxyDataSourceProvider).clearAutoSelected(mode: current);
+      if (current != null) await _clearAutoSelection(current);
       await _applyAutoSelection(next);
     });
   }
