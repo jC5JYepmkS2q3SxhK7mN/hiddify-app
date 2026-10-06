@@ -305,7 +305,11 @@ windows-zip-release:
 	mkdir -p Hiddify; \
 	unzip -q "$$ZIP_FILE" -d Hiddify/; \
 	rm "$$ZIP_FILE"; \
-	/c/Windows/System32/tar.exe -a -cf "$$FILE_NAME.zip" Hiddify; \
+	if command -v 7z > /dev/null 2>&1; then \
+	  7z a -tzip -bso0 -bsp0 "$$FILE_NAME.zip" Hiddify; \
+	else \
+	  pwsh -NoProfile -Command "Compress-Archive -Path Hiddify -DestinationPath '$$FILE_NAME.zip' -Force"; \
+	fi; \
 	rm -rf Hiddify; \
 	$(GREEN)Successful$(DONE)
 
