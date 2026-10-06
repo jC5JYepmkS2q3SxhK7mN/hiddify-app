@@ -123,9 +123,9 @@ class AppProxyDao extends DatabaseAccessor<Db> with _$AppProxyDaoMixin, InfraLog
           ..update(
             appProxyEntries,
             AppProxyEntriesCompanion.custom(
-              flags: appProxyEntries.flags
-                ..bitwiseAnd(Constant(~PkgFlag.userSelection.value))
-                ..bitwiseAnd(Constant(~PkgFlag.forceDeselection.value)),
+              flags: appProxyEntries.flags.bitwiseAnd(
+                Constant(~(PkgFlag.userSelection.value | PkgFlag.forceDeselection.value)),
+              ),
             ),
           )
           ..deleteWhere(appProxyEntries, (tbl) => tbl.flags.equals(0))
