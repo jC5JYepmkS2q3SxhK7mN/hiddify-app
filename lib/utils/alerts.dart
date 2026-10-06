@@ -55,7 +55,7 @@ class CustomToast extends StatelessWidget {
       context: context,
       title: Text(message),
       type: type._toastificationType,
-      alignment: Alignment.bottomLeft,
+      alignment: AlignmentDirectional.bottomStart,
       // a Material 3 snackbar's time
       autoCloseDuration: const Duration(seconds: 4),
       style: ToastificationStyle.flat,
