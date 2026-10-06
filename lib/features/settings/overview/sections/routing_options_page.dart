@@ -1,3 +1,4 @@
+import 'package:circle_flags/circle_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
@@ -5,9 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_based_routing/model/per_app_proxy_mode.dart';
-import 'package:hiddify/features/app_based_routing/overview/app_list_notifier.dart';
 import 'package:hiddify/features/route_rules/notifier/rules_notifier.dart';
 import 'package:hiddify/features/route_rules/widget/rule_tile.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
@@ -80,6 +79,7 @@ class RoutingOptionsPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(t.pages.settings.routing.title),
         actions: [
+          const _RegionChip(),
           PopupMenuButton(
             icon: const Icon(Icons.more_vert_rounded),
             itemBuilder: (_) => rules.isEmpty ? menuItems.getRange(0, 2).toList() : menuItems,
@@ -161,33 +161,6 @@ class RoutingOptionsPage extends HookConsumerWidget {
             child: Column(
               children: [
                 Divider(height: 4, thickness: 4, color: theme.colorScheme.primaryContainer),
-                ChoicePreferenceWidget(
-                  selected: ref.watch(ConfigOptions.region),
-                  preferences: ref.watch(ConfigOptions.region.notifier),
-                  choices: Region.values,
-                  title: t.pages.settings.routing.region,
-                  showFlag: true,
-                  icon: Icons.place_rounded,
-                  presentChoice: (value) => value.present(t),
-                  onChanged: (val) async {
-                    await ref.read(ConfigOptions.directDnsAddress.notifier).reset();
-                    final autoRegion = ref.read(Preferences.autoAppsSelectionRegion);
-                    final mode = ref.read(Preferences.perAppProxyMode).toAppProxy();
-                    if (autoRegion != val &&
-                        autoRegion != null &&
-                        val != Region.other &&
-                        mode != null &&
-                        PlatformUtils.isAndroid) {
-                      await ref
-                          .read(dialogNotifierProvider.notifier)
-                          .showOk(
-                            t.pages.settings.routing.appBasedRouting.autoSelection.dialog.title,
-                            t.pages.settings.routing.appBasedRouting.autoSelection.dialog.msg(region: val.name),
-                          );
-                      await ref.read(AppListProvider(mode).notifier).clearAutoSelected();
-                    }
-                  },
-                ),
                 if (PlatformUtils.isAndroid)
                   ListTile(
                     title: Text(t.pages.settings.routing.appBasedRouting.title),
@@ -239,6 +212,101 @@ class RoutingOptionsPage extends HookConsumerWidget {
         onPressed: () => context.goNamed('rule', pathParameters: {'orderId': 'new'}),
         child: const Icon(Icons.add_rounded),
       ),
+    );
+  }
+}
+
+/// The region decides the region rule and auto selection, so it stays in sight; the flag shows which one.
+class _RegionChip extends ConsumerWidget {
+  const _RegionChip();
+
+  static const _radius = BorderRadius.all(Radius.circular(8));
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(translationsProvider).requireValue;
+    final theme = Theme.of(context);
+    final region = ref.watch(ConfigOptions.region);
+    final colorScheme = theme.colorScheme;
+    // a popup menu, so back closes it and not the page
+    return PopupMenuButton<Region>(
+      tooltip: region.presentName(t),
+      position: PopupMenuPosition.under,
+      borderRadius: _radius,
+      onSelected: (value) async {
+        if (value == region) return;
+        await ref.read(ConfigOptions.region.notifier).update(value);
+        // the direct DNS server's default depends on the region
+        await ref.read(ConfigOptions.directDnsAddress.notifier).reset();
+      },
+      itemBuilder: (_) => [
+        for (final option in Region.values)
+          PopupMenuItem(
+            value: option,
+            child: Row(
+              children: [
+                _RegionFlag(option),
+                const Gap(12),
+                Expanded(child: Text(option.presentName(t))),
+                if (option == region) const Icon(Icons.check_rounded),
+              ],
+            ),
+          ),
+      ],
+      child: Container(
+        height: 32,
+        decoration: BoxDecoration(
+          border: Border.all(color: colorScheme.outline),
+          borderRadius: _radius,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // as tall as the chip: its outer corners follow the line's, its inner ones meet the word
+            _RegionFlag(
+              region,
+              size: 30,
+              borderRadius: const BorderRadiusDirectional.horizontal(start: Radius.circular(7)),
+            ),
+            const Gap(8),
+            Text(
+              t.pages.settings.routing.region,
+              style: theme.textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
+            ),
+            Icon(Icons.arrow_drop_down_rounded, size: 20, color: colorScheme.onSurfaceVariant),
+            const Gap(4),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Square, like the other flags in the app; Other has a gray tile with a globe in the same shape.
+class _RegionFlag extends StatelessWidget {
+  const _RegionFlag(this.region, {this.size = 24, this.borderRadius = const BorderRadius.all(Radius.circular(6))});
+
+  final Region region;
+  final double size;
+  final BorderRadiusGeometry borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    if (region == Region.other) {
+      final colorScheme = Theme.of(context).colorScheme;
+      return Container(
+        width: size,
+        height: size,
+        // a tint of the text color, so it shows on any background
+        decoration: BoxDecoration(color: colorScheme.onSurface.withValues(alpha: 0.1), borderRadius: borderRadius),
+        child: Icon(Icons.public_rounded, size: size * 2 / 3, color: colorScheme.onSurfaceVariant),
+      );
+    }
+    return CircleFlag(
+      // the lion and sun, as for the IP's country
+      region == Region.ir ? 'ir-shir' : region.name,
+      size: size,
+      shape: RoundedRectangleBorder(borderRadius: borderRadius),
     );
   }
 }
