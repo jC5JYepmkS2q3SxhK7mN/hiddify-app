@@ -74,7 +74,8 @@ class PackageNamesPage extends HookConsumerWidget {
       null => const <String>{},
     };
     bool outsideVpn(String pkg) => switch (appBasedRoutingMode) {
-      AppProxyMode.include => !listedApps.contains(pkg),
+      // with no app listed, Android lets every app into the VPN
+      AppProxyMode.include => listedApps.isNotEmpty && !listedApps.contains(pkg),
       AppProxyMode.exclude => listedApps.contains(pkg),
       null => false,
     };
