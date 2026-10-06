@@ -109,10 +109,12 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
     await _loading(() => _applyAutoSelection(mode));
   }
 
-  Future<AutoSelectionResult> _applyAutoSelection(AppProxyMode mode) async {
+  Future<void> _applyAutoSelection(AppProxyMode mode) async {
     loggy.info('Performing auto selection');
     final region = ref.read(ConfigOptions.region);
     final (list, result) = await ref.read(autoSelectionRepoProvider).getByAppProxyMode(mode: mode, region: region);
+    // the region or the mode changed while the list loaded, and that change already settled auto selection
+    if (ref.read(ConfigOptions.region) != region || ref.read(Preferences.perAppProxyMode) != mode) return;
     if (result == AutoSelectionResult.success) {
       await ref.read(appProxyDataSourceProvider).applyAutoSelection(autoList: list!, mode: mode);
       await ref.read(Preferences.autoAppsSelectionRegion.notifier).update(region);
@@ -122,7 +124,6 @@ class AppBasedRouting extends _$AppBasedRouting with AppLogger {
       await _clearAutoSelection(mode);
     }
     ref.read(autoSelectionIssueProvider.notifier).update(result);
-    return result;
   }
 
   Future<void> _clearAutoSelection(AppProxyMode mode) async {
