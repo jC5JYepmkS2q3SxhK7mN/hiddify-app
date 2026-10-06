@@ -6,7 +6,6 @@ import 'package:gap/gap.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/general_preferences.dart';
-import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/features/app_based_routing/model/app_package_info.dart';
 import 'package:hiddify/features/app_based_routing/model/pkg_flag.dart';
@@ -211,23 +210,15 @@ class AppListPage extends HookConsumerWidget with PresLogger {
                       onPressed: () => ref.read(AppListProvider(mode).notifier).clearAll(),
                     ),
                   ],
-                  builder: (context, controller, child) => AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: ref.watch(autoSelectionLoadingProvider)
-                        ? const Padding(
-                            padding: EdgeInsets.all(8),
-                            child: SizedBox(width: 32, height: 32, child: CircularProgressIndicator()),
-                          )
-                        : IconButton(
-                            onPressed: () {
-                              if (controller.isOpen) {
-                                controller.close();
-                              } else {
-                                controller.open();
-                              }
-                            },
-                            icon: const Icon(Icons.more_vert_rounded),
-                          ),
+                  builder: (context, controller, child) => IconButton(
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                    icon: const Icon(Icons.more_vert_rounded),
                   ),
                 ),
               ],
@@ -253,17 +244,6 @@ class AppListPage extends HookConsumerWidget with PresLogger {
               onPressed: () =>
                   scrollController.animateTo(0.0, duration: const Duration(milliseconds: 500), curve: Curves.easeOut),
               child: const Icon(Icons.keyboard_arrow_up_rounded),
-            )
-          : (ref.watch(ConfigOptions.region) != Region.other)
-          ? FloatingActionButton.extended(
-              onPressed: () async =>
-                  await ref.read(bottomSheetsNotifierProvider.notifier).showAutoAppsSelection(mode: mode!),
-              label: Text(t.pages.settings.routing.appBasedRouting.autoSelection.title),
-              icon: Icon(
-                ref.watch(Preferences.autoAppsSelectionRegion) == null
-                    ? Icons.toggle_off_outlined
-                    : Icons.toggle_on_rounded,
-              ),
             )
           : null,
       body: displayedApps.when(
