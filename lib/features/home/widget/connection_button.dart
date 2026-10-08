@@ -28,6 +28,7 @@ class ConnectionButton extends HookConsumerWidget {
     final delay = activeProxy.valueOrNull?.urlTestDelay ?? 0;
 
     final requiresReconnect = ref.watch(configOptionNotifierProvider).valueOrNull;
+    final hotReloading = ref.watch(hotReloadingProvider).valueOrNull ?? false;
     final today = DateTime.now();
     // final animationController = useAnimationController(
     //   duration: const Duration(seconds: 1),
@@ -140,16 +141,19 @@ class ConnectionButton extends HookConsumerWidget {
         _ => () {},
       },
       enabled: switch (connectionStatus) {
+        AsyncData(value: Connected()) when hotReloading => false,
         AsyncData(value: Connected()) || AsyncData(value: Disconnected()) || AsyncError() => true,
         _ => false,
       },
       label: switch (connectionStatus) {
+        AsyncData(value: Connected()) when hotReloading => t.connection.hotReloading,
         AsyncData(value: Connected()) when requiresReconnect == true => t.connection.reconnect,
         AsyncData(value: Connected()) when !ConnectionConst.isValidDelay(delay) => t.connection.connecting,
         AsyncData(value: final status) => status.present(t),
         _ => "",
       },
       buttonColor: switch (connectionStatus) {
+        AsyncData(value: Connected()) when hotReloading => const Color.fromARGB(255, 185, 176, 103),
         AsyncData(value: Connected()) when requiresReconnect == true => Colors.teal,
         AsyncData(value: Connected()) when !ConnectionConst.isValidDelay(delay) => const Color.fromARGB(255, 185, 176, 103),
         AsyncData(value: Connected()) => buttonTheme.connectedColor!,
@@ -163,6 +167,7 @@ class ConnectionButton extends HookConsumerWidget {
         _ => Assets.images.disconnectNorouz,
       },
       newButtonColor: switch (connectionStatus) {
+        AsyncData(value: Connected()) when hotReloading => const Color.fromARGB(255, 185, 176, 103),
         AsyncData(value: Connected()) when requiresReconnect == true => Colors.teal,
         AsyncData(value: Connected()) when !ConnectionConst.isValidDelay(delay) => const Color.fromARGB(255, 185, 176, 103),
         AsyncData(value: Connected()) => buttonTheme.connectedColor!,
@@ -170,6 +175,7 @@ class ConnectionButton extends HookConsumerWidget {
         _ => Colors.red,
       },
       animated: switch (connectionStatus) {
+        AsyncData(value: Connected()) when hotReloading => false,
         AsyncData(value: Connected()) when requiresReconnect == true => false,
         AsyncData(value: Connected()) when !ConnectionConst.isValidDelay(delay) => false,
         AsyncData(value: Connected()) => true,

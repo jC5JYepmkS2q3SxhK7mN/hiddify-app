@@ -1,5 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:hiddify/core/notification/toast_hover_pause.dart';
 import 'package:toastification/toastification.dart';
 
 enum AlertType {
@@ -51,15 +52,17 @@ class CustomToast extends StatelessWidget {
   }
 
   void show(BuildContext context) {
-    toastification.show(
+    late final ToastificationItem item;
+    item = toastification.show(
       context: context,
-      title: Text(message),
+      title: ToastHoverPause(item: () => item, child: Text(message)),
       type: type._toastificationType,
       alignment: AlignmentDirectional.bottomStart,
       // a Material 3 snackbar's time
       autoCloseDuration: const Duration(seconds: 4),
       style: ToastificationStyle.flat,
-      pauseOnHover: true,
+      // see ToastHoverPause
+      pauseOnHover: false,
       showProgressBar: false,
       dragToClose: true,
       closeOnClick: true,

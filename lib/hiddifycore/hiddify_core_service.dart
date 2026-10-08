@@ -224,6 +224,25 @@ class HiddifyCoreService with InfraLogger {
     });
   }
 
+  /// Applies a changed config to the running core: first as a hot reload, which keeps the core
+  /// (and its connections) running; when the core cannot hot reload it (e.g. the TUN inbound
+  /// changed) or the hot reload fails, the core is restarted instead.
+  TaskEither<String, Unit> reload(String path, String name, bool disableMemoryLimit) {
+    return TaskEither(() async {
+      loggy.debug("hot reloading");
+      try {
+        final res = await core.bgClient.hotReload(
+          StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit),
+        );
+        if (res.messageType == MessageType.EMPTY) return right(unit);
+        loggy.info("hot reload not applied, restarting: ${res.messageType} ${res.message}");
+      } on GrpcError catch (e) {
+        loggy.warning("hot reload failed, restarting: $e");
+      }
+      return restart(path, name, disableMemoryLimit).run();
+    });
+  }
+
   TaskEither<String, Unit> restart(String path, String name, bool disableMemoryLimit) {
     return TaskEither(() async {
       loggy.debug("restarting");
