@@ -15,7 +15,7 @@ import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// What the button shows, one value per look.
-enum _Look { loading, disconnected, connecting, connected, noPing, disconnecting, failed }
+enum _Look { loading, disconnected, connecting, connected, noPing, hotReloading, disconnecting, failed }
 
 /// The core reports the tunnel as up before the first ping answers, so a tunnel
 /// with no ping yet still looks like connecting: the user waits once, not twice.
@@ -24,11 +24,15 @@ enum _Look { loading, disconnected, connecting, connected, noPing, disconnecting
 /// The status reloads after every core start; until the new stream answers,
 /// the last status holds. A failed start comes back as disconnected with the
 /// failure attached.
-_Look _lookOf(AsyncValue<ConnectionStatus> status, int delay) => switch (status) {
+///
+/// A hot reload keeps the tunnel up, and the status stays connected through it.
+/// It comes before the ping checks, so a reload never looks like a ping problem.
+_Look _lookOf(AsyncValue<ConnectionStatus> status, int delay, bool hotReloading) => switch (status) {
   AsyncError() => _Look.failed,
   AsyncValue(valueOrNull: Disconnected(connectionFailure: _?)) => _Look.failed,
   AsyncValue(valueOrNull: Disconnected()) => _Look.disconnected,
   AsyncValue(valueOrNull: Connecting()) => _Look.connecting,
+  AsyncValue(valueOrNull: Connected()) when hotReloading => _Look.hotReloading,
   AsyncValue(valueOrNull: Connected()) when delay == 0 => _Look.connecting,
   AsyncValue(valueOrNull: Connected()) when !ConnectionConst.isValidDelay(delay) => _Look.noPing,
   AsyncValue(valueOrNull: Connected()) => _Look.connected,
@@ -46,11 +50,14 @@ class ConnectionButton extends HookConsumerWidget {
     // After a disconnect Riverpod keeps the last ping as the previous value,
     // which would show the next connection as up before its own ping answers.
     final delay = ref.watch(activeProxyNotifierProvider).unwrapPrevious().valueOrNull?.urlTestDelay ?? 0;
-    final look = _lookOf(status, delay);
+    final hotReloading = ref.watch(hotReloadingProvider).valueOrNull ?? false;
+    final look = _lookOf(status, delay, hotReloading);
 
     // What a tap does follows the core alone: a tunnel that is up can be
-    // turned off even while it still looks like connecting.
+    // turned off even while it still looks like connecting. The core is busy
+    // while it hot reloads, so the tap is off until that ends.
     final onTap = switch (status) {
+      AsyncData(value: Connected()) when hotReloading => null,
       AsyncData(value: Disconnected()) || AsyncError() => () => _connect(ref),
       AsyncData(value: Connected()) => () => ref.read(connectionNotifierProvider.notifier).toggleConnection(),
       _ => null,
@@ -66,18 +73,19 @@ class ConnectionButton extends HookConsumerWidget {
         _Look.disconnected => t.connection.tapToConnect,
         _Look.connecting => t.connection.connecting,
         _Look.connected || _Look.noPing => t.connection.connected,
+        _Look.hotReloading => t.connection.hotReloading,
         _Look.disconnecting => t.connection.disconnecting,
         _Look.failed => t.connection.failed,
       },
       hint: look == _Look.failed ? t.connection.tapToRetry : null,
       buttonColor: switch (look) {
         _Look.connected => buttonTheme.connectedColor!,
-        _Look.noPing => const Color.fromARGB(255, 185, 176, 103),
+        _Look.noPing || _Look.hotReloading => const Color.fromARGB(255, 185, 176, 103),
         _Look.failed => Colors.red,
         _ => buttonTheme.idleColor!,
       },
       image: switch (look) {
-        _Look.connected || _Look.noPing => Assets.images.connectNorouz,
+        _Look.connected || _Look.noPing || _Look.hotReloading => Assets.images.connectNorouz,
         _ => Assets.images.disconnectNorouz,
       },
       useImage: today.day >= 19 && today.day <= 23 && today.month == 3,
