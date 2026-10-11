@@ -117,7 +117,7 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
         final res = await _status.get(timeout: const Duration(seconds: 1));
 
         switch (res) {
-          case CoreStarted():
+          case CoreStarted() || CoreHotReloading():
             break;
           case CoreStopped():
             if (res.alert != null) {
