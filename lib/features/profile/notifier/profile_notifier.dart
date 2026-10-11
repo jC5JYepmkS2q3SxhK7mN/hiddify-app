@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
@@ -90,6 +91,32 @@ class AddProfileNotifier extends _$AddProfileNotifier with AppLogger {
             },
           )
           .run();
+    });
+  }
+
+  /// Adds one profile per file in a zip, named after the file. Each file's text goes straight to the core, which
+  /// decides whether it is a valid config. Files the core rejects are skipped, and the add fails only if none works.
+  Future<void> addArchive(Uint8List zipBytes) async {
+    if (state.isLoading) return;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      ProfileFailure? firstFailure;
+      var added = 0;
+      for (final file in readZipTexts(zipBytes)) {
+        final result = await _profilesRepo.addLocal(file.text, userOverride: UserOverride(name: file.name)).run();
+        result.match(
+          (err) {
+            loggy.warning("failed to add profile [${file.name}] from zip", err);
+            firstFailure ??= err;
+          },
+          (_) {
+            added++;
+          },
+        );
+      }
+      if (added == 0) throw firstFailure ?? const ProfileFailure.invalidConfig();
+      loggy.info("successfully added $added profiles from zip");
+      return unit;
     });
   }
 
