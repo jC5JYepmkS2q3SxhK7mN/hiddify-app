@@ -57,7 +57,7 @@ class FixBtns extends ConsumerWidget {
             }
             final notifier = ref.read(addProfileNotifierProvider.notifier);
             if (picked.extension?.toLowerCase() == 'zip') {
-              notifier.addArchive(bytes);
+              notifier.addArchive(bytes, name: picked.name.replaceFirst(RegExp(r'\.zip$', caseSensitive: false), ''));
             } else {
               notifier.addClipboard(decodeTextBytes(bytes));
             }
