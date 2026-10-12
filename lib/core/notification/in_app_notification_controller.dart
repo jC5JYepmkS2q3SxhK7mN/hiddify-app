@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -55,7 +56,20 @@ void showAppSnackBar(
     ..clearSnackBars()
     ..showSnackBar(
       SnackBar(
-        content: Text(message, maxLines: 6, overflow: TextOverflow.ellipsis),
+        content: Row(
+          children: [
+            Icon(type._icon, color: type._color, size: 24),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                maxLines: 6,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
         behavior: SnackBarBehavior.floating,
         // at most 480 wide, 16 from the sides on a narrow screen. A margin instead of a width: SnackBar
         // takes only one of them. On a phone it clears the 80 high bottom bar by 12.
@@ -99,4 +113,18 @@ class SnackBarHost extends StatelessWidget {
       ),
     );
   }
+}
+
+extension NotificationTypeX on NotificationType {
+  IconData get _icon => switch (this) {
+    NotificationType.success => FluentIcons.checkmark_circle_24_regular,
+    NotificationType.error => FluentIcons.dismiss_circle_24_regular,
+    NotificationType.info => FluentIcons.info_24_regular,
+  };
+
+  Color get _color => switch (this) {
+    NotificationType.success => const Color(0xFF32BC32),
+    NotificationType.error => const Color(0xFFFF3A30),
+    NotificationType.info => const Color(0xFF47AFFF),
+  };
 }
