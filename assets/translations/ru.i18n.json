@@ -757,6 +757,7 @@
     "tapToConnect": "Нажмите для подключения",
     "connect": "Подключить",
     "connecting": "Подключение…",
+    "hotReloading": "Применение изменений…",
     "connected": "Подключено",
     "disconnect": "Отключить",
     "disconnecting": "Отключение…",

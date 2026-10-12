@@ -733,6 +733,7 @@
     "tapToConnect": "點擊連線",
     "connect": "連線",
     "connecting": "連線中…",
+    "hotReloading": "套用變更中…",
     "connected": "已連線",
     "disconnect": "中斷連線",
     "disconnecting": "中斷連線中…",

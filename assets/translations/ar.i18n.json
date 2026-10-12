@@ -770,6 +770,7 @@
     "tapToConnect": "انقر للاتصال",
     "connect": "اتصال",
     "connecting": "جار الاتصال…",
+    "hotReloading": "جاري تطبيق التغييرات…",
     "connected": "متصل",
     "disconnect": "قطع الاتصال",
     "disconnecting": "جاري قطع الاتصال…",

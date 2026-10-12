@@ -735,6 +735,7 @@
     "tapToConnect": "Toca para conectar",
     "connect": "Conectar",
     "connecting": "Conectando…",
+    "hotReloading": "Aplicando cambios…",
     "connected": "Conectado",
     "disconnect": "Desconectar",
     "disconnecting": "Desconectando…",

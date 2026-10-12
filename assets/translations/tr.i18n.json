@@ -733,6 +733,7 @@
     "tapToConnect": "Bağlanmak için dokunun",
     "connect": "Bağlan",
     "connecting": "Bağlanıyor…",
+    "hotReloading": "Değişiklikler uygulanıyor…",
     "connected": "Bağlı",
     "disconnect": "Bağlantıyı kes",
     "disconnecting": "Bağlantı kesiliyor…",
