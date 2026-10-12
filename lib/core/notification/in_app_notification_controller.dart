@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:hiddify/core/notification/toast_hover_pause.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -76,6 +78,38 @@ class InAppNotificationController with AppLogger {
       _show(message, type: NotificationType.success, action: action);
 
   ToastificationItem? showInfoToast(String message, {ToastAction? action}) => _show(message, action: action);
+}
+
+/// Shows the app's SnackBars above every route, so a dialog or a bottom sheet can't cover them.
+///
+/// It is a Scaffold around the Navigator. The pages' Scaffolds sit inside it, and a
+/// ScaffoldMessenger shows a SnackBar only on the outermost of its Scaffolds: this one.
+class SnackBarHost extends StatelessWidget {
+  const SnackBarHost({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    // no top padding: on iOS a Scaffold puts a status bar tap target there, over the pages' own
+    final hostMediaQuery = mediaQuery.removePadding(removeTop: true);
+    return MediaQuery(
+      // the keyboard as bottom padding: a floating SnackBar stays above both
+      data: hostMediaQuery.copyWith(
+        viewPadding: hostMediaQuery.viewPadding.copyWith(
+          bottom: math.max(mediaQuery.viewPadding.bottom, mediaQuery.viewInsets.bottom),
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        // the pages keep their full height and handle the keyboard themselves
+        resizeToAvoidBottomInset: false,
+        // the pages get the app's MediaQuery as it was
+        body: MediaQuery(data: mediaQuery, child: child),
+      ),
+    );
+  }
 }
 
 extension NotificationTypeX on NotificationType {

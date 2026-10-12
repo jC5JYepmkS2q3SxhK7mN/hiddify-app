@@ -9,6 +9,7 @@ import 'package:hiddify/core/localization/locale_extensions.dart';
 import 'package:hiddify/core/localization/locale_preferences.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/model/constants.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/router/go_router/go_router_notifier.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/core/theme/app_theme.dart';
@@ -91,10 +92,12 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
                   title: Constants.appName,
                   builder: (context, child) {
                     final theme = Theme.of(context);
-                    child = UpgradeAlert(
-                      upgrader: upgrader,
-                      navigatorKey: router.routerDelegate.navigatorKey,
-                      child: child ?? const SizedBox(),
+                    child = SnackBarHost(
+                      child: UpgradeAlert(
+                        upgrader: upgrader,
+                        navigatorKey: router.routerDelegate.navigatorKey,
+                        child: child ?? const SizedBox(),
+                      ),
                     );
                     if (kDebugMode && _debugAccessibility) {
                       return AccessibilityTools(checkFontOverflows: true, child: child);
