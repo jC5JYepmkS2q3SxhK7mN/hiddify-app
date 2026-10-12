@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hiddify/core/router/go_router/helper/active_breakpoint_notifier.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -56,27 +57,54 @@ void showAppSnackBar(
     ..clearSnackBars()
     ..showSnackBar(
       SnackBar(
-        // a min height of 40: 36 here plus the SnackBar's 2 above and below
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 36),
-          child: Row(
-            children: [
-              Icon(type._icon, color: type._color, size: 24),
-              const SizedBox(width: 10),
-              Expanded(
-                // room above and below a text of several lines; one line still fits in 36
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Text(
-                    message,
-                    maxLines: 6,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
+        // a close button on hover when there is no action
+        content: HookBuilder(
+          builder: (context) {
+            final hovered = useState(false);
+            return MouseRegion(
+              onEnter: (_) => hovered.value = true,
+              onExit: (_) => hovered.value = false,
+              // a min height of 40: 36 here plus the SnackBar's 2 above and below
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 36),
+                child: Row(
+                  children: [
+                    Icon(type._icon, color: type._color, size: 24),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      // room above and below a text of several lines; one line still fits in 36
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          message,
+                          maxLines: 6,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ),
+                    if (action == null)
+                      // hidden, it keeps its room but can't be pressed or reached by a screen reader
+                      Visibility(
+                        visible: hovered.value,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: IconButton(
+                          iconSize: 18,
+                          // small enough to keep a one-line SnackBar at 40
+                          padding: const EdgeInsets.all(2),
+                          constraints: const BoxConstraints(),
+                          color: Theme.of(context).colorScheme.onInverseSurface,
+                          onPressed: messenger.hideCurrentSnackBar,
+                          icon: Icon(Icons.close, semanticLabel: MaterialLocalizations.of(context).closeButtonTooltip),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
