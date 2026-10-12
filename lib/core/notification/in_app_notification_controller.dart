@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -44,8 +45,9 @@ class InAppNotificationController with AppLogger {
 
 /// Shows [message] as the app's SnackBar, replacing the one on screen.
 ///
-/// A SnackBar starts its close timer only once it is fully on screen, so one raised while the app
-/// draws no frames (in the background) still closes after it shows.
+/// Its close timer starts only when it is first drawn, so one raised while the app draws no frames
+/// (in the background) still shows, then closes. The pointer on it stops the timer; leaving starts
+/// it again with the full time.
 void showAppSnackBar(
   ScaffoldMessengerState messenger,
   String message, {
@@ -53,6 +55,8 @@ void showAppSnackBar(
   ToastAction? action,
 }) {
   final side = math.max(16.0, (MediaQuery.sizeOf(messenger.context).width - 480) / 2);
+  // 4 s, a Material 3 snackbar's time; 8 s with a button, to read it and reach the button
+  final duration = Duration(seconds: action == null ? 4 : 8);
   messenger
     ..clearSnackBars()
     ..showSnackBar(
@@ -61,6 +65,11 @@ void showAppSnackBar(
         content: HookBuilder(
           builder: (context) {
             final hovered = useState(false);
+            useEffect(() {
+              if (hovered.value) return null;
+              final timer = Timer(duration, () => messenger.hideCurrentSnackBar(reason: SnackBarClosedReason.timeout));
+              return timer.cancel;
+            }, [hovered.value]);
             return MouseRegion(
               onEnter: (_) => hovered.value = true,
               onExit: (_) => hovered.value = false,
@@ -114,10 +123,8 @@ void showAppSnackBar(
         // takes only one of them. On a phone it clears the 80 high bottom bar by 12.
         margin: EdgeInsets.fromLTRB(side, 0, side, Breakpoint(messenger.context).isMobile() ? 92 : 16),
         action: action == null ? null : SnackBarAction(label: action.label, onPressed: action.onPressed),
-        // closes itself even with an action (a SnackBar keeps it by default)
-        persist: false,
-        // 4 s, a Material 3 snackbar's time; 8 s with a button, to read it and reach the button
-        duration: Duration(seconds: action == null ? 4 : 8),
+        // the timer above closes it: SnackBar's own can't stop while the pointer is on it
+        persist: true,
       ),
     );
 }
