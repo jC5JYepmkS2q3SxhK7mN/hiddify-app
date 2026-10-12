@@ -56,21 +56,32 @@ void showAppSnackBar(
     ..clearSnackBars()
     ..showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            Icon(type._icon, color: type._color, size: 24),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                maxLines: 6,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w500),
+        // a min height of 40: 36 here plus the SnackBar's 2 above and below
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 36),
+          child: Row(
+            children: [
+              Icon(type._icon, color: type._color, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                // room above and below a text of several lines; one line still fits in 36
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    message,
+                    maxLines: 6,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // a padding of its own replaces the SnackBar's 14 above and below the content
+        padding: EdgeInsetsDirectional.fromSTEB(16, 2, action == null ? 8 : 4, 2),
         // at most 480 wide, 16 from the sides on a narrow screen. A margin instead of a width: SnackBar
         // takes only one of them. On a phone it clears the 80 high bottom bar by 12.
         margin: EdgeInsets.fromLTRB(side, 0, side, Breakpoint(messenger.context).isMobile() ? 92 : 16),
