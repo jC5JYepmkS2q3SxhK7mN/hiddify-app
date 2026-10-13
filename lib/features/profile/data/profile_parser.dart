@@ -198,7 +198,7 @@ class ProfileParser {
 
         final line = lines[currentIndex];
         if (!_isLink(line)) {
-          results[currentIndex] = line.trim();
+          results[currentIndex] = line;
           continue;
         }
 
