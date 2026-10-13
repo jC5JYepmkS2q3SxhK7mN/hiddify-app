@@ -204,7 +204,7 @@ class ProfileParser {
 
         try {
           final response = await _httpClient.get<String>(
-            line,
+            line.trimRight(),
             cancelToken: cancelToken,
             userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)
                 ? _httpClient.userAgent.replaceAll('HiddifyNext', 'HiddifyNextX')
