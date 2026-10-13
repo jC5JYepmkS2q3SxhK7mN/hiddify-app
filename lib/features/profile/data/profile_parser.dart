@@ -225,6 +225,9 @@ class ProfileParser with InfraLogger {
 
     // 4 downloads at a time
     await Future.wait(List.generate(4, (_) => worker()));
+    if (cancelToken.isCancelled) {
+      throw const ProfileFailure.cancelByUser('HTTP request for getting an inner subscription link canceled by user.');
+    }
     return results.join('\n');
   }
 
