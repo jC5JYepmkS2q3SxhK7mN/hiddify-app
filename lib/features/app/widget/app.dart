@@ -32,10 +32,6 @@ bool isOnPauseCalled = false;
 class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
   const App({super.key});
 
-  void onInactive(WidgetRef ref) {
-    onPause(ref);
-  }
-
   void onPause(WidgetRef ref) {
     if (PlatformUtils.isDesktop) return;
     isOnPauseCalled = true;
@@ -183,19 +179,19 @@ class App extends HookConsumerWidget with WidgetsBindingObserver, PresLogger {
   // }
 
   void setupStateListener(WidgetRef ref) {
-    final appLifecycleState = useAppLifecycleState();
-
     useEffect(() {
-      loggy.info("current app state");
-      loggy.info(appLifecycleState);
-      if (appLifecycleState == AppLifecycleState.paused) {
-        onPause(ref);
-      } else if (appLifecycleState == AppLifecycleState.inactive) {
-        onInactive(ref);
-      } else if (appLifecycleState == AppLifecycleState.resumed) {
-        onResume(ref);
+      // The engine calls the listener directly, so a pause is seen even when no frame is drawn in the
+      // background. Inactive (a dialog, the notification shade) is not a pause and closes nothing.
+      void handle(AppLifecycleState state) {
+        loggy.info("app state: $state");
+        if (state == AppLifecycleState.paused) onPause(ref);
+        if (state == AppLifecycleState.resumed) onResume(ref);
       }
-      return null;
-    }, [appLifecycleState]);
+
+      final initial = WidgetsBinding.instance.lifecycleState;
+      if (initial != null) handle(initial);
+      final listener = AppLifecycleListener(onStateChange: handle);
+      return listener.dispose;
+    }, const []);
   }
 }
