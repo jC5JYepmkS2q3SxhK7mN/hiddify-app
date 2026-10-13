@@ -230,7 +230,7 @@ class ProfileParser {
   TaskEither<ProfileFailure, Unit> _expandLinksInFile(String tempFilePath, CancelToken? cancelToken) =>
       TaskEither.tryCatch(() async {
         final file = File(tempFilePath);
-        final text = await file.readAsString();
+        final text = safeDecodeBase64((await file.readAsString()).trim());
         final expanded = await expandLinks(text, cancelToken ?? CancelToken());
         if (expanded != text) await file.writeAsString(expanded);
         return unit;
