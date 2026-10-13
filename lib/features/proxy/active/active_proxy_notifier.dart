@@ -88,12 +88,14 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
     if (serviceRunning != _lastServiceRunning) {
       _lastServiceRunning = serviceRunning;
       _wasConnectionValid = false;
+      _resubscribeDelay = _minResubscribeDelay;
     }
     if (!serviceRunning) {
       return Stream.error(const ServiceNotRunning());
     }
     Timer? resubscribe;
     ref.onDispose(() => resubscribe?.cancel());
+    var received = 0;
     return _proxyRepo
         .watchActiveProxies()
         // A failed stream used to become an empty outbound with no delay, which the
@@ -103,12 +105,21 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
         .where((event) => event.isRight())
         .map((event) => event.getOrElse((l) => List<OutboundGroup>.empty()))
         .map((event) => event.firstOrNull?.items.first ?? OutboundInfo())
-        .doOnData((info) => _handleConnectionHaptic(info.urlTestDelay))
+        .doOnData((info) {
+          // The first event is the core service's cached list, sent even when
+          // the call fails; only a later one shows the stream really works.
+          if (++received > 1) _resubscribeDelay = _minResubscribeDelay;
+          _handleConnectionHaptic(info.urlTestDelay);
+        })
         .doOnDone(() {
           // gRPC ends the stream when its connection drops, e.g. once iOS suspends
           // the app or the Mac sleeps. Nothing else would ever open it again.
-          loggy.debug("active proxy stream ended, resubscribing");
-          resubscribe = Timer(const Duration(seconds: 2), ref.invalidateSelf);
+          // While it keeps failing the wait doubles, so a core that stays
+          // unreachable is not retried, and logged as an error, every 2 seconds.
+          loggy.debug("active proxy stream ended, resubscribing in $_resubscribeDelay");
+          resubscribe = Timer(_resubscribeDelay, ref.invalidateSelf);
+          final doubled = _resubscribeDelay * 2;
+          _resubscribeDelay = doubled < _maxResubscribeDelay ? doubled : _maxResubscribeDelay;
         });
   }
 
@@ -118,6 +129,10 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
   /// on real transitions (connect / timeout / recover), not on every ping update.
   bool _wasConnectionValid = false;
   bool? _lastServiceRunning;
+
+  static const _minResubscribeDelay = Duration(seconds: 2);
+  static const _maxResubscribeDelay = Duration(seconds: 30);
+  Duration _resubscribeDelay = _minResubscribeDelay;
 
   void _handleConnectionHaptic(int urlTestDelay) {
     final isValid = ConnectionConst.isValidDelay(urlTestDelay);
