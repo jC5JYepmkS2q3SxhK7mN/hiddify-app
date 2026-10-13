@@ -11,6 +11,7 @@ import 'package:hiddify/features/proxy/data/proxy_repository.dart';
 import 'package:hiddify/features/proxy/model/ip_info_entity.dart' as oldipinfo;
 import 'package:hiddify/features/proxy/model/proxy_failure.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:hiddify/hiddifycore/init_signal.dart';
 
 import 'package:hiddify/utils/riverpod_utils.dart';
 import 'package:hiddify/utils/utils.dart';
@@ -80,15 +81,35 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
   Stream<OutboundInfo> build() {
     // ref.disposeDelay(const Duration(seconds: 20));
     final serviceRunning = ref.watch(serviceRunningProvider);
-    _wasConnectionValid = false;
+    // The core is set up again when the app comes back from the background, on
+    // a new gRPC channel. The stream below lives on the old one, so it has to be
+    // opened again; serviceRunning stays true throughout and would not do it.
+    ref.watch(coreRestartSignalProvider);
+    if (serviceRunning != _lastServiceRunning) {
+      _lastServiceRunning = serviceRunning;
+      _wasConnectionValid = false;
+    }
     if (!serviceRunning) {
       return Stream.error(const ServiceNotRunning());
     }
+    Timer? resubscribe;
+    ref.onDispose(() => resubscribe?.cancel());
     return _proxyRepo
         .watchActiveProxies()
+        // A failed stream used to become an empty outbound with no delay, which the
+        // connection button shows as a yellow "connecting" that never clears. The
+        // tunnel itself is fine, so the last known outbound stays and the stream is
+        // opened again below.
+        .where((event) => event.isRight())
         .map((event) => event.getOrElse((l) => List<OutboundGroup>.empty()))
         .map((event) => event.firstOrNull?.items.first ?? OutboundInfo())
-        .doOnData((info) => _handleConnectionHaptic(info.urlTestDelay));
+        .doOnData((info) => _handleConnectionHaptic(info.urlTestDelay))
+        .doOnDone(() {
+          // gRPC ends the stream when its connection drops, e.g. once iOS suspends
+          // the app or the Mac sleeps. Nothing else would ever open it again.
+          loggy.debug("active proxy stream ended, resubscribing");
+          resubscribe = Timer(const Duration(seconds: 2), ref.invalidateSelf);
+        });
   }
 
   ProxyRepository get _proxyRepo => ref.read(proxyRepositoryProvider);
@@ -96,6 +117,7 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
   /// Whether the tunnel currently has a valid ping. Tracked so haptics fire only
   /// on real transitions (connect / timeout / recover), not on every ping update.
   bool _wasConnectionValid = false;
+  bool? _lastServiceRunning;
 
   void _handleConnectionHaptic(int urlTestDelay) {
     final isValid = ConnectionConst.isValidDelay(urlTestDelay);
