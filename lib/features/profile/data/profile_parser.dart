@@ -33,7 +33,7 @@ import 'package:meta/meta.dart';
 /// since local profiles have no url. Every step treats a whitespace-only result
 /// as blank, so it falls through to the next step.
 
-class ProfileParser {
+class ProfileParser with InfraLogger {
   // Synthetic sentinel assigned to `total` for "unlimited" traffic (subscription-userinfo total=0 or
   // missing). It MUST stay above the 10 TB "unlimited" threshold the UI uses to decide whether to show
   // "∞" (isInfinitSize() in lib/utils/number_formatters.dart, and profile_tile.dart). The previous
@@ -184,7 +184,7 @@ class ProfileParser {
   /// Returns [text] unchanged when no line is a link.
   Future<String> expandLinks(String text, CancelToken cancelToken) async {
     final lines = text.split('\n');
-    if (!lines.any(_isLink)) return text;
+    if (!lines.any(_isSubscriptionLink)) return text;
 
     final results = List<String?>.filled(lines.length, null);
     int index = 0;
@@ -197,7 +197,7 @@ class ProfileParser {
         if (currentIndex >= lines.length) return;
 
         final line = lines[currentIndex];
-        if (!_isLink(line)) {
+        if (!_isSubscriptionLink(line)) {
           results[currentIndex] = line;
           continue;
         }
@@ -214,6 +214,10 @@ class ProfileParser {
           results[currentIndex] = (response.data ?? '').trim();
         } catch (err) {
           if (err is DioException && CancelToken.isCancel(err)) return;
+          // the full url carries the user's token, so only the host is logged
+          loggy.warning(
+            'dropped an inner subscription link that failed to download: ${Uri.tryParse(line.trimRight())?.host}',
+          );
           results[currentIndex] = '';
         }
       }
@@ -224,7 +228,13 @@ class ProfileParser {
     return results.join('\n');
   }
 
-  static bool _isLink(String line) => line.startsWith('http://') || line.startsWith('https://');
+  /// An http(s) line is a subscription link only when its URL has a path. HTTP proxy links have none: the core reads
+  /// their options from the query.
+  static bool _isSubscriptionLink(String line) {
+    if (!line.startsWith('http://') && !line.startsWith('https://')) return false;
+    final path = Uri.tryParse(line.trimRight())?.path ?? '';
+    return path.isNotEmpty && path != '/';
+  }
 
   /// Expands the links in the temp file and writes the file once, only if the text changed.
   TaskEither<ProfileFailure, Unit> _expandLinksInFile(String tempFilePath, CancelToken? cancelToken) =>
