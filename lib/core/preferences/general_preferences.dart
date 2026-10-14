@@ -8,6 +8,7 @@ import 'package:hiddify/features/profile/model/profile_sort_enum.dart';
 import 'package:hiddify/features/window/notifier/window_notifier.dart';
 import 'package:hiddify/utils/platform_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:logging/logging.dart';
 
 bool _debugIntroPage = false;
 
@@ -123,6 +124,18 @@ abstract class Preferences {
   /// How many records the in-memory log ring keeps. Saved, so a size picked
   /// once while chasing a bug is still there on the next run.
   static final logBufferSize = PreferencesNotifier.create<int, int>("log-buffer-size", 1000);
+
+  /// The level filter on the logs page. Saved, so the page opens on the level
+  /// picked last time.
+  ///
+  /// Starts at warn: below that the page is mostly the app narrating itself,
+  /// which buries the lines somebody opened this page to find.
+  static final logFilterLevel = PreferencesNotifier.create<Level, String>(
+    "log-filter-level",
+    Level.WARNING,
+    mapFrom: (value) => Level.LEVELS.firstWhere((level) => level.name == value),
+    mapTo: (value) => value.name,
+  );
 
   static final profilesSort = PreferencesNotifier.create<({ProfilesSort by, SortMode mode}), String>(
     "profiles_sort",
