@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hiddify/core/logger/ring/log_ring.dart';
 import 'package:hiddify/core/model/region.dart';
 import 'package:hiddify/core/preferences/actions_at_closing.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
@@ -135,6 +136,15 @@ abstract class Preferences {
     Level.WARNING,
     mapFrom: (value) => Level.LEVELS.firstWhere((level) => level.name == value),
     mapTo: (value) => value.name,
+  );
+
+  /// The category filter on the logs page, saved the same way. Null shows every
+  /// category.
+  static final logFilterCategory = PreferencesNotifier.create<LogCategory?, String?>(
+    "log-filter-category",
+    null,
+    mapFrom: (value) => value == null || value.isEmpty ? null : LogCategory.values.byName(value),
+    mapTo: (value) => value == null ? '' : value.name,
   );
 
   static final profilesSort = PreferencesNotifier.create<({ProfilesSort by, SortMode mode}), String>(
