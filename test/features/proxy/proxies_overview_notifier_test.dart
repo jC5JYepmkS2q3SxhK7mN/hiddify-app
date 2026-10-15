@@ -80,9 +80,9 @@ void main() {
     for (final item in container.read(proxiesOverviewNotifierProvider).requireValue!.items) item.tag,
   ];
 
-  /// The rows the page shows after the core streams [items].
-  Future<List<String>> stream(WidgetTester tester, List<OutboundInfo> items) async {
-    repository.updates.add(right(OutboundGroup(tag: 'select', selected: items.first.tag, items: items)));
+  /// The rows the page shows after the core streams [items], with [selected] picked (the first by default).
+  Future<List<String>> stream(WidgetTester tester, List<OutboundInfo> items, {String? selected}) async {
+    repository.updates.add(right(OutboundGroup(tag: 'select', selected: selected ?? items.first.tag, items: items)));
     await tester.pump();
     return rows();
   }
@@ -94,5 +94,42 @@ void main() {
     await notifier().changeProxy('select', 'b');
     expect(notifications.errors, [container.read(translationsProvider).requireValue.pages.proxies.switchFailed]);
     expect(container.read(proxiesOverviewNotifierProvider).requireValue!.selected, 'a');
+  });
+
+  testWidgets('the picked proxy stays in its row while the rest re-sorts', (tester) async {
+    await open(tester);
+    expect(await stream(tester, [proxy('a', 100), proxy('b', 200), proxy('c', 300)]), ['a', 'b', 'c']);
+    await notifier().changeProxy('select', 'b');
+    // its new ping would send it to the end
+    expect(await stream(tester, [proxy('a', 100), proxy('b', 900), proxy('c', 300)], selected: 'b'), ['a', 'b', 'c']);
+    // the others still sort
+    expect(await stream(tester, [proxy('a', 500), proxy('b', 900), proxy('c', 300)], selected: 'b'), ['c', 'b', 'a']);
+  });
+
+  testWidgets('the row is free again once another proxy is selected elsewhere', (tester) async {
+    await open(tester);
+    await stream(tester, [proxy('a', 100), proxy('b', 200), proxy('c', 300)]);
+    await notifier().changeProxy('select', 'b');
+    expect(await stream(tester, [proxy('a', 100), proxy('b', 900), proxy('c', 300)], selected: 'a'), ['a', 'c', 'b']);
+  });
+
+  testWidgets('picking lowest pins the lowest row, not the proxy lowest picks', (tester) async {
+    await open(tester);
+    final before = [
+      proxy('balance', 200, group: true),
+      proxy('lowest', 300, group: true),
+      proxy('a', 100),
+      proxy('b', 150),
+    ];
+    expect(await stream(tester, before), ['balance', 'lowest', 'a', 'b']);
+    await notifier().changeProxy('select', 'lowest');
+    // lowest's new ping would move it up; a and b, among them lowest's pick, still re-sort
+    final after = [
+      proxy('balance', 200, group: true),
+      proxy('lowest', 50, group: true),
+      proxy('a', 400),
+      proxy('b', 150),
+    ];
+    expect(await stream(tester, after, selected: 'lowest'), ['balance', 'lowest', 'b', 'a']);
   });
 }
