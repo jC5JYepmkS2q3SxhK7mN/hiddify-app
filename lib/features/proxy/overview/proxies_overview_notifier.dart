@@ -4,6 +4,7 @@ import 'package:dartx/dartx.dart';
 
 import 'package:hiddify/core/haptic/haptic_service.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hiddify/core/preferences/preferences_provider.dart';
 import 'package:hiddify/core/utils/preferences_utils.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
@@ -205,10 +206,19 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
     if (!state.hasValue) return;
     final outbounds = state.value!;
     await ref.read(hapticServiceProvider.notifier).lightImpact();
-    await ref.read(proxyRepositoryProvider).selectProxy(groupTag, outboundTag).getOrElse((err) {
-      loggy.warning("error selecting outbound", err);
-      throw err;
-    }).run();
+    final selected = await ref
+        .read(proxyRepositoryProvider)
+        .selectProxy(groupTag, outboundTag)
+        .map((_) => true)
+        .getOrElse((err) {
+          loggy.warning("error selecting outbound", err);
+          // thrown from a tap, the error reached no one and the tap seemed ignored
+          final t = ref.read(translationsProvider).requireValue;
+          ref.read(inAppNotificationControllerProvider).showErrorToast(t.pages.proxies.switchFailed);
+          return false;
+        })
+        .run();
+    if (!selected) return;
     final newselected = outbounds.items.where((e) => e.tag == outboundTag).firstOrNull;
     if (newselected != null) {
       newselected.isSelected = true;
