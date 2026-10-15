@@ -112,6 +112,7 @@
       "empty": "Kullanılabilir proxy yok",
       "activeProxy": "Aktif proxy",
       "unknownIp": "Bilinmeyen IP",
+      "switchFailed": "Bu proxy'ye geçilemedi. Tekrar deneyin.",
       "sortOptions": {
         "unsorted": "Varsayılan",
         "name": "Alfabetik",

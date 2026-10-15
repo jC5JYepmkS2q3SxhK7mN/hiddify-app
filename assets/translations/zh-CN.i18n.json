@@ -112,6 +112,7 @@
       "empty": "无可用代理",
       "activeProxy": "当前代理",
       "unknownIp": "未知 IP",
+      "switchFailed": "无法切换到此代理。请重试。",
       "sortOptions": {
         "unsorted": "默认",
         "name": "按名称",

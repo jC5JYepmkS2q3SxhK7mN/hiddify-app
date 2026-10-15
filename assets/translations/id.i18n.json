@@ -112,6 +112,7 @@
       "empty": "Tidak ada proxy yang tersedia",
       "activeProxy": "Proxy aktif",
       "unknownIp": "IP tidak dikenal",
+      "switchFailed": "Tidak dapat beralih ke proxy ini. Coba lagi.",
       "sortOptions": {
         "unsorted": "Default",
         "name": "Berdasarkan abjad",

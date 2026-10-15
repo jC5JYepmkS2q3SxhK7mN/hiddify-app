@@ -112,6 +112,7 @@
       "empty": "No hay proxies disponibles",
       "activeProxy": "Proxy activo",
       "unknownIp": "IP desconocida",
+      "switchFailed": "No se pudo cambiar a este proxy. Vuelve a intentarlo.",
       "sortOptions": {
         "unsorted": "Por defecto",
         "name": "Alfabéticamente",
