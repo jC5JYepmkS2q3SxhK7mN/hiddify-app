@@ -175,23 +175,25 @@ class _ConnectionButton extends HookWidget {
                   top: -10,
                   right: -10,
                   bottom: -10,
-                  child: AnimatedSwitcher(
+                  // A single faded child: an AnimatedSwitcher here hit duplicate keys
+                  // when the state flipped twice within its duration.
+                  child: AnimatedOpacity(
+                    opacity: busy ? 1 : 0,
                     duration: const Duration(milliseconds: 300),
-                    child: busy
-                        ? SizedBox.expand(
-                            key: ValueKey(look),
-                            child: Transform.flip(
-                              // Disconnecting spins the other way.
-                              flipX: look == _Look.disconnecting,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 4,
-                                strokeCap: StrokeCap.round,
-                                color: buttonColor,
-                                backgroundColor: buttonColor.withValues(alpha: .2),
-                              ),
-                            ),
-                          )
-                        : const SizedBox.shrink(),
+                    // Stops the spinner's ticker while hidden.
+                    child: TickerMode(
+                      enabled: busy,
+                      child: Transform.flip(
+                        // Disconnecting spins the other way.
+                        flipX: look == _Look.disconnecting,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 4,
+                          strokeCap: StrokeCap.round,
+                          color: buttonColor,
+                          backgroundColor: buttonColor.withValues(alpha: .2),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 Material(
