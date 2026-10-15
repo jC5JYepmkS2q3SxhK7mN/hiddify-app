@@ -459,7 +459,10 @@
           "title": "استراتيجية Balancer",
           "roundRobin": "Round robin",
           "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
+          "stickySession": "Sticky session",
+          "roundRobinDescription": "كل اتصال يستخدم الخادم التالي، لذا قد ترى المواقع تغيّر عنوان IP الخاص بك",
+          "consistentHashDescription": "كل موقع يستخدم الخادم نفسه دائمًا",
+          "stickySessionDescription": "كل موقع يحتفظ بخادم عشوائي حتى تعيد الاتصال"
         },
         "resolveDestination": "تحديد وجهة الاتصال",
         "ipv6Route": "توجيه IPv6",

@@ -428,7 +428,10 @@
           "title": "Estrategia de Balancer",
           "roundRobin": "Round robin",
           "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
+          "stickySession": "Sticky session",
+          "roundRobinDescription": "Cada conexión usa el siguiente servidor, así que los sitios pueden ver que tu IP cambia",
+          "consistentHashDescription": "Cada sitio usa siempre el mismo servidor",
+          "stickySessionDescription": "Cada sitio mantiene un servidor aleatorio hasta que te vuelvas a conectar"
         },
         "resolveDestination": "Resolver destino",
         "ipv6Route": "Ruta IPv6",

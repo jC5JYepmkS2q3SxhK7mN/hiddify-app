@@ -427,7 +427,10 @@
           "title": "Balancer 策略",
           "roundRobin": "Round robin",
           "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
+          "stickySession": "Sticky session",
+          "roundRobinDescription": "每个连接依次使用下一个服务器，网站可能会看到您的 IP 变化",
+          "consistentHashDescription": "每个网站始终使用同一个服务器",
+          "stickySessionDescription": "每个网站使用一个随机服务器，直到您重新连接"
         },
         "resolveDestination": "解析目的地",
         "ipv6Route": "IPv6 路由",

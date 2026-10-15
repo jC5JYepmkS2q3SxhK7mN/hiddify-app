@@ -427,7 +427,10 @@
           "title": "Strategi Balancer",
           "roundRobin": "Round robin",
           "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
+          "stickySession": "Sticky session",
+          "roundRobinDescription": "Setiap koneksi memakai server berikutnya, jadi situs mungkin melihat IP Anda berubah",
+          "consistentHashDescription": "Setiap situs selalu memakai server yang sama",
+          "stickySessionDescription": "Setiap situs memakai server acak sampai Anda menyambung ulang"
         },
         "resolveDestination": "Resolusi tujuan",
         "ipv6Route": "Rute IPv6",

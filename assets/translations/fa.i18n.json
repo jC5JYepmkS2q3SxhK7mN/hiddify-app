@@ -428,7 +428,10 @@
           "title": "استراتژی Balancer",
           "roundRobin": "Round robin",
           "consistentHash": "Consistent hash",
-          "stickySession": "Sticky session"
+          "stickySession": "Sticky session",
+          "roundRobinDescription": "هر اتصال از سرور بعدی استفاده می‌کند، پس سایت‌ها ممکن است تغییر IP شما را ببینند",
+          "consistentHashDescription": "هر سایت همیشه از همان سرور استفاده می‌کند",
+          "stickySessionDescription": "هر سایت تا اتصال دوباره، یک سرور تصادفی را نگه می‌دارد"
         },
         "resolveDestination": "تحلیل آدرس مقصد",
         "ipv6Route": "مسیریابی IPv6",
