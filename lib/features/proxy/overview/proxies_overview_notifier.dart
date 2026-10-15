@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:dartx/dartx.dart';
 
@@ -60,6 +61,7 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   @override
   Stream<OutboundGroup?> build() {
     ref.disposeDelay(const Duration(seconds: 15));
+    _pinned = null;
     final serviceRunning = ref.watch(serviceRunningProvider);
     if (!serviceRunning) {
       return Stream.error(const ServiceNotRunning());
@@ -137,6 +139,9 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   //   return sortedProxies;
   // }
 
+  /// The proxy picked on this page and the row it was in. Cleared by a new connection or sort.
+  ({String tag, int index})? _pinned;
+
   Future<OutboundGroup?> _sortOutbounds(OutboundGroup? proxies, ProxiesSort sortBy) async {
     if (proxies == null) return null;
 
@@ -164,13 +169,13 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
         return (b.upload + b.download).compareTo(a.upload + a.download);
       }),
     };
-    final items = <OutboundInfo>[];
-    for (final item in sortedItems) {
-      // if (groupWithSelected.keys.contains(item.tag)) {
-      //   items.add(item.copyWith(selectedTag: groupWithSelected[item.tag]));
-      // } else {
-      items.add(item);
-      // }
+    // a copy: sortedItems reads proxies.items, which is cleared below
+    final items = sortedItems.toList();
+    // The proxy the user picked stays in the row they tapped, and the rest sorts around it. A new
+    // ping used to move it, often to the end of the list, right after the tap.
+    if (_pinned case (:final tag, :final index) when proxies.selected == tag) {
+      final picked = items.indexWhere((item) => item.tag == tag);
+      if (picked != -1) items.insert(min(index, items.length - 1), items.removeAt(picked));
     }
     proxies.items.clear();
     proxies.items.addAll(items);
@@ -219,6 +224,8 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
         })
         .run();
     if (!selected) return;
+    final row = outbounds.items.indexWhere((e) => e.tag == outboundTag);
+    if (row != -1) _pinned = (tag: outboundTag, index: row);
     final newselected = outbounds.items.where((e) => e.tag == outboundTag).firstOrNull;
     if (newselected != null) {
       newselected.isSelected = true;
