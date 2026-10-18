@@ -12,10 +12,12 @@ import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/proxy/data/proxy_data_providers.dart';
 import 'package:hiddify/features/proxy/model/proxy_failure.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
+import 'package:hiddify/hiddifycore/init_signal.dart';
 
 import 'package:hiddify/utils/riverpod_utils.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'proxies_overview_notifier.g.dart';
 
@@ -61,12 +63,23 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
   @override
   Stream<OutboundGroup?> build() {
     ref.disposeDelay(const Duration(seconds: 15));
-    _pinned = null;
     final serviceRunning = ref.watch(serviceRunningProvider);
+    // Set up again when the app comes back from the background, on a new gRPC
+    // channel; the stream below lives on the old one.
+    ref.watch(coreRestartSignalProvider);
+    final sortBy = ref.watch(proxiesSortNotifierProvider);
+    // Reopening the stream also runs build, and that must not drop the pin.
+    if (serviceRunning != _lastServiceRunning || sortBy != _lastSortBy) {
+      _lastServiceRunning = serviceRunning;
+      _lastSortBy = sortBy;
+      _pinned = null;
+      _resubscribeDelay = _minResubscribeDelay;
+    }
     if (!serviceRunning) {
       return Stream.error(const ServiceNotRunning());
     }
-    final sortBy = ref.watch(proxiesSortNotifierProvider);
+    Timer? resubscribe;
+    ref.onDispose(() => resubscribe?.cancel());
     // yield* ref
     //     .watch(proxyRepositoryProvider)
     //     .watchProxies()
@@ -87,14 +100,34 @@ class ProxiesOverviewNotifier extends _$ProxiesOverviewNotifier with AppLogger {
     return ref
         .watch(proxyRepositoryProvider)
         .watchProxies()
-        .map(
-          (event) => event.getOrElse((err) {
+        // A failed stream used to become an error the page showed as "Unexpected error"
+        // for as long as it stayed open, while the tunnel itself kept working. The failure
+        // is logged, the last list stays on screen, and the stream is opened again below.
+        .where(
+          (event) => event.fold((err) {
             loggy.warning("error receiving proxies", err);
-            throw err;
-          }),
+            return false;
+          }, (_) => true),
         )
+        .map((event) => event.getOrElse((_) => null))
+        .doOnData((_) => _resubscribeDelay = _minResubscribeDelay)
+        .doOnDone(() {
+          // gRPC ends the stream when its connection drops, e.g. once iOS suspends the app.
+          // While reopening keeps failing the wait doubles, as for the active proxy.
+          loggy.debug("proxies stream ended, resubscribing in $_resubscribeDelay");
+          resubscribe = Timer(_resubscribeDelay, ref.invalidateSelf);
+          final doubled = _resubscribeDelay * 2;
+          _resubscribeDelay = doubled < _maxResubscribeDelay ? doubled : _maxResubscribeDelay;
+        })
         .asyncMap((proxies) async => await _sortOutbounds(proxies, sortBy));
   }
+
+  bool? _lastServiceRunning;
+  ProxiesSort? _lastSortBy;
+
+  static const _minResubscribeDelay = Duration(seconds: 2);
+  static const _maxResubscribeDelay = Duration(seconds: 30);
+  Duration _resubscribeDelay = _minResubscribeDelay;
 
   // Future<List<OutboundGroup>> _sortOutbounds(
   //   List<OutboundGroup> proxies,
