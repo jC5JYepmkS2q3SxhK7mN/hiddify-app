@@ -22,7 +22,7 @@
     "add": "Add",
     "clipboard": "Clipboard",
     "addToClipboard": "Copy to clipboard",
-    "scanQr": "Scan QR code",
+    "qrCode": "QR code",
     "free": "Free",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -733,6 +733,9 @@
       "password": "Password",
       "showPassword": "Show password",
       "hidePassword": "Hide password"
+    },
+    "qrScanner": {
+      "notFound": "No QR code found in this image"
     }
   },
   "connection": {
