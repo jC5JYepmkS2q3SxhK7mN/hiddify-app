@@ -22,7 +22,7 @@
     "add": "إضافة",
     "clipboard": "الحافظة",
     "addToClipboard": "نسخ إلى الحافظة",
-    "scanQr": "مسح رمز QR",
+    "qrCode": "رمز QR",
     "free": "مجاني",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -768,6 +768,9 @@
       "password": "كلمة المرور",
       "showPassword": "إظهار كلمة المرور",
       "hidePassword": "إخفاء كلمة المرور"
+    },
+    "qrScanner": {
+      "notFound": "لم يتم العثور على رمز QR في هذه الصورة"
     }
   },
   "connection": {
