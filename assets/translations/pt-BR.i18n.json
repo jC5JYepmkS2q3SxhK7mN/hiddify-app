@@ -22,7 +22,7 @@
     "add": "Adicionar",
     "clipboard": "Área de transferência",
     "addToClipboard": "Copiar para a área de transferência",
-    "scanQr": "Escanear QR code",
+    "qrCode": "Código QR",
     "free": "Grátis",
     "warp": "WARP",
     "fragment": "Fragmento",
@@ -733,6 +733,9 @@
       "password": "Senha",
       "showPassword": "Mostrar senha",
       "hidePassword": "Ocultar senha"
+    },
+    "qrScanner": {
+      "notFound": "Nenhum código QR encontrado nesta imagem"
     }
   },
   "connection": {

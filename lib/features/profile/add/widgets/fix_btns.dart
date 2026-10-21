@@ -68,7 +68,7 @@ class FixBtns extends ConsumerWidget {
           FixBtn(
             key: const ValueKey('add_by_qr_code_button'),
             height: height,
-            title: t.common.scanQr,
+            title: t.common.qrCode,
             icon: Icons.qr_code_scanner,
             onTap: () async {
               final cr = await ref.read(dialogNotifierProvider.notifier).showQrScanner();

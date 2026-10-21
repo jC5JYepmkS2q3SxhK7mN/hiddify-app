@@ -2,7 +2,7 @@
 
 ## Controlling the app
 
-flutter_driver can drive the running app, but only when the `driver` flag is set. Debug builds only.
+flutter_driver can drive the running app, but only when the `driver` flag is set. Debug and profile builds only.
 While it is on the app cannot accept a real keyboard, so leave the flag off for anything else.
 
 ```bash

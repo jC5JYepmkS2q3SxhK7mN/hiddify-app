@@ -22,7 +22,7 @@
     "add": "Tambah",
     "clipboard": "Papan klip",
     "addToClipboard": "Salin ke papan klip",
-    "scanQr": "Pindai kode QR",
+    "qrCode": "Kode QR",
     "free": "Gratis",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -731,6 +731,9 @@
       "password": "Kata sandi",
       "showPassword": "Tampilkan kata sandi",
       "hidePassword": "Sembunyikan kata sandi"
+    },
+    "qrScanner": {
+      "notFound": "Tidak ada kode QR di gambar ini"
     }
   },
   "connection": {

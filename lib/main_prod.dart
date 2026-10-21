@@ -10,7 +10,7 @@ import 'package:hiddify/core/model/environment.dart';
 
 Future<void> main() async {
   // Behind --dart-define=driver=true — see the note in lib/main.dart.
-  if (kDebugMode && const bool.fromEnvironment('driver')) {
+  if (!kReleaseMode && const bool.fromEnvironment('driver')) {
     enableFlutterDriverExtension();
   }
 

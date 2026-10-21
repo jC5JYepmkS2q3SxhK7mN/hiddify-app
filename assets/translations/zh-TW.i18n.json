@@ -22,7 +22,7 @@
     "add": "新增",
     "clipboard": "剪貼簿",
     "addToClipboard": "複製到剪貼簿",
-    "scanQr": "掃描 QR Code",
+    "qrCode": "QR Code",
     "free": "免費",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -731,6 +731,9 @@
       "password": "密碼",
       "showPassword": "顯示密碼",
       "hidePassword": "隱藏密碼"
+    },
+    "qrScanner": {
+      "notFound": "此圖片中找不到 QR Code"
     }
   },
   "connection": {

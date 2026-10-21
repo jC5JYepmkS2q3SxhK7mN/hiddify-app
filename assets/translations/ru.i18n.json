@@ -22,7 +22,7 @@
     "add": "Добавить",
     "clipboard": "Буфер обмена",
     "addToClipboard": "Копировать в буфер обмена",
-    "scanQr": "Сканировать QR-код",
+    "qrCode": "QR-код",
     "free": "Бесплатно",
     "warp": "WARP",
     "fragment": "Фрагмент",
@@ -755,6 +755,9 @@
       "password": "Пароль",
       "showPassword": "Показать пароль",
       "hidePassword": "Скрыть пароль"
+    },
+    "qrScanner": {
+      "notFound": "На этом изображении нет QR-кода"
     }
   },
   "connection": {
