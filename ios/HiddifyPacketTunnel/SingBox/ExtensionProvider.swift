@@ -5,8 +5,8 @@ import os.log
 
 // Packet tunnel provider, following sing-box-for-apple's Library/Network/ExtensionProvider.swift,
 // adapted to Hiddify's model: the extension only sets up hiddify-core with its gRPC server
-// (MobileSetup); the app then starts the core through gRPC. The extension never starts the core
-// itself.
+// (MobileSetup); the app then starts the core through gRPC. Only when the system starts the
+// tunnel (Always-on, or the switch in the iOS Settings) does the extension start the core itself.
 open class ExtensionProvider: NEPacketTunnelProvider {
     public static let errorFile = FilePath.workingDirectory.appendingPathComponent("network_extension_error.log")
     private let logger = Logger(subsystem: "apple.hiddify.com.HiddifyPacketTunnel", category: "PacketTunnel")
@@ -80,6 +80,18 @@ open class ExtensionProvider: NEPacketTunnelProvider {
             throw startupError("(packet-tunnel) error: setup service: \(setupError.localizedDescription)")
         }
         LibboxSetMemoryLimit(!disableMemoryLimit)
+
+        // The app passes options; the system passes none, and no app is there to start the core.
+        // An empty request makes the core start from the last one the app made, as on Android.
+        if options == nil {
+            writeMessage("(packet-tunnel) started by the system, starting the core from the last request")
+            var startError: NSError?
+            MobileStart("", "", &startError)
+            if let startError {
+                throw startupError("(packet-tunnel) error: start core: \(startError.localizedDescription)")
+            }
+            return
+        }
         writeMessage("(packet-tunnel) gRPC server ready on port \(grpcServiceModePort), waiting for the app to start the core")
     }
 

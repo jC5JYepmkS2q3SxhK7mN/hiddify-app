@@ -8,6 +8,7 @@ import 'package:hiddify/features/auto_start/notifier/auto_start_notifier.dart';
 import 'package:hiddify/features/common/general_pref_tiles.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
 import 'package:hiddify/features/settings/widget/preference_tile.dart';
+import 'package:hiddify/hiddifycore/core_interface/core_interface_mobile.dart';
 import 'package:hiddify/utils/utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:humanizer/humanizer.dart';
@@ -45,6 +46,16 @@ class GeneralPage extends HookConsumerWidget {
               onChanged: ref.read(hapticServiceProvider.notifier).updatePreference,
             ),
           ],
+          if (PlatformUtils.isIOS)
+            SwitchListTile.adaptive(
+              title: Text(t.pages.settings.general.alwaysOnVpn),
+              secondary: const Icon(Icons.vpn_lock_rounded),
+              value: ref.watch(Preferences.alwaysOnVpn),
+              onChanged: (value) async {
+                await ref.read(Preferences.alwaysOnVpn.notifier).update(value);
+                await CoreInterfaceMobile.methodChannel.invokeMethod("set_always_on", value);
+              },
+            ),
           if (PlatformUtils.isDesktop) ...[
             const ClosingPrefTile(),
             SwitchListTile.adaptive(

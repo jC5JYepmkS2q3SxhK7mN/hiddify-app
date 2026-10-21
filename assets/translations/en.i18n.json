@@ -243,6 +243,7 @@
         "autoIpCheck": "Automatically check connection IP",
         "dynamicNotification": "Display speed in notification",
         "hapticFeedback": "Haptic feedback",
+        "alwaysOnVpn": "Always-on VPN",
         "actionAtClosing": "When closing the window",
         "autoStart": "Start at login",
         "silentStart": "Start minimized",

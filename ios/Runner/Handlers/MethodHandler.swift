@@ -164,6 +164,15 @@ public class MethodHandler: NSObject, FlutterPlugin {
         case "stop":
             VPNManager.shared.disconnect()
             result(true)
+        case "set_always_on":
+            guard let on = call.arguments as? Bool else {
+                result(FlutterError(code: "INVALID_ARGS", message: nil, details: nil))
+                return
+            }
+            Task {
+                await VPNManager.shared.setAlwaysOn(on)
+                await mainResult(true)
+            }
         case "reset":
             VPNManager.shared.reset()
             result(true)

@@ -38,4 +38,7 @@ class VPNConfig: ObservableObject {
     
     @Stored(key: "VPN.DisableMemoryLimit")
     var disableMemoryLimit: Bool = false
+
+    @Stored(key: "VPN.AlwaysOn")
+    var alwaysOn: Bool = false
 }

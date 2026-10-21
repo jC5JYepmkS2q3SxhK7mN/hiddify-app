@@ -113,12 +113,8 @@ class VPNManager: ObservableObject {
     
     private func enableVPNManager() async throws {
         manager.isEnabled = true
-        let rule = NEOnDemandRuleConnect()
-        rule.interfaceTypeMatch = .any
-        rule.probeURL = URL(string: "http://captive.apple.com")
-        manager.onDemandRules = [rule]
-        manager.isOnDemandEnabled = true
-        
+        applyOnDemand(VPNConfig.shared.alwaysOn)
+
         do {
             try await manager.saveToPreferences()
             try await manager.loadFromPreferences()
@@ -127,6 +123,35 @@ class VPNManager: ObservableObject {
         }
     }
     
+    /// Always-on is iOS On-Demand with a rule that connects on any network. It is turned on
+    /// only by connect, and disconnect() turns it off, so the system never brings the tunnel
+    /// back after the user stopped it.
+    private func applyOnDemand(_ on: Bool) {
+        if on {
+            let rule = NEOnDemandRuleConnect()
+            rule.interfaceTypeMatch = .any
+            rule.probeURL = URL(string: "http://captive.apple.com")
+            manager.onDemandRules = [rule]
+        } else {
+            manager.onDemandRules = []
+        }
+        manager.isOnDemandEnabled = on
+    }
+
+    func setAlwaysOn(_ on: Bool) async {
+        VPNConfig.shared.alwaysOn = on
+        guard loaded, manager.isOnDemandEnabled != on else { return }
+        // Turning it on while disconnected waits for the next connect: On-Demand would
+        // start the tunnel right away, without the user asking to connect.
+        if on && state != .connected && state != .connecting && state != .reasserting { return }
+        applyOnDemand(on)
+        do {
+            try await manager.saveToPreferences()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+
     @MainActor private func set(upload: Int64, download: Int64) {
         self.upload = upload
         self.download = download
