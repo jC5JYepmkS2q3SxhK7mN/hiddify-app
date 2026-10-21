@@ -10,12 +10,14 @@ import 'package:hiddify/bootstrap.dart';
 import 'package:hiddify/core/model/environment.dart';
 
 Future<void> main() async {
-  // Debug builds that ask for it: lets an external client tap, type and scroll
-  // the app. Behind a flag because the extension installs a TestTextInput that
-  // takes over the text input channel — with it on, no field in the app accepts
-  // a real keyboard. Run with --dart-define=driver=true to drive it.
+  // Debug and profile builds that ask for it: lets an external client tap, type
+  // and scroll the app. Profile too, because the iPhone build running on a Mac
+  // only starts as a profile build. Behind a flag because the extension installs
+  // a TestTextInput that takes over the text input channel — with it on, no field
+  // in the app accepts a real keyboard. Run with --dart-define=driver=true to
+  // drive it. Never in release.
   // Must come first: it installs the binding that ensureInitialized() reuses.
-  if (kDebugMode && const bool.fromEnvironment('driver')) {
+  if (!kReleaseMode && const bool.fromEnvironment('driver')) {
     enableFlutterDriverExtension();
   }
 

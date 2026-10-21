@@ -22,7 +22,7 @@
     "add": "Ekle",
     "clipboard": "Pano",
     "addToClipboard": "Panoya kopyala",
-    "scanQr": "QR kod tara",
+    "qrCode": "QR kod",
     "free": "Ücretsiz",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -731,6 +731,9 @@
       "password": "Şifre",
       "showPassword": "Şifreyi göster",
       "hidePassword": "Şifreyi gizle"
+    },
+    "qrScanner": {
+      "notFound": "Bu görselde QR kod bulunamadı"
     }
   },
   "connection": {

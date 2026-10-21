@@ -22,7 +22,7 @@
     "add": "添加",
     "clipboard": "剪贴板",
     "addToClipboard": "复制到剪贴板",
-    "scanQr": "扫描二维码",
+    "qrCode": "二维码",
     "free": "免费",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -731,6 +731,9 @@
       "password": "密码",
       "showPassword": "显示密码",
       "hidePassword": "隐藏密码"
+    },
+    "qrScanner": {
+      "notFound": "此图片中未找到二维码"
     }
   },
   "connection": {

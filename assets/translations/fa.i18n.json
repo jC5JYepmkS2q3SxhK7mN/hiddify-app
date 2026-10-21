@@ -22,7 +22,7 @@
     "add": "افزودن",
     "clipboard": "کلیپ‌بورد",
     "addToClipboard": "کپی در کلیپ‌بورد",
-    "scanQr": "اسکن کد QR",
+    "qrCode": "کد QR",
     "free": "رایگان",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -733,6 +733,9 @@
       "password": "رمز عبور",
       "showPassword": "نمایش رمز عبور",
       "hidePassword": "پنهان کردن رمز عبور"
+    },
+    "qrScanner": {
+      "notFound": "کد QR در این تصویر پیدا نشد"
     }
   },
   "connection": {

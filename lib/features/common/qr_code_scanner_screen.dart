@@ -1,6 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hiddify/core/localization/translations.dart';
+import 'package:hiddify/core/notification/in_app_notification_controller.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -399,18 +402,37 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 //   }
 // }
 
-class QrCodeScannerDialog extends ConsumerWidget {
+class QrCodeScannerDialog extends HookConsumerWidget {
   const QrCodeScannerDialog({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.read(translationsProvider).requireValue;
+    final controller = useMemoized(MobileScannerController.new);
+    useEffect(() => controller.dispose, [controller]);
+
+    // reads the QR code from an image file instead of the camera
+    Future<void> scanImage() async {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      final path = result?.files.single.path;
+      if (path == null) return;
+      final capture = await controller.analyzeImage(path).catchError((_) => null);
+      final rawData = capture?.barcodes.firstOrNull?.rawValue;
+      if (!context.mounted) return;
+      if (rawData != null) {
+        context.pop(rawData);
+      } else {
+        ref.read(inAppNotificationControllerProvider).showErrorToast(t.dialogs.qrScanner.notFound);
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
           alignment: Alignment.center,
           children: [
             MobileScanner(
+              controller: controller,
               placeholderBuilder: (context) => const Center(child: CircularProgressIndicator()),
               overlayBuilder: (context, constraints) => Container(
                 width: MediaQuery.of(context).size.width * 0.7,
@@ -448,6 +470,21 @@ class QrCodeScannerDialog extends ConsumerWidget {
                 child: IconButton(
                   onPressed: () => context.pop(),
                   icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                  splashRadius: 24,
+                ),
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.topEnd,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(1000),
+                ),
+                margin: const EdgeInsets.all(8),
+                child: IconButton(
+                  onPressed: scanImage,
+                  icon: Icon(Icons.image_outlined, color: Theme.of(context).colorScheme.onPrimaryContainer),
                   splashRadius: 24,
                 ),
               ),

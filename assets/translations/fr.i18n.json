@@ -22,7 +22,7 @@
     "add": "Ajouter",
     "clipboard": "Presse-papiers",
     "addToClipboard": "Copier dans le presse-papiers",
-    "scanQr": "Scanner le QR code",
+    "qrCode": "Code QR",
     "free": "Gratuit",
     "warp": "WARP",
     "fragment": "Fragment",
@@ -733,6 +733,9 @@
       "password": "Mot de passe",
       "showPassword": "Afficher le mot de passe",
       "hidePassword": "Masquer le mot de passe"
+    },
+    "qrScanner": {
+      "notFound": "Aucun code QR trouvé dans cette image"
     }
   },
   "connection": {
