@@ -46,7 +46,8 @@ Future<void> lazyBootstrap(WidgetsBinding widgetsBinding, Environment env) async
 
   final container = ProviderContainer(
     overrides: [environmentProvider.overrideWithValue(env)],
-    observers: [RiverpodObserver()],
+    // every provider change with its value: far too much to log by default
+    observers: [if (const bool.fromEnvironment('riverpod_log')) RiverpodObserver()],
   );
 
   await _init("directories", () => container.read(appDirectoriesProvider.future));
@@ -93,10 +94,7 @@ Future<void> lazyBootstrap(WidgetsBinding widgetsBinding, Environment env) async
   }
   // phase 3 — a log file is worth its cost on desktop, or while debugging.
   // On a phone in release it only burns storage nobody reads.
-  await _init(
-    "logging",
-    () async => logFinish(keepFile: debug || PlatformUtils.isDesktop),
-  );
+  await _init("logging", () async => logFinish(keepFile: debug || PlatformUtils.isDesktop));
 
   // marks where this run begins, since the file now spans several
   logMarkRun(appInfo.format());

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,18 +10,21 @@ import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
 import 'package:hiddify/core/router/dialog/dialog_notifier.dart';
 import 'package:hiddify/core/theme/theme_extensions.dart';
 import 'package:hiddify/core/widget/animated_text.dart';
+import 'package:hiddify/features/connection/model/connection_failure.dart';
 import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
+import 'package:hiddify/features/home/widget/eclipse_button_painter.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_notifier.dart';
+import 'package:hiddify/features/stats/notifier/stats_notifier.dart';
 import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// What the button shows, one value per look.
-enum _Look { loading, disconnected, connecting, connected, noPing, hotReloading, disconnecting, failed }
+enum _Look { loading, disconnected, connecting, waiting, connected, noPing, hotReloading, disconnecting, failed }
 
 /// The core reports the tunnel as up before the first ping answers, so a tunnel
-/// with no ping yet still looks like connecting: the user waits once, not twice.
+/// with no ping yet is still waiting: the user waits once, not twice.
 /// A delay of 0 is a ping not measured yet; any other invalid delay timed out.
 ///
 /// The status reloads after every core start; until the new stream answers,
@@ -35,7 +39,7 @@ _Look _lookOf(AsyncValue<ConnectionStatus> status, int delay, bool hotReloading)
   AsyncValue(valueOrNull: Disconnected()) => _Look.disconnected,
   AsyncValue(valueOrNull: Connecting()) => _Look.connecting,
   AsyncValue(valueOrNull: Connected()) when hotReloading => _Look.hotReloading,
-  AsyncValue(valueOrNull: Connected()) when delay == 0 => _Look.connecting,
+  AsyncValue(valueOrNull: Connected()) when delay == 0 => _Look.waiting,
   AsyncValue(valueOrNull: Connected()) when !ConnectionConst.isValidDelay(delay) => _Look.noPing,
   AsyncValue(valueOrNull: Connected()) => _Look.connected,
   AsyncValue(valueOrNull: Disconnecting()) => _Look.disconnecting,
@@ -51,9 +55,21 @@ class ConnectionButton extends HookConsumerWidget {
     final status = ref.watch(connectionNotifierProvider);
     // After a disconnect Riverpod keeps the last ping as the previous value,
     // which would show the next connection as up before its own ping answers.
-    final delay = ref.watch(activeProxyNotifierProvider).unwrapPrevious().valueOrNull?.urlTestDelay ?? 0;
+    final measured = ref.watch(activeProxyNotifierProvider).unwrapPrevious().valueOrNull?.urlTestDelay ?? 0;
+    // The proxy list also reloads whenever the app comes back to the front (the
+    // core gets a new channel), and while it does it has no ping. The tunnel
+    // never went down, so the last ping of this connection holds until then:
+    // otherwise the button would go back to waiting and blink on every focus.
+    final connected = status.valueOrNull is Connected;
+    final lastDelay = useRef(0);
+    if (!connected) {
+      lastDelay.value = 0;
+    } else if (measured != 0) {
+      lastDelay.value = measured;
+    }
+    final delay = connected && measured == 0 ? lastDelay.value : measured;
     final hotReloading = ref.watch(hotReloadingProvider).valueOrNull ?? false;
-    final look = _lookOf(status, delay, hotReloading);
+    final look = _held(_lookOf(status, delay, hotReloading));
 
     // A connect can be cancelled only a second after it began, so a double tap
     // on connect doesn't cancel the connect its first tap started.
@@ -79,15 +95,29 @@ class ConnectionButton extends HookConsumerWidget {
       _ => null,
     };
 
+    final failure = switch (status) {
+      AsyncError(:final ConnectionFailure error) => error,
+      AsyncValue(valueOrNull: Disconnected(connectionFailure: final failure?)) => failure,
+      _ => null,
+    };
+    // the speeds the button's light follows while connected
+    final stats = ref.watch(statsNotifierProvider).valueOrNull;
+
     const buttonTheme = ConnectionButtonTheme.light;
     final today = DateTime.now();
     return _ConnectionButton(
       look: look,
       onTap: onTap,
+      onErrorDetails: failure == null
+          ? null
+          : () => ref.read(dialogNotifierProvider.notifier).showCustomAlertFromErr(failure.present(t)),
+      errorDetailsLabel: t.connection.errorDetails,
+      download: stats?.downlink.toInt() ?? 0,
+      upload: stats?.uplink.toInt() ?? 0,
       label: switch (look) {
         _Look.loading => "",
         _Look.disconnected => t.connection.tapToConnect,
-        _Look.connecting => t.connection.connecting,
+        _Look.connecting || _Look.waiting => t.connection.connecting,
         _Look.connected || _Look.noPing => t.connection.connected,
         _Look.hotReloading => t.connection.hotReloading,
         _Look.disconnecting => t.connection.disconnecting,
@@ -98,6 +128,8 @@ class ConnectionButton extends HookConsumerWidget {
         _Look.connected => buttonTheme.connectedColor!,
         _Look.noPing || _Look.hotReloading => const Color.fromARGB(255, 185, 176, 103),
         _Look.failed => Colors.red,
+        // the logo's own blue while the connection is on its way
+        _Look.connecting || _Look.waiting || _Look.disconnecting => const Color(0xFF455FE9),
         _ => buttonTheme.idleColor!,
       },
       image: switch (look) {
@@ -107,6 +139,41 @@ class ConnectionButton extends HookConsumerWidget {
       useImage: today.day >= 19 && today.day <= 23 && today.month == 3,
     );
   }
+
+  /// Coming back from the background, the app sets the core up again, and for a moment the status
+  /// can read as not connected though the tunnel never went down. So leaving connected for
+  /// [_Look.loading], [_Look.disconnected] or [_Look.waiting] waits [_hold] before it shows, and
+  /// nothing changes if connected is back by then. A disconnect passes through disconnecting and a
+  /// failure is failed, so both still show at once.
+  _Look _held(_Look look) {
+    final shown = useRef(look);
+    final until = useRef<DateTime?>(null);
+    final rebuild = useState(0);
+    final steady = {_Look.connected, _Look.noPing, _Look.hotReloading}.contains(shown.value);
+    final blip = {_Look.loading, _Look.disconnected, _Look.waiting}.contains(look);
+    var result = look;
+    if (steady && blip) {
+      until.value ??= DateTime.now().add(_hold);
+      if (DateTime.now().isBefore(until.value!)) {
+        result = shown.value;
+      } else {
+        until.value = null;
+      }
+    } else {
+      until.value = null;
+    }
+    shown.value = result;
+    // shows the new look once the hold is over, if nothing else rebuilds the button first
+    useEffect(() {
+      final end = until.value;
+      if (end == null) return null;
+      final timer = Timer(end.difference(DateTime.now()), () => rebuild.value++);
+      return timer.cancel;
+    }, [until.value]);
+    return result;
+  }
+
+  static const _hold = Duration(milliseconds: 1500);
 
   /// Connects, or sends the user to add a profile when there is none.
   Future<void> _connect(WidgetRef ref) async {
@@ -126,6 +193,10 @@ class _ConnectionButton extends HookWidget {
   const _ConnectionButton({
     required this.look,
     required this.onTap,
+    required this.onErrorDetails,
+    required this.errorDetailsLabel,
+    required this.download,
+    required this.upload,
     required this.label,
     required this.hint,
     required this.buttonColor,
@@ -135,25 +206,92 @@ class _ConnectionButton extends HookWidget {
 
   final _Look look;
   final VoidCallback? onTap;
+
+  /// Shows what went wrong; null when nothing did.
+  final VoidCallback? onErrorDetails;
+  final String errorDetailsLabel;
+
+  /// Bytes a second.
+  final int download;
+  final int upload;
   final String label;
   final String? hint;
   final Color buttonColor;
   final AssetGenImage image;
   final bool useImage;
 
+  static const _size = 148.0;
+
+  /// Room round the button for its light.
+  static const _glow = 110.0;
+
+  EclipseLook get _eclipseLook => switch (look) {
+    _Look.loading || _Look.disconnected => EclipseLook.idle,
+    _Look.connecting || _Look.disconnecting => EclipseLook.starting,
+    _Look.waiting || _Look.hotReloading => EclipseLook.waiting,
+    _Look.connected || _Look.noPing => EclipseLook.connected,
+    _Look.failed => EclipseLook.error,
+  };
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final busy = look == _Look.connecting || look == _Look.disconnecting;
+    final still = MediaQuery.disableAnimationsOf(context);
+    final clock = useMemoized(() => Stopwatch()..start());
+    double now() => clock.elapsedMicroseconds / 1e6;
 
-    // One ripple when a wait the user watched ends connected, not when the
-    // app opens on a tunnel that is already up or a timed-out ping recovers.
-    final ripple = useAnimationController(duration: const Duration(milliseconds: 900));
+    // when the look last changed, and from what
+    final eclipseLook = _eclipseLook;
+    final change = useRef((
+      look: eclipseLook,
+      previous: eclipseLook,
+      at: -10.0,
+      color: buttonColor,
+      previousColor: buttonColor,
+    ));
     final previousLook = usePrevious(look);
+    // when the button last stopped showing connected
+    final leftConnected = useRef(-10.0);
+    if (change.value.look != eclipseLook || change.value.color != buttonColor) {
+      final last = change.value;
+      if (last.look == EclipseLook.connected && eclipseLook != EclipseLook.connected) leftConnected.value = now();
+      final eased = Color.lerp(last.previousColor, last.color, ((now() - last.at) / .45).clamp(0.0, 1.0))!;
+      // the app opening on a tunnel that is already up, or connected coming back
+      // after a moment away, skips the connect animation instead of replaying it
+      final skip =
+          previousLook == _Look.loading || (eclipseLook == EclipseLook.connected && now() - leftConnected.value < 2);
+      change.value = (
+        look: eclipseLook,
+        previous: last.look,
+        at: skip ? now() - 10 : now(),
+        color: buttonColor,
+        previousColor: eased,
+      );
+    }
+
+    // the speeds arrive once a second; the light follows them smoothly
+    final target = useRef(const EclipseTraffic());
+    target.value = EclipseTraffic(down: EclipseTraffic.level(download), up: EclipseTraffic.level(upload));
+    final traffic = useRef(const EclipseTraffic());
+
+    // repaints about 30 times a second, and only while something moves
+    final time = useValueNotifier(0.0);
     useEffect(() {
-      if (look == _Look.connected && previousLook == _Look.connecting) ripple.forward(from: 0);
-      return null;
-    }, [look]);
+      var last = now();
+      final timer = Timer.periodic(const Duration(milliseconds: 33), (_) {
+        final at = now();
+        // the light rises with the traffic in about a second, and fades more slowly, so the
+        // stats reloading for a moment (coming back from the background) barely dims it
+        double follow(double from, double to) =>
+            from + (to - from) * (1 - math.exp(-(at - last) / (to > from ? .8 : 2.5)));
+        final t = traffic.value;
+        traffic.value = EclipseTraffic(down: follow(t.down, target.value.down), up: follow(t.up, target.value.up));
+        last = at;
+        final settled = change.value.look == EclipseLook.idle && at - change.value.at > 1;
+        if (!settled) time.value = at;
+      });
+      return timer.cancel;
+    }, const []);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -164,85 +302,63 @@ class _ConnectionButton extends HookWidget {
           label: label,
           hint: hint,
           child: SizedBox.square(
-            dimension: 148,
+            dimension: _size,
             child: Stack(
               fit: StackFit.expand,
               clipBehavior: Clip.none,
               children: [
-                AnimatedBuilder(
-                  animation: ripple,
-                  builder: (context, _) => ripple.isAnimating
-                      ? Transform.scale(
-                          scale: 1 + .4 * ripple.value,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: buttonColor.withValues(alpha: .7 * (1 - ripple.value)),
-                                width: 3,
-                              ),
+                Positioned(
+                  left: -_glow,
+                  top: -_glow,
+                  right: -_glow,
+                  bottom: -_glow,
+                  child: IgnorePointer(
+                    child: ValueListenableBuilder(
+                      valueListenable: time,
+                      builder: (context, t, _) {
+                        final c = change.value;
+                        return CustomPaint(
+                          painter: EclipseButtonPainter(
+                            frame: EclipseFrame(
+                              look: c.look,
+                              previous: c.previous,
+                              since: still ? 10 : now() - c.at,
+                              time: still ? 0 : now(),
+                              color: c.color,
+                              previousColor: c.previousColor,
                             ),
+                            radius: _size / 2,
+                            traffic: traffic.value,
+                            dark: theme.brightness == Brightness.dark,
+                            drawLogo: !useImage,
+                            logoOpacity: look == _Look.loading ? .38 : 1,
                           ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                Positioned.fill(
-                  left: -10,
-                  top: -10,
-                  right: -10,
-                  bottom: -10,
-                  // A single faded child: an AnimatedSwitcher here hit duplicate keys
-                  // when the state flipped twice within its duration.
-                  child: AnimatedOpacity(
-                    opacity: busy ? 1 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    // Stops the spinner's ticker while hidden.
-                    child: TickerMode(
-                      enabled: busy,
-                      child: Transform.flip(
-                        // Disconnecting spins the other way.
-                        flipX: look == _Look.disconnecting,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 4,
-                          strokeCap: StrokeCap.round,
-                          color: buttonColor,
-                          backgroundColor: buttonColor.withValues(alpha: .2),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
                 Material(
                   key: const ValueKey("home_connection_button"),
                   shape: const CircleBorder(),
-                  color: Colors.white,
-                  elevation: 3,
-                  shadowColor: Colors.black,
-                  surfaceTintColor: Colors.transparent,
+                  color: Colors.transparent,
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     focusColor: Colors.grey,
                     onTap: onTap,
-                    child: Padding(
-                      padding: const EdgeInsets.all(36),
-                      child: AnimatedOpacity(
-                        opacity: look == _Look.loading ? .38 : 1,
-                        duration: const Duration(milliseconds: 300),
-                        child: TweenAnimationBuilder(
-                          tween: ColorTween(end: buttonColor),
-                          duration: const Duration(milliseconds: 250),
-                          builder: (context, value, child) {
-                            if (useImage) {
-                              return image.image();
-                            } else {
-                              return Assets.images.logo.svg(colorFilter: ColorFilter.mode(value!, BlendMode.srcIn));
-                            }
-                          },
-                        ),
-                      ),
-                    ),
+                    child: useImage ? Padding(padding: const EdgeInsets.all(36), child: image.image()) : null,
                   ),
                 ),
+                // the error badge opens what went wrong
+                if (look == _Look.failed && onErrorDetails != null)
+                  Positioned.fromRect(
+                    rect: EclipseButtonPainter.errorBadgeRect(const Offset(_size / 2, _size / 2), _size / 2).inflate(8),
+                    child: Semantics(
+                      button: true,
+                      label: errorDetailsLabel,
+                      child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: onErrorDetails),
+                    ),
+                  ),
               ],
             ),
           ),

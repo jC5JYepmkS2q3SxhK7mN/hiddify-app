@@ -40,6 +40,11 @@ class HiddifyCoreService with InfraLogger {
   // Counts the stops the app sent, so a start knows when a stop came after it.
   final _stopRequests = BehaviorSubject<int>.seeded(0);
 
+  // Numbers the status listeners. Setting the core up again (when the app comes back) moves it on
+  // before the old channel is closed, so the end of the old listener's stream isn't taken for the
+  // core stopping; the new listener reports the core's real state first thing.
+  int _statusListener = 0;
+
   Future<void> init() async {
     await setup()
         .mapLeft((e) {
@@ -85,6 +90,8 @@ class HiddifyCoreService with InfraLogger {
 
   TaskEither<String, Unit> setup() {
     return TaskEither(() async {
+      // the status listener in place stops counting before its channel is replaced
+      _statusListener++;
       try {
         final directories = ref.read(appDirectoriesProvider).requireValue;
         final debug = kDebugMode || ref.read(ConfigOptions.logLevel).isVerbose;
@@ -464,23 +471,19 @@ class HiddifyCoreService with InfraLogger {
   }
 
   Future<void> startListeningStatus(String key, CoreClient cc) async {
+    final listener = ++_statusListener;
     await listenSingle<CoreStatus>(
       "${key}StatusListener",
       () => cc
           .coreInfoListener(Empty(), options: grpcOptions)
-          .doOnCancel(() {
-            loggy.error("status", "Canceld");
-            if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
-          })
-          .doOnData((event) {
-            loggy.debug("status", event);
-            if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
-          })
-          .doOnDone(() {
-            loggy.error("status", "done");
-            if (currentState == const CoreStatus.started()) currentState = const CoreStatus.stopped();
-          })
+          .doOnCancel(() => loggy.debug("status listener cancelled"))
+          .doOnData((event) => loggy.debug("status", event))
+          .doOnDone(() => loggy.debug("status stream ended"))
+          // the core ending the stream means it stopped
           .endWith(CoreInfoResponse(coreState: CoreStates.STOPPED))
+          // ...unless the stream belongs to a listener set up again since: its channel was closed
+          // and replaced, which says nothing about the core
+          .where((_) => listener == _statusListener)
           .map((event) {
             currentState = CoreStatus.fromCoreInfo(event);
             statusController.add(currentState);
@@ -488,7 +491,8 @@ class HiddifyCoreService with InfraLogger {
           }),
       // .endWith(const CoreStatus.stopped())
       onError: (error) {
-        loggy.error("Stream error in ${key}StatusListener: $error");
+        // expected when the app comes back and the old channel is closed
+        loggy.debug("Stream error in ${key}StatusListener: $error");
 
         // currentState = const CoreStatus.stopped();
         // statusController.add(currentState);

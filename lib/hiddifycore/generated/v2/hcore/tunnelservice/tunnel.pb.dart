@@ -32,8 +32,7 @@ class TunnelStartRequest extends $pb.GeneratedMessage {
     if (serverUsername != null) result.serverUsername = serverUsername;
     if (serverPassword != null) result.serverPassword = serverPassword;
     if (strictRoute != null) result.strictRoute = strictRoute;
-    if (endpointIndependentNat != null)
-      result.endpointIndependentNat = endpointIndependentNat;
+    if (endpointIndependentNat != null) result.endpointIndependentNat = endpointIndependentNat;
     if (stack != null) result.stack = stack;
     return result;
   }
@@ -47,10 +46,8 @@ class TunnelStartRequest extends $pb.GeneratedMessage {
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(json, registry);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'TunnelStartRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'tunnelservice'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TunnelStartRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'tunnelservice'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'ipv6')
     ..aI(2, _omitFieldNames ? '' : 'serverPort')
     ..aOS(3, _omitFieldNames ? '' : 'serverUsername')
@@ -64,8 +61,7 @@ class TunnelStartRequest extends $pb.GeneratedMessage {
   TunnelStartRequest clone() => deepCopy();
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   TunnelStartRequest copyWith(void Function(TunnelStartRequest) updates) =>
-      super.copyWith((message) => updates(message as TunnelStartRequest))
-          as TunnelStartRequest;
+      super.copyWith((message) => updates(message as TunnelStartRequest)) as TunnelStartRequest;
 
   @$core.override
   $pb.BuilderInfo get info_ => _i;
@@ -74,11 +70,10 @@ class TunnelStartRequest extends $pb.GeneratedMessage {
   static TunnelStartRequest create() => TunnelStartRequest._();
   @$core.override
   TunnelStartRequest createEmptyInstance() => create();
-  static $pb.PbList<TunnelStartRequest> createRepeated() =>
-      $pb.PbList<TunnelStartRequest>();
+  static $pb.PbList<TunnelStartRequest> createRepeated() => $pb.PbList<TunnelStartRequest>();
   @$core.pragma('dart2js:noInline')
-  static TunnelStartRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<TunnelStartRequest>(create);
+  static TunnelStartRequest getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TunnelStartRequest>(create);
   static TunnelStartRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -159,14 +154,11 @@ class TunnelResponse extends $pb.GeneratedMessage {
   factory TunnelResponse.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromBuffer(data, registry);
-  factory TunnelResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+  factory TunnelResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
       create()..mergeFromJson(json, registry);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'TunnelResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'tunnelservice'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TunnelResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'tunnelservice'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'message')
     ..hasRequiredFields = false;
 
@@ -174,8 +166,7 @@ class TunnelResponse extends $pb.GeneratedMessage {
   TunnelResponse clone() => deepCopy();
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   TunnelResponse copyWith(void Function(TunnelResponse) updates) =>
-      super.copyWith((message) => updates(message as TunnelResponse))
-          as TunnelResponse;
+      super.copyWith((message) => updates(message as TunnelResponse)) as TunnelResponse;
 
   @$core.override
   $pb.BuilderInfo get info_ => _i;
@@ -184,11 +175,9 @@ class TunnelResponse extends $pb.GeneratedMessage {
   static TunnelResponse create() => TunnelResponse._();
   @$core.override
   TunnelResponse createEmptyInstance() => create();
-  static $pb.PbList<TunnelResponse> createRepeated() =>
-      $pb.PbList<TunnelResponse>();
+  static $pb.PbList<TunnelResponse> createRepeated() => $pb.PbList<TunnelResponse>();
   @$core.pragma('dart2js:noInline')
-  static TunnelResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<TunnelResponse>(create);
+  static TunnelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TunnelResponse>(create);
   static TunnelResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -201,7 +190,5 @@ class TunnelResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(1);
 }
 
-const $core.bool _omitFieldNames =
-    $core.bool.fromEnvironment('protobuf.omit_field_names');
-const $core.bool _omitMessageNames =
-    $core.bool.fromEnvironment('protobuf.omit_message_names');
+const $core.bool _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

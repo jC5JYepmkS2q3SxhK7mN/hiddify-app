@@ -23,24 +23,18 @@ const TunnelStartRequest$json = {
     {'1': 'server_username', '3': 3, '4': 1, '5': 9, '10': 'serverUsername'},
     {'1': 'server_password', '3': 4, '4': 1, '5': 9, '10': 'serverPassword'},
     {'1': 'strict_route', '3': 5, '4': 1, '5': 8, '10': 'strictRoute'},
-    {
-      '1': 'endpoint_independent_nat',
-      '3': 6,
-      '4': 1,
-      '5': 8,
-      '10': 'endpointIndependentNat'
-    },
+    {'1': 'endpoint_independent_nat', '3': 6, '4': 1, '5': 8, '10': 'endpointIndependentNat'},
     {'1': 'stack', '3': 7, '4': 1, '5': 9, '10': 'stack'},
   ],
 };
 
 /// Descriptor for `TunnelStartRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List tunnelStartRequestDescriptor = $convert.base64Decode(
-    'ChJUdW5uZWxTdGFydFJlcXVlc3QSEgoEaXB2NhgBIAEoCFIEaXB2NhIfCgtzZXJ2ZXJfcG9ydB'
-    'gCIAEoBVIKc2VydmVyUG9ydBInCg9zZXJ2ZXJfdXNlcm5hbWUYAyABKAlSDnNlcnZlclVzZXJu'
-    'YW1lEicKD3NlcnZlcl9wYXNzd29yZBgEIAEoCVIOc2VydmVyUGFzc3dvcmQSIQoMc3RyaWN0X3'
-    'JvdXRlGAUgASgIUgtzdHJpY3RSb3V0ZRI4ChhlbmRwb2ludF9pbmRlcGVuZGVudF9uYXQYBiAB'
-    'KAhSFmVuZHBvaW50SW5kZXBlbmRlbnROYXQSFAoFc3RhY2sYByABKAlSBXN0YWNr');
+final $typed_data.Uint8List tunnelStartRequestDescriptor =
+    $convert.base64Decode('ChJUdW5uZWxTdGFydFJlcXVlc3QSEgoEaXB2NhgBIAEoCFIEaXB2NhIfCgtzZXJ2ZXJfcG9ydB'
+        'gCIAEoBVIKc2VydmVyUG9ydBInCg9zZXJ2ZXJfdXNlcm5hbWUYAyABKAlSDnNlcnZlclVzZXJu'
+        'YW1lEicKD3NlcnZlcl9wYXNzd29yZBgEIAEoCVIOc2VydmVyUGFzc3dvcmQSIQoMc3RyaWN0X3'
+        'JvdXRlGAUgASgIUgtzdHJpY3RSb3V0ZRI4ChhlbmRwb2ludF9pbmRlcGVuZGVudF9uYXQYBiAB'
+        'KAhSFmVuZHBvaW50SW5kZXBlbmRlbnROYXQSFAoFc3RhY2sYByABKAlSBXN0YWNr');
 
 @$core.Deprecated('Use tunnelResponseDescriptor instead')
 const TunnelResponse$json = {
@@ -51,5 +45,5 @@ const TunnelResponse$json = {
 };
 
 /// Descriptor for `TunnelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List tunnelResponseDescriptor = $convert
-    .base64Decode('Cg5UdW5uZWxSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List tunnelResponseDescriptor =
+    $convert.base64Decode('Cg5UdW5uZWxSZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
