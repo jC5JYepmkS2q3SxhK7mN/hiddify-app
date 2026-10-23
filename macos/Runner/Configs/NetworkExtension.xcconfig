@@ -5,13 +5,18 @@ HIDDIFY_HOST_ENTITLEMENTS = Runner/Release.entitlements
 HIDDIFY_HOST_ENTITLEMENTS[config=Debug] = Runner/Developer.entitlements
 HIDDIFY_EXTENSION_CODE_SIGN_ALLOWED = YES
 HIDDIFY_EXTENSION_CODE_SIGN_ALLOWED[config=Debug] = NO
-HIDDIFY_TUNNEL_BUNDLE_IDENTIFIER = app.hiddify.com.HiddifyPacketTunnel
-HIDDIFY_APP_BUNDLE_IDENTIFIER = app.hiddify.com
-HIDDIFY_VPN_APP_GROUP = $(TeamIdentifierPrefix)app.hiddify.com.vpn
+// The same identifiers as the iOS app, in the same Apple team
+HIDDIFY_TUNNEL_BUNDLE_IDENTIFIER = apple.hiddify.com.HiddifyPacketTunnel
+HIDDIFY_APP_BUNDLE_IDENTIFIER = apple.hiddify.com
+HIDDIFY_VPN_APP_GROUP = $(TeamIdentifierPrefix)apple.hiddify.com.vpn
 // Apple Development profiles use the standard value; Developer ID uses the suffix.
 HIDDIFY_NETWORK_EXTENSION_ENTITLEMENT = packet-tunnel-provider-systemextension
 HIDDIFY_NETWORK_EXTENSION_ENTITLEMENT[config=Debug] = packet-tunnel-provider
-HIDDIFY_CODE_SIGN_STYLE = Automatic
+// Developer ID signing is manual, with the Developer ID profiles (CI supplies them through
+// APPLE_MACOS_SIGNING_XCCONFIG): automatic signing only makes development profiles, which lack the
+// system extension entitlement. Debug signs automatically for development.
+HIDDIFY_CODE_SIGN_STYLE = Manual
+HIDDIFY_CODE_SIGN_STYLE[config=Debug] = Automatic
 HIDDIFY_CODE_SIGN_IDENTITY = Developer ID Application
 HIDDIFY_CODE_SIGN_IDENTITY[config=Debug] = -
 HIDDIFY_HOST_PROVISIONING_PROFILE =

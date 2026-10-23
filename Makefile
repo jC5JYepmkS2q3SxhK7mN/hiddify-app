@@ -531,6 +531,10 @@ build-macos-libs:
 	make -C hiddify-core -f Makefile macos
 	bash macos/scripts/build-tunnel-core.sh
 
+# Runs Debug from /Applications, where macOS allows the VPN system extension.
+macos-run-dev:
+	bash macos/scripts/run-dev.sh
+
 build-ios-libs: 
 	rm -rf $(IOS_OUT)/HiddifyCore.xcframework 
 	make -C hiddify-core -f Makefile ios  

@@ -64,6 +64,10 @@ class CoreInterfaceDesktop extends CoreInterface with InfraLogger {
 
   static final String secret = generateRandomPassword(100);
 
+  // Whether this process started its core. Another Hiddify instance can answer on the same port, and
+  // using its core leaves every call refused once that instance quits.
+  static bool _coreStarted = false;
+
   ClientChannel? _channel;
 
   @override
@@ -81,6 +85,7 @@ class CoreInterfaceDesktop extends CoreInterface with InfraLogger {
     final helloClient = HelloClient(helloChannel);
 
     try {
+      if (!_coreStarted) throw StateError("core is not started yet");
       await helloClient.sayHello(HelloRequest(name: "test"));
       loggy.info("core is already started!");
     } catch (e) {
@@ -101,6 +106,7 @@ class CoreInterfaceDesktop extends CoreInterface with InfraLogger {
       if (err.isNotEmpty) {
         return err;
       }
+      _coreStarted = true;
       final res = await helloClient.sayHello(HelloRequest(name: "test"));
       loggy.info(res.toString());
     } finally {

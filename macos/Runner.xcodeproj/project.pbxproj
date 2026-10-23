@@ -76,7 +76,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1813C840306A12F200536EDE /* app.hiddify.com.HiddifyPacketTunnel.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = app.hiddify.com.HiddifyPacketTunnel.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
+		1813C840306A12F200536EDE /* apple.hiddify.com.HiddifyPacketTunnel.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = apple.hiddify.com.HiddifyPacketTunnel.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		1813C841306A12F200536EDE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		1813C85E306A1B6800536EDE /* SystemExtensionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemExtensionController.swift; sourceTree = "<group>"; };
 		1A1027315C9B3E3F83410A09 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -216,7 +216,7 @@
 			children = (
 				33CC10ED2044A3C60003C045 /* Hiddify.app */,
 				331C80D5294CF71000263BE5 /* RunnerTests.xctest */,
-				1813C840306A12F200536EDE /* app.hiddify.com.HiddifyPacketTunnel.systemextension */,
+				1813C840306A12F200536EDE /* apple.hiddify.com.HiddifyPacketTunnel.systemextension */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -290,7 +290,7 @@
 			);
 			name = HiddifyPacketTunnel;
 			productName = HiddifyPacketTunnel;
-			productReference = 1813C840306A12F200536EDE /* app.hiddify.com.HiddifyPacketTunnel.systemextension */;
+			productReference = 1813C840306A12F200536EDE /* apple.hiddify.com.HiddifyPacketTunnel.systemextension */;
 			productType = "com.apple.product-type.system-extension";
 		};
 		331C80D4294CF70F00263BE5 /* RunnerTests */ = {
@@ -360,7 +360,6 @@
 					33CC10EC2044A3C60003C045 = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 1100;
-						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 1;

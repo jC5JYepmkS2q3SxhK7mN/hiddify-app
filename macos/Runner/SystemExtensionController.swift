@@ -22,7 +22,7 @@ final class SystemExtensionController:
     NSObject,
     OSSystemExtensionRequestDelegate {
     let extensionIdentifier = Bundle.main.object(forInfoDictionaryKey: "HiddifyTunnelBundleIdentifier") as? String
-        ?? "app.hiddify.com.HiddifyPacketTunnel"
+        ?? "apple.hiddify.com.HiddifyPacketTunnel"
     private(set) var activationState: ExtensionActivationState = .idle
     var onStateChanged: (() -> Void)?
     private var completion: ((Error?) -> Void)?

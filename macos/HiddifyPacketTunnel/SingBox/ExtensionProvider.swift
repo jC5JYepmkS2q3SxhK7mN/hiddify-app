@@ -13,7 +13,7 @@ import os.log
 /// Engine state is confined to engineQueue, which supports the unchecked Sendable
 /// conformance. ExtensionPlatformInterface locks shared network snapshots and settings.
 class ExtensionProvider: NEPacketTunnelProvider, @unchecked Sendable {
-    private let logger = Logger(subsystem: "app.hiddify.com.HiddifyPacketTunnel", category: "PacketTunnel")
+    private let logger = Logger(subsystem: "apple.hiddify.com.HiddifyPacketTunnel", category: "PacketTunnel")
     // Go can synchronously wait for Apple's network settings callback. Keep its
     // lifecycle calls serialized on a worker queue so that callback can progress.
     private let engineQueue = DispatchQueue(label: "app.hiddify.packet-tunnel.engine")
