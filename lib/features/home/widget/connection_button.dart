@@ -227,7 +227,8 @@ class _ConnectionButton extends HookWidget {
 
   EclipseLook get _eclipseLook => switch (look) {
     _Look.loading || _Look.disconnected => EclipseLook.idle,
-    _Look.connecting || _Look.disconnecting => EclipseLook.starting,
+    _Look.connecting => EclipseLook.starting,
+    _Look.disconnecting => EclipseLook.stopping,
     _Look.waiting || _Look.hotReloading => EclipseLook.waiting,
     _Look.connected || _Look.noPing => EclipseLook.connected,
     _Look.failed => EclipseLook.error,

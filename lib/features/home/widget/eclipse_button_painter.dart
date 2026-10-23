@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 /// What the connect button shows. Each look animates on its own clock, [EclipseFrame.since].
-enum EclipseLook { idle, starting, waiting, connected, error }
+enum EclipseLook { idle, starting, waiting, connected, stopping, error }
 
 /// One moment of the button: its look, the look before it, and how long ago each clock started.
 class EclipseFrame {
@@ -141,6 +141,10 @@ void _paintLook(_Ctx x) {
       _barsWave(x);
     case EclipseLook.connected:
       _connected(x);
+    case EclipseLook.stopping:
+      x.disc();
+      x.bevel();
+      _barsWave(x, backwards: true);
     case EclipseLook.error:
       _error(x);
   }
@@ -149,10 +153,12 @@ void _paintLook(_Ctx x) {
 // ---------------------------------------------------------------------------------------------
 // The looks
 
-/// The bars brighten one after another, left to right.
-void _barsWave(_Ctx x) {
+/// The bars brighten one after another, left to right; [backwards], as while disconnecting, from the
+/// i back to the short bar, the starting wave played in reverse.
+void _barsWave(_Ctx x, {bool backwards = false}) {
   final p = (x.f.time % 1.6) / 1.6;
-  x.logo(parts: _each((i) => _Part(opacity: .4 + .6 * _bump(p * 1.6 - _HiLogo.rank[i] * .3))));
+  double rank(int part) => backwards ? _HiLogo.rank.last - _HiLogo.rank[part] : _HiLogo.rank[part];
+  x.logo(parts: _each((i) => _Part(opacity: .4 + .6 * _bump(p * 1.6 - rank(i) * .3))));
 }
 
 /// A soft sweep turning inside the button, over two faint guide circles.
