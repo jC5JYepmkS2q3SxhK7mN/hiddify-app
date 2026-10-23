@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
@@ -53,13 +55,27 @@ class ConnectionButton extends HookConsumerWidget {
     final hotReloading = ref.watch(hotReloadingProvider).valueOrNull ?? false;
     final look = _lookOf(status, delay, hotReloading);
 
+    // A connect can be cancelled only a second after it began, so a double tap
+    // on connect doesn't cancel the connect its first tap started.
+    final connecting = status.valueOrNull is Connecting;
+    final cancellable = useState(false);
+    useEffect(() {
+      cancellable.value = false;
+      if (!connecting) return null;
+      final timer = Timer(const Duration(seconds: 1), () => cancellable.value = true);
+      return timer.cancel;
+    }, [connecting]);
+
     // What a tap does follows the core alone: a tunnel that is up can be
-    // turned off even while it still looks like connecting. The core is busy
-    // while it hot reloads, so the tap is off until that ends.
+    // turned off even while it still looks like connecting, and so can a
+    // start, which the core cancels. The core is busy while it hot reloads,
+    // so the tap is off until that ends.
     final onTap = switch (status) {
       AsyncData(value: Connected()) when hotReloading => null,
+      AsyncData(value: Connecting()) when !cancellable.value => null,
       AsyncData(value: Disconnected()) || AsyncError() => () => _connect(ref),
-      AsyncData(value: Connected()) => () => ref.read(connectionNotifierProvider.notifier).toggleConnection(),
+      AsyncData(value: Connected() || Connecting()) =>
+        () => ref.read(connectionNotifierProvider.notifier).toggleConnection(),
       _ => null,
     };
 

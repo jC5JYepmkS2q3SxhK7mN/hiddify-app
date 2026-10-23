@@ -37,6 +37,9 @@ class HiddifyCoreService with InfraLogger {
   final Map<String, StreamSubscription?> subscriptions = {};
   List<OutboundGroup> latest = [];
 
+  // Counts the stops the app sent, so a start knows when a stop came after it.
+  final _stopRequests = BehaviorSubject<int>.seeded(0);
+
   Future<void> init() async {
     await setup()
         .mapLeft((e) {
@@ -132,6 +135,7 @@ class HiddifyCoreService with InfraLogger {
 
   TaskEither<ConnectionFailure, Unit> start(String path, String name, bool disableMemoryLimit) {
     return TaskEither(() async {
+      final stops = _stopRequests.value;
       statusController.add(currentState = const CoreStatus.starting());
       loggy.debug("starting");
       final background = await core.setupBackground(path, name);
@@ -145,79 +149,92 @@ class HiddifyCoreService with InfraLogger {
       // armed once at setup does not survive the engine restarting. Re-listening
       // is idempotent: listenSingle cancels the previous one for the same key.
       await startListeningLogs("fg", core.fgClient);
-      if (!core.isSingleChannel()) {
-        await startListeningLogs("bg", core.bgClient);
+      if (!core.isSingleChannel()) await startListeningLogs("bg", core.bgClient);
+      // the start's outcome arrives only on the status stream, so it must be listened to
+      if (!core.isSingleChannel() || !subscriptions.containsKey("bgStatusListener")) {
         await startListeningStatus("bg", core.bgClient);
       }
-      // if (latestOptions != null) {
-      //   await core.bgClient.changeHiddifySettings(
-      //     ChangeHiddifySettingsRequest(
-      //       hiddifySettingsJson: jsonEncode(latestOptions!.toJson()),
-      //     ),
-      //   );
-      // }
-      // final content = await File(path).readAsString();
-      // loggy.debug("starting with content: $content");
+      // the user disconnected while the start was being prepared
+      if (_stopRequests.value != stops) return right(unit);
       try {
-        final res = await core.bgClient.start(
-          StartRequest(
-            configPath: path,
-            configName: name,
-            // configContent: content,
-            disableMemoryLimit: disableMemoryLimit,
+        final outcome = await _startAndWait(
+          stops,
+          () => core.bgClient.start(
+            StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit),
           ),
         );
         ref.read(coreRestartSignalProvider.notifier).restart();
-        if (res.messageType != MessageType.ALREADY_STARTED && res.messageType != MessageType.EMPTY) {
-          final alert = res.message.contains("denied") ? CoreAlert.requestVPNPermission : CoreAlert.startFailed;
-          currentState = CoreStatus.stopped(
-            alert: alert,
-            message: "failed to start core ${res.messageType} ${res.message}",
-          );
-
-          statusController.add(currentState);
-
-          return left(
-            currentState.getCoreAlert() ??
-                ConnectionFailure.unexpected("failed to start core ${res.messageType} ${res.message}"),
-          );
-        }
+        if (outcome case CoreStopped(alert: _?)) return left(_startFailure(outcome));
       } on GrpcError catch (e) {
         loggy.error("failed to start bg core: $e");
         ref.read(coreRestartSignalProvider.notifier).restart();
-        final message = e.message ?? "";
         if (e.code == StatusCode.unavailable) {
           return left(const ConnectionFailure.unexpected("background core is not started yet!"));
         }
-        if (message.isEmpty) {
-          return left(const ConnectionFailure.unexpected("failed to start background core"));
-        }
-        // Go words Windows errors in English, so the two texts below match on every system language.
-        // Windows refuses the TUN adapter to a process that is not elevated.
-        if (message.contains("start inbound/tun[tun-in]: configure tun interface: Access is denied.")) {
-          return left(const ConnectionFailure.missingPrivilege());
-        }
-        // Another adapter already has the address the core gives its TUN (172.19.0.1).
-        if (message.contains(
-          "start inbound/tun[tun-in]: configure tun interface: set ipv4 address: The object already exists.",
-        )) {
-          return left(const ConnectionFailure.tunAddressInUse());
-        }
-        return left(ConnectionFailure.unexpected(message));
+        return left(ConnectionFailure.unexpected(e.message ?? "failed to start background core"));
       }
-
-      // if (res.messageType != MessageType.EMPTY) return left(res);
 
       return right(unit);
     });
   }
 
+  /// Sends a start or restart and returns how it ended. The core answers at once and reports the
+  /// outcome only on the status stream: STARTING, then STARTED or STOPPED. A restart stops first,
+  /// so a STOPPED before STARTING is not the outcome. A stop the app sends after [stops] ends the
+  /// wait as stopped: the core then drops the start, possibly without reporting STARTING.
+  Future<CoreStatus> _startAndWait(int stops, Future<CoreInfoResponse> Function() send) async {
+    final outcome = Completer<CoreStatus>();
+    void complete(CoreStatus status) {
+      if (!outcome.isCompleted) outcome.complete(status);
+    }
+
+    var starting = false;
+    // skips the status the subject replays: it is from before this request
+    final statuses = statusController.stream.skip(statusController.hasValue ? 1 : 0).listen((status) {
+      if (status is CoreStarting) starting = true;
+      if (status is CoreStarted || (starting && status is CoreStopped)) complete(status);
+    });
+    final stopped = _stopRequests.where((n) => n != stops).listen((_) => complete(const CoreStatus.stopped()));
+    try {
+      final res = await send();
+      if (res.messageType == MessageType.ALREADY_STARTED) {
+        if (res.coreState == CoreStates.STARTED) return const CoreStatus.started();
+        // a start queued earlier will report the outcome; its STARTING may have gone already
+        starting = true;
+      }
+      return await outcome.future;
+    } finally {
+      await statuses.cancel();
+      await stopped.cancel();
+    }
+  }
+
+  /// The failure for a start that ended stopped with an alert.
+  ConnectionFailure _startFailure(CoreStopped stopped) {
+    final message = stopped.message ?? "";
+    // Go words Windows errors in English, so the two texts below match on every system language.
+    // Windows refuses the TUN adapter to a process that is not elevated.
+    if (message.contains("start inbound/tun[tun-in]: configure tun interface: Access is denied.")) {
+      return const ConnectionFailure.missingPrivilege();
+    }
+    // Another adapter already has the address the core gives its TUN (172.19.0.1).
+    if (message.contains(
+      "start inbound/tun[tun-in]: configure tun interface: set ipv4 address: The object already exists.",
+    )) {
+      return const ConnectionFailure.tunAddressInUse();
+    }
+    final alert = message.contains("denied") ? CoreAlert.requestVPNPermission : stopped.alert;
+    return CoreStatus.stopped(alert: alert, message: message).getCoreAlert() ??
+        ConnectionFailure.unexpected("failed to start core: $message");
+  }
+
   TaskEither<String, Unit> stop() {
     return TaskEither(() async {
       loggy.debug("stopping");
+      _stopRequests.add(_stopRequests.value + 1);
       var errMsg = "";
       try {
-        await core.bgClient.stop(Empty());
+        await _stopAndWait();
       } on GrpcError catch (e) {
         if (e.code == StatusCode.unknown && !(e.message?.contains("HTTP/2") ?? false)) {
           errMsg = e.message ?? "failed to stop core: $e";
@@ -233,6 +250,22 @@ class HiddifyCoreService with InfraLogger {
       if (errMsg.isNotEmpty) return left(errMsg);
       return right(unit);
     });
+  }
+
+  /// Sends a stop and waits for the core to report STOPPED; the core answers the call at once.
+  /// The wait is bounded, so a core that stops reporting cannot leave the app disconnecting.
+  Future<void> _stopAndWait() async {
+    final stopped = statusController.stream.skip(statusController.hasValue ? 1 : 0).whereType<CoreStopped>().first;
+    final res = await core.bgClient.stop(Empty());
+    // ALREADY_STOPPED while a stop is still running: its STOPPED is yet to come
+    if (res.messageType == MessageType.ALREADY_STOPPED && res.coreState == CoreStates.STOPPED) return;
+    await stopped.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () {
+        loggy.warning("core did not report stopped in time");
+        return const CoreStopped();
+      },
+    );
   }
 
   /// Applies a changed config to the running core: first as a hot reload, which keeps the core
@@ -259,10 +292,13 @@ class HiddifyCoreService with InfraLogger {
       loggy.debug("restarting");
       // if (!await core.restart(path, name)) {
       try {
-        final res = await core.bgClient.restart(
-          StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit, delayStart: true),
+        final outcome = await _startAndWait(
+          _stopRequests.value,
+          () => core.bgClient.restart(
+            StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit, delayStart: true),
+          ),
         );
-        if (res.messageType != MessageType.EMPTY) return left("${res.messageType} ${res.message}");
+        if (outcome case CoreStopped(alert: _?, :final message)) return left(message ?? "failed to restart core");
       } on GrpcError catch (e) {
         loggy.error("failed to restart bg core: $e");
         if (e.code == StatusCode.unknown && !(e.message?.contains("HTTP/2 error") ?? false)) {
@@ -505,9 +541,14 @@ class HiddifyCoreService with InfraLogger {
       await stopListenSingle(key);
     }
     subscriptions[key] = null;
-    subscriptions[key] = stream().listen(
+    late final StreamSubscription<T> subscription;
+    subscriptions[key] = subscription = stream().listen(
       (event) {
         // loggy.debug(event);
+      },
+      // an ended stream is not listened to anymore, so the next listenSingle arms it again
+      onDone: () {
+        if (identical(subscriptions[key], subscription)) subscriptions.remove(key);
       },
       cancelOnError: true,
       onError: (error) {

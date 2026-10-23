@@ -108,8 +108,8 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
           await haptic.lightImpact();
           await ref.read(Preferences.startedByUser.notifier).update(true);
           await _connect();
-        case Connected():
-          // default:
+        // the core cancels a start that a stop comes after
+        case Connected() || Connecting():
           await haptic.mediumImpact();
           await ref.read(Preferences.startedByUser.notifier).update(false);
           await _disconnect();
@@ -225,6 +225,4 @@ class SingleCall {
 }
 
 /// Whether the core is hot reloading; only the connection button shows it.
-final hotReloadingProvider = StreamProvider<bool>(
-  (ref) => ref.watch(connectionRepositoryProvider).watchHotReloading(),
-);
+final hotReloadingProvider = StreamProvider<bool>((ref) => ref.watch(connectionRepositoryProvider).watchHotReloading());
