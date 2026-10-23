@@ -148,6 +148,9 @@ class HiddifyCoreService with InfraLogger {
       final background = await core.setupBackground(path, name);
       if (background != const CoreStatus.started()) {
         statusController.add(currentState = const CoreStatus.stopped());
+        // the user disconnected while the background core was starting, which stopped it: the start
+        // was cancelled, it did not fail
+        if (_stopRequests.value != stops) return right(unit);
         return left(background.getCoreAlert() ?? const ConnectionFailure.unexpected("failed to start core"));
       }
       // Armed again on every connect, not only when there are two channels.

@@ -108,6 +108,10 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
           await haptic.lightImpact();
           await ref.read(Preferences.startedByUser.notifier).update(true);
           await _connect();
+        // a connect can be cancelled only a second after it began, so taps in quick succession
+        // don't cancel the connect the first one started, whatever they came from
+        case Connecting() when DateTime.now().difference(_connectingSince) < const Duration(seconds: 1):
+          loggy.debug("connect began less than a second ago, not cancelling it");
         // the core cancels a start that a stop comes after
         case Connected() || Connecting():
           await haptic.mediumImpact();
@@ -161,12 +165,16 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
     );
   }
 
+  /// When the last connect began.
+  DateTime _connectingSince = DateTime(0);
+
   Future<void> _connectThrottled() async {
     final activeProfile = await ref.read(activeProfileProvider.future);
     if (activeProfile == null) {
       loggy.info("no active profile, not connecting");
       return;
     }
+    _connectingSince = DateTime.now();
     // Read before connecting: a failed start sends the core restart signal, which marks this
     // notifier out of date until the next frame, and debug builds refuse any ref call until then.
     final dialogs = ref.read(dialogNotifierProvider.notifier);
