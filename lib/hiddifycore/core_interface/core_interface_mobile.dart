@@ -61,12 +61,15 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
       await identityDirectory.delete(recursive: true);
     }
 
-    final status = statusChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
-    final alerts = alertsChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
-    final merged = ValueConnectableStream(Rx.merge([status, alerts])).autoConnect();
-    _status = LastStream(merged);
-    await _nativeStatusSubscription?.cancel();
-    _nativeStatusSubscription = merged.listen(_managedStatus.add);
+    // Created once. setup runs again on every resume, including the one right after the VPN
+    // dialog closes; a replaced stream would leave a start that is waiting on it deaf.
+    if (_nativeStatusSubscription == null) {
+      final status = statusChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
+      final alerts = alertsChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
+      final merged = ValueConnectableStream(Rx.merge([status, alerts])).autoConnect();
+      _status = LastStream(merged);
+      _nativeStatusSubscription = merged.listen(_managedStatus.add);
+    }
 
     // Start the core first — the server certificate only exists after setup.
     if (!await isPortOpen('127.0.0.1', portFront)) {
@@ -188,27 +191,22 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     _isBgClientAvailable = true;
     loggy.info('Waiting for starting core');
     final waitingSince = DateTime.now();
-    waitForStart:
-    for (var i = 0; i < 20; i++) {
-      try {
-        final res = await _status.get(timeout: const Duration(seconds: 1));
-
-        switch (res) {
+    // The reply to "start" only means the service was asked to start; whether it did arrives
+    // later on the status stream. Wait for the first status that settles it: up, or stopped
+    // with a reason. On timeout the port check below decides.
+    try {
+      final res = await _status.get(
+        timeout: const Duration(seconds: 20),
+        where: (status) => switch (status) {
           // the platform service is up: the core's own status takes over from here
-          case CoreStarted() || CoreWaiting() || CoreNoAvailableProxies() || CoreHotReloading():
-            break waitForStart;
-          case CoreStopped():
-            if (res.alert != null) {
-              return res;
-            }
-
-          case CoreStopping():
-          case CoreStarting():
-        }
-        await Future.delayed(const Duration(milliseconds: 200));
-      } on TimeoutException {
-        // just retry
-      }
+          CoreStarted() || CoreWaiting() || CoreNoAvailableProxies() || CoreHotReloading() => true,
+          CoreStopped(:final alert) => alert != null,
+          _ => false,
+        },
+      );
+      if (res is CoreStopped) return res;
+    } on TimeoutException {
+      loggy.warning('no start status from the service in 20 s');
     }
     loggy.info('Waiting for starting core finished after ${DateTime.now().difference(waitingSince).inMilliseconds}ms');
 
