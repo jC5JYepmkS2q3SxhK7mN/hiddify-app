@@ -120,6 +120,8 @@ def main() -> None:
         run("codesign", "--verify", "--deep", "--strict", "--verbose=2", str(app))
         if not (app / "PrivacyInfo.xcprivacy").is_file():
             fail("PrivacyInfo.xcprivacy is missing from the app bundle")
+        if not (extensions[0] / "PrivacyInfo.xcprivacy").is_file():
+            fail("PrivacyInfo.xcprivacy is missing from the packet tunnel extension")
 
     print(f"IPA verification passed: {bundle_id}, team {team_id}")
 

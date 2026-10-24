@@ -66,6 +66,13 @@ def main() -> None:
         with (ROOT / relative_path).open("rb") as handle:
             plistlib.load(handle)
 
+    # Must be in Copy Bundle Resources or the IPA ships without the privacy manifest.
+    if project.count("PrivacyInfo.xcprivacy in Resources") < 2:
+        fail(
+            "PrivacyInfo.xcprivacy must be in the Runner and HiddifyPacketTunnel "
+            "Resources build phases"
+        )
+
     print(
         f"iOS release configuration is consistent: {bundle_id}, "
         f"team {team_id}, version {marketing_version} ({build_number})"

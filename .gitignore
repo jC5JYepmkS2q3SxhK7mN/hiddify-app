@@ -78,3 +78,4 @@ windows/sign.cer
 /cert.pem
 /key.pem
 /sign.pfx
+.ci-secrets-export/

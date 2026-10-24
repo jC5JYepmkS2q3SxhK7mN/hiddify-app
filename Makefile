@@ -565,7 +565,7 @@ macos-dist-appstore:
 macos-appstore-upload:
 	bash macos/scripts/dist.sh app-store --upload
 
-# CI builds the Mac App Store version and uploads it to TestFlight for version tags.
+# CI builds the Mac App Store pkg; MACOS_APPSTORE_ARGS=--upload sends it to TestFlight (version tags).
 macos-appstore-prepare: macos-prepare
 
 macos-appstore-release:
