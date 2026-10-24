@@ -1,4 +1,5 @@
-
+*.crt
+*.p12
 # Miscellaneous
 *.class
 *.log
