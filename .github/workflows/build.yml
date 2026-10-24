@@ -326,10 +326,7 @@ jobs:
         if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
-          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          MACOS_APPSTORE_ARGS: --upload
+        # Upload is a separate step so a bad APPSTORE_* secret still leaves pkg/dmg artifacts.
         run: make macos-appstore-release
 
       - name: Validate iOS without code signing
@@ -430,6 +427,7 @@ jobs:
 
       - name: Copy to out macOS App Store
         if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
+        id: macos-appstore-out
         run: |
           ls -R dist/
           mkdir -p out
@@ -445,7 +443,16 @@ jobs:
           fi
           cp "$pkg" "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
           cp "$dmg" "out/${TARGET_NAME_macos_appstore_dmg}.dmg"
+          echo "pkg=out/${TARGET_NAME_macos_appstore_pkg}.pkg" >> "$GITHUB_OUTPUT"
           ls -la out/
+
+      - name: Upload macOS App Store build to TestFlight
+        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+        run: bash macos/scripts/upload-appstore.sh "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
 
       - name: Copy to out unix
         if: startsWith(matrix.platform,'linux') || matrix.platform == 'macos' || (matrix.platform == 'ios' && inputs.upload-artifact)

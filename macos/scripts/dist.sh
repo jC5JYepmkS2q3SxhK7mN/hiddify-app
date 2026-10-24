@@ -69,13 +69,7 @@ case "$task_mode" in
     echo "Built $task_pkg"
     echo "Built $task_dmg"
     if [[ "$task_upload" == true ]]; then
-      if [[ -n "${APPSTORE_API_PRIVATE_KEY:-}" ]]; then
-        # altool reads the key from this folder by its ID.
-        mkdir -p ~/.appstoreconnect/private_keys
-        printf '%s\n' "$APPSTORE_API_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_"$APPSTORE_API_KEY_ID".p8
-      fi
-      xcrun altool --upload-app --type macos --file "$task_pkg" \
-        --apiKey "$APPSTORE_API_KEY_ID" --apiIssuer "$APPSTORE_ISSUER_ID"
+      bash "$task_root/macos/scripts/upload-appstore.sh" "$task_pkg"
     fi
     exit 0
     ;;
