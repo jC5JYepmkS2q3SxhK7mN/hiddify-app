@@ -123,8 +123,16 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
     private var operationID = UUID()
     private var busy = false
     private var cancelRequested = false
+    // Set from a stop request until it finishes: saving the preferences comes before macOS reports
+    // the tunnel disconnecting, which can take seconds the app would otherwise show as connected.
+    private var stopping = false
     private var queuedStop: FlutterResult?
     private let enabled = Bundle.main.object(forInfoDictionaryKey: "HiddifyNetworkExtensionEnabled") as? String == "YES"
+    // The Mac App Store build carries the packet tunnel as an app extension, which needs no
+    // activation. Its sandbox keeps the app from setting the system proxy, so the tunnel does that.
+    private let appExtension = Bundle.main.object(forInfoDictionaryKey: "HiddifyTunnelKind") as? String == "app-extension"
+    // Builds without a Network Extension run the VPN in hiddify-core's tunnel service instead.
+    private let tunnelService = TunnelServiceController()
 
     init(messenger: FlutterBinaryMessenger) {
         super.init()
@@ -145,16 +153,12 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
     func onCancel(withArguments arguments: Any?) -> FlutterError? { eventSink = nil; return nil }
 
     private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard enabled else { tunnelService.handle(call, result: result); return }
         if call.method == "initialize" || call.method == "status" {
-            guard enabled else { result(status()); return }
             load { [weak self] error in
                 if let error = error { result(Self.flutterError(error)) }
                 else { result(self?.status()); self?.emitStatus() }
             }
-            return
-        }
-        guard enabled else {
-            result(Self.flutterError(vpnError("VPN is unavailable in this Debug build. Build with an authorized Apple team and enable HIDDIFY_NETWORK_EXTENSION_ENABLED to use the system extension. Proxy modes are available.")))
             return
         }
         if busy && call.method == "stop" {
@@ -177,6 +181,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
         busy = true
         let finish: (Error?) -> Void = { [weak self] error in
             self?.busy = false
+            self?.stopping = false
             self?.emitStatus()
             if let error = error { result(Self.flutterError(error)) }
             else { result(self?.status()) }
@@ -194,7 +199,10 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
                 finish(vpnError("Missing VPN configuration.")); return
             }
             do { try checkSigning() } catch { finish(error); return }
-            activation.activate { [weak self] error in
+            let activate: (@escaping (Error?) -> Void) -> Void = appExtension
+                ? { $0(nil) }
+                : { [activation] in activation.activate(completion: $0) }
+            activate { [weak self] error in
                 guard let self = self else { return }
                 if let error = error { finish(error); return }
                 self.load { error in
@@ -203,6 +211,8 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
                 }
             }
         case "stop":
+            stopping = true
+            emitStatus()
             load { [weak self] error in
                 if let error = error { finish(error); return }
                 self?.stop(completion: finish)
@@ -237,7 +247,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
               SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: kSecCSSigningInformation), &information) == errSecSuccess,
               let info = information as? [String: Any],
               let entitlements = info[kSecCodeInfoEntitlementsDict as String] as? [String: Any],
-              entitlements["com.apple.developer.system-extension.install"] as? Bool == true,
+              appExtension || entitlements["com.apple.developer.system-extension.install"] as? Bool == true,
               let providers = entitlements["com.apple.developer.networking.networkextension"] as? [String],
               providers.contains("packet-tunnel-provider") || providers.contains("packet-tunnel-provider-systemextension") else {
             throw vpnError("This build is not signed for Network Extension. Select an authorized Apple Developer team for Runner and HiddifyPacketTunnel.")
@@ -246,9 +256,11 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
         guard hasTeam else {
             throw vpnError("This build is not signed for Network Extension. Select an authorized Apple Developer team for Runner and HiddifyPacketTunnel.")
         }
-        let extensionURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Library/SystemExtensions/\(activation.extensionIdentifier).systemextension")
+        let extensionURL = appExtension
+            ? Bundle.main.builtInPlugInsURL!.appendingPathComponent("HiddifyPacketTunnel.appex")
+            : Bundle.main.bundleURL.appendingPathComponent("Contents/Library/SystemExtensions/\(activation.extensionIdentifier).systemextension")
         guard FileManager.default.fileExists(atPath: extensionURL.path) else {
-            throw vpnError("The packet tunnel system extension is missing from this app bundle.")
+            throw vpnError("The packet tunnel extension is missing from this app bundle.")
         }
     }
 
@@ -295,6 +307,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
                 "settingsJSON": arguments["settingsJSON"]!,
                 "configName": arguments["configName"] as? String ?? "Hiddify",
                 "disableMemoryLimit": arguments["disableMemoryLimit"] as? Bool ?? false,
+                "proxyOnly": arguments["proxyOnly"] as? Bool ?? false,
                 "port": old?["port"] as? Int ?? Int(arc4random_uniform(40000)) + 20000,
                 "secret": secret,
             ]
@@ -408,7 +421,8 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
     }
 
     private func status() -> [String: Any] {
-        var result: [String: Any] = ["available": enabled, "status": "disconnected", "activation": "idle"]
+        var result: [String: Any] = ["available": enabled, "status": "disconnected", "activation": "idle",
+                                     "proxyThroughTunnel": appExtension]
         switch activation.activationState {
         case .idle: break
         case .activating: result["activation"] = "activating"
@@ -427,6 +441,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
             case .disconnecting: result["status"] = "disconnecting"
             default: break
             }
+            if stopping && result["status"] as? String != nil { result["status"] = "disconnecting" }
             let config = (manager.protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration
             result["port"] = config?["port"]
             result["secret"] = config?["secret"]
@@ -434,7 +449,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
         return result
     }
 
-    private func emitStatus() { eventSink?(status()) }
+    private func emitStatus() { eventSink?(enabled ? status() : tunnelService.state()) }
     private static func flutterError(_ error: Error) -> FlutterError {
         let nativeError = error as NSError
         let needsApproval = nativeError.domain == "app.hiddify.macos-vpn"

@@ -32,6 +32,9 @@ type Options struct {
 	Secret             string
 	Port               int32
 	DisableMemoryLimit bool
+	// ProxyOnly runs the core without its TUN inbound: the extension only points the system proxy
+	// at the core's local proxy, for the Mac App Store build, whose sandbox cannot set it itself.
+	ProxyOnly bool
 }
 
 var lifecycle sync.Mutex
@@ -99,7 +102,7 @@ func Start(options *Options, platform libbox.PlatformInterface) (err error) {
 	}
 	// VPN mode must not install a separate system proxy or a privileged listener
 	// on the LAN, even if those options came from a custom profile.
-	settings["enable-tun"] = true
+	settings["enable-tun"] = !options.ProxyOnly
 	settings["enable-tun-service"] = false
 	settings["set-system-proxy"] = false
 	settings["allow-connection-from-lan"] = false

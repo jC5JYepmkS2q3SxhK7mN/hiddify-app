@@ -53,6 +53,9 @@ class ExtensionProvider: NEPacketTunnelProvider, @unchecked Sendable {
     /// Starts the core on engineQueue and returns after its tunnel settings are applied.
     private func startService(_ configuration: SingBox.Configuration) throws {
         let options = try SingBox.setupOptions(configuration: configuration)
+        if configuration.proxyOnly {
+            try applyProxySettings(port: configuration.proxyPort)
+        }
         let platformInterface = ExtensionPlatformInterface(self)
         // Retain the adapter for the core's Go-to-Swift callbacks.
         self.platformInterface = platformInterface
@@ -61,6 +64,26 @@ class ExtensionProvider: NEPacketTunnelProvider, @unchecked Sendable {
             throw error ?? tunnelError("The VPN engine failed to start.")
         }
         started = true
+    }
+
+    /// Points the system proxy at the core's local proxy, with no routes, so traffic that ignores the
+    /// proxy keeps its usual path.
+    private func applyProxySettings(port: Int) throws {
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "127.0.0.1")
+        settings.ipv4Settings = NEIPv4Settings(addresses: ["172.19.0.1"], subnetMasks: ["255.255.255.240"])
+        let proxy = NEProxySettings()
+        let server = NEProxyServer(address: "127.0.0.1", port: port)
+        proxy.httpServer = server
+        proxy.httpsServer = server
+        proxy.httpEnabled = true
+        proxy.httpsEnabled = true
+        proxy.excludeSimpleHostnames = true
+        proxy.exceptionList = ["localhost", "*.local", "127.0.0.1", "::1", "169.254/16", "10.0.0.0/8",
+                               "172.16.0.0/12", "192.168.0.0/16"]
+        settings.proxySettings = proxy
+        try runBlocking(timeoutMessage: "macOS timed out while applying the system proxy settings.") { [self] in
+            try await setTunnelNetworkSettings(settings)
+        }
     }
 
     // MARK: - Logging

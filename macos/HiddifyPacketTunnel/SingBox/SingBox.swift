@@ -17,6 +17,9 @@ final class SingBox {
         let port: Int32
         let disableMemoryLimit: Bool
         let resources: [String: Data]
+        /// Only point the system proxy at the core's local proxy port, without routing traffic.
+        let proxyOnly: Bool
+        let proxyPort: Int
 
         init(_ values: [String: Any]) throws {
             guard let content = values["configContent"] as? String, !content.isEmpty,
@@ -32,6 +35,9 @@ final class SingBox {
             self.port = port.int32Value
             self.disableMemoryLimit = values["disableMemoryLimit"] as? Bool ?? false
             self.resources = values["resources"] as? [String: Data] ?? [:]
+            self.proxyOnly = values["proxyOnly"] as? Bool ?? false
+            let settingsObject = (try? JSONSerialization.jsonObject(with: Data(settings.utf8))) as? [String: Any]
+            self.proxyPort = (settingsObject?["mixed-port"] as? NSNumber)?.intValue ?? 12334
         }
     }
 
@@ -81,6 +87,7 @@ final class SingBox {
         options.secret = configuration.secret
         options.port = configuration.port
         options.disableMemoryLimit = configuration.disableMemoryLimit
+        options.proxyOnly = configuration.proxyOnly
         return options
     }
 }

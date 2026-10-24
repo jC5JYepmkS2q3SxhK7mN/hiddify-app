@@ -117,6 +117,12 @@ jobs:
             os: macos-15
             aarch: universal
             targets: dmg,pkg
+
+          # Built and uploaded to TestFlight only for version tags; never a release asset.
+          - platform: macos-appstore
+            os: macos-26
+            aarch: universal
+            targets: pkg
             
           - platform: ios
             os: macos-26
@@ -141,6 +147,9 @@ jobs:
            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
            echo "${{secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64}}"|base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
            ls ~/Library/MobileDevice/Provisioning\ Profiles
+           # Xcode 16 and later read profiles from this folder instead.
+           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
+           cp ~/Library/MobileDevice/Provisioning\ Profiles/* ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/
            security unlock-keychain -p "" signing_temp.keychain
            security find-identity -v -p codesigning
         #   ls ~/Library/MobileDevice/Provisioning\ Profiles
@@ -164,11 +173,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Check out the core the macOS tunnel runs
+        if: startsWith(matrix.platform, 'macos')
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule update --init --recursive hiddify-core
+
       - name: Set up packet tunnel Go toolchain
-        if: matrix.platform == 'macos'
+        if: startsWith(matrix.platform, 'macos')
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.6'
+          go-version: '1.26.3'
           cache-dependency-path: macos/NetworkExtensionCore/go.sum
 
       - name: Configure macOS signing
@@ -180,14 +195,17 @@ jobs:
         run: |
           set -euo pipefail
           signing_config="$RUNNER_TEMP/hiddify-macos-signing.xcconfig"
-          if [[ "$SIGN_RELEASE" == 'true' ]]; then
-            if [[ -z "$MACOS_SIGNING_XCCONFIG" ]]; then
-              echo '::error::Set APPLE_MACOS_SIGNING_XCCONFIG with DEVELOPMENT_TEAM, HIDDIFY_CODE_SIGN_IDENTITY = Developer ID Application, and provisioning profile settings for Runner and HiddifyPacketTunnel. Import the matching Developer ID certificates and profiles before building a signed release.'
-              exit 1
-            fi
+          # With a Developer ID the VPN runs in the packet tunnel system extension. Without one, the
+          # build is signed ad hoc and its VPN runs in the root helper the user installs.
+          if [[ "$SIGN_RELEASE" == 'true' && -n "$MACOS_SIGNING_XCCONFIG" ]]; then
             printf '%s\n' "$MACOS_SIGNING_XCCONFIG" > "$signing_config"
+            echo 'MACOS_DEVELOPER_ID=true' >> "$GITHUB_ENV"
           else
-            printf '%s\n' 'CODE_SIGNING_ALLOWED = NO' > "$signing_config"
+            if [[ "$SIGN_RELEASE" == 'true' ]]; then
+              echo '::warning::APPLE_MACOS_SIGNING_XCCONFIG is not set, so the macOS release is built without a Developer ID.'
+            fi
+            cp macos/Runner/Configs/Unsigned.xcconfig "$signing_config"
+            echo 'MACOS_DEVELOPER_ID=false' >> "$GITHUB_ENV"
           fi
           echo "XCODE_XCCONFIG_FILE=$signing_config" >> "$GITHUB_ENV"
 
@@ -289,16 +307,27 @@ jobs:
 
 
       - name: Prepare for ${{ matrix.platform }}
+        if: matrix.platform != 'macos-appstore' || (inputs.upload-artifact && inputs.tag-name != 'draft')
         run: |
           make ${{ matrix.platform }}-prepare
 
 
       - name: Build ${{ matrix.platform }}
-        if: (matrix.platform != 'ios' && matrix.platform != 'windows') || inputs.upload-artifact
+        if: matrix.platform != 'macos-appstore' && ((matrix.platform != 'ios' && matrix.platform != 'windows') || inputs.upload-artifact)
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           make ${{ matrix.platform }}-release
+
+      - name: Build the Mac App Store version and upload it to TestFlight
+        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact && inputs.tag-name != 'draft'
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          MACOS_APPSTORE_ARGS: --upload
+        run: make macos-appstore-release
 
       - name: Validate iOS without code signing
         if: matrix.platform == 'ios' && !inputs.upload-artifact
@@ -429,7 +458,7 @@ jobs:
           done
 
       - name: Sign installer and notarize macOS packages
-        if: ${{ inputs.upload-artifact && matrix.platform == 'macos' }}
+        if: ${{ inputs.upload-artifact && matrix.platform == 'macos' && env.MACOS_DEVELOPER_ID == 'true' }}
         env:
           APPLE_MACOS_INSTALLER_SIGN_IDENTITY: ${{ secrets.APPLE_MACOS_INSTALLER_SIGN_IDENTITY }}
           APPLE_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_NOTARIZATION_APPLE_ID }}
@@ -455,6 +484,7 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db ||echo ok
           rm ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision ||echo ok
+          rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles ||echo ok
   update-draft:
     if: ${{ inputs.upload-artifact }}
     needs: [build]

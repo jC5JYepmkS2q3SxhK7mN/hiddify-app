@@ -65,10 +65,23 @@ final class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoco
                 }
             }
             settings.ipv6Settings = ipv6
+        } else if options.getAutoRoute() {
+            // With IPv6 disabled the core gives the tunnel no IPv6 address. Route IPv6 into the
+            // tunnel anyway, as on iOS, or it would leave outside the VPN.
+            let ipv6 = NEIPv6Settings(addresses: [], networkPrefixLengths: [])
+            ipv6.includedRoutes = [NEIPv6Route.default()]
+            settings.ipv6Settings = ipv6
         }
-        if options.getAutoRoute() {
-            let dns = try options.getDNSServerAddress()
-            let dnsSettings = NEDNSSettings(servers: [dns.value])
+        // The TUN's DNS servers; none when its DNS mode is disabled.
+        var dnsServers: [String] = []
+        if options.getAutoRoute(), options.getDNSMode()?.value != LibboxDNSModeDisabled {
+            let iterator = try options.getDNSServerAddress()
+            while iterator.hasNext() {
+                dnsServers.append(iterator.next())
+            }
+        }
+        if !dnsServers.isEmpty {
+            let dnsSettings = NEDNSSettings(servers: dnsServers)
             // The empty match domain makes this resolver apply to all DNS queries.
             dnsSettings.matchDomains = [""]
             dnsSettings.matchDomainsNoSearch = true
@@ -134,6 +147,36 @@ final class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoco
 
     // User notification delivery is not provided by this system extension.
     func send(_ notification: LibboxNotification?) throws {}
+    func cancelNotification(_ identifier: String?, typeID: Int32) throws {}
+
+    // MARK: - Not available in the packet tunnel
+
+    private func notSupported(_ feature: String) -> NSError {
+        tunnelError("\(feature) is not supported in the packet tunnel.")
+    }
+
+    func usePlatformShell() -> Bool { false }
+    func checkPlatformShell() throws { throw notSupported("Platform shell") }
+    func lookupUser(_ username: String?) throws -> LibboxPlatformUser { throw notSupported("User lookup") }
+    func openShellSession(_ user: LibboxPlatformUser?, command: String?, environ: (any LibboxStringIteratorProtocol)?,
+                          term: String?, rows: Int32, cols: Int32) throws -> any LibboxShellSessionProtocol {
+        throw notSupported("Shell session")
+    }
+    func lookupSFTPServer() throws -> LibboxStringBox { throw notSupported("SFTP server") }
+    func readSystemSSHHostKey() throws -> LibboxStringBox { throw notSupported("System SSH host key") }
+    func usePlatformBridge() -> Bool { false }
+    func createBridge(_ options: LibboxBridgeOptions?) throws -> any LibboxBridgeSessionProtocol {
+        throw notSupported("Platform bridge")
+    }
+    func usePlatformAutoRedirect() -> Bool { false }
+    func createAutoRedirect(_ options: Data?, handler: (any LibboxAutoRedirectHandlerProtocol)?) throws
+        -> any LibboxAutoRedirectSessionProtocol {
+        throw notSupported("Auto redirect")
+    }
+    func startNeighborMonitor(_ listener: (any LibboxNeighborUpdateListenerProtocol)?) throws {}
+    func closeNeighborMonitor(_ listener: (any LibboxNeighborUpdateListenerProtocol)?) throws {}
+    func registerMyInterface(_ name: String?) {}
+    func tailscaleHostname() -> String { ProcessInfo.processInfo.hostName }
 
     // MARK: - Process lookup
 

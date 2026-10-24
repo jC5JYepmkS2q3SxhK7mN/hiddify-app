@@ -41,9 +41,9 @@ func FindConnectionOwner(ipProtocol int32, sourceAddress string, sourcePort int3
 	if err != nil {
 		return nil, err
 	}
-	return &libbox.ConnectionOwner{
-		ProcessPath: owner.ProcessPath,
-		UserId:      owner.UserId,
-		UserName:    owner.UserName,
-	}, nil
+	result := &libbox.ConnectionOwner{UserId: owner.UserId, UserName: owner.UserName}
+	if len(owner.ProcessPaths) > 0 {
+		result.ProcessPath = owner.ProcessPaths[0]
+	}
+	return result, nil
 }

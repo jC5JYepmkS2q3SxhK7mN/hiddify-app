@@ -5,6 +5,10 @@ HIDDIFY_HOST_ENTITLEMENTS = Runner/Release.entitlements
 HIDDIFY_HOST_ENTITLEMENTS[config=Debug] = Runner/Developer.entitlements
 HIDDIFY_EXTENSION_CODE_SIGN_ALLOWED = YES
 HIDDIFY_EXTENSION_CODE_SIGN_ALLOWED[config=Debug] = NO
+// The packet tunnel is a system extension, except in the Mac App Store build (AppStore.xcconfig),
+// which carries it as an app extension instead.
+HIDDIFY_TUNNEL_KIND = system-extension
+HIDDIFY_APPEX_CODE_SIGN_ALLOWED = NO
 // The same identifiers as the iOS app, in the same Apple team
 HIDDIFY_TUNNEL_BUNDLE_IDENTIFIER = apple.hiddify.com.HiddifyPacketTunnel
 HIDDIFY_APP_BUNDLE_IDENTIFIER = apple.hiddify.com

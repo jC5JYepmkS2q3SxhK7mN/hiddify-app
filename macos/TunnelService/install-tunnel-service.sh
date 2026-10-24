@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+
+# Installs the VPN service of builds without a Developer ID: the app's own executable, run as
+# `Hiddify --tunnel run` by launchd with administrator rights, which takes the traffic into a TUN and
+# hands it to the core in the app. Hiddify runs this with an administrator password; by hand:
+#   sudo "/Applications/Hiddify.app/Contents/Resources/TunnelService/install-tunnel-service.sh" /Applications/Hiddify.app
+
+task_source="${1:-}"
+task_destination="/Library/Application Support/Hiddify/TunnelService/Hiddify.app"
+
+if [[ "$(id -u)" != 0 ]]; then
+  echo 'error: run this script with sudo.' >&2
+  exit 1
+fi
+if [[ ! -x "$task_source/Contents/MacOS/Hiddify" ]]; then
+  echo 'error: pass the path of Hiddify.app.' >&2
+  exit 1
+fi
+
+# The root helper of earlier builds.
+launchctl bootout system/com.hiddify.tunnel-helper 2>/dev/null || true
+rm -f /Library/LaunchDaemons/com.hiddify.tunnel-helper.plist /Library/PrivilegedHelperTools/com.hiddify.tunnel-helper \
+  /var/run/hiddify-tunnel-helper.sock
+rm -rf "/Library/Application Support/Hiddify/TunnelHelper"
+
+if [[ -x "$task_destination/Contents/MacOS/Hiddify" ]]; then
+  "$task_destination/Contents/MacOS/Hiddify" --tunnel uninstall || true
+fi
+# A root daemon must not run files its user can change, so it runs a root-owned copy of the app.
+rm -rf "$task_destination"
+mkdir -p "$(dirname "$task_destination")"
+ditto "$task_source" "$task_destination"
+xattr -cr "$task_destination"
+chown -R root:wheel "$task_destination"
+chmod -R go-w "$task_destination"
+"$task_destination/Contents/MacOS/Hiddify" --tunnel install
+echo 'Hiddify VPN service installed.'

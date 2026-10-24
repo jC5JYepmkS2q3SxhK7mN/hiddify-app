@@ -544,6 +544,25 @@ build-macos-libs:
 macos-run-dev:
 	bash macos/scripts/run-dev.sh
 
+# macOS releases built on this Mac; see macos/scripts/dist.sh.
+macos-dist-unsigned:
+	bash macos/scripts/dist.sh unsigned $(DISTRIBUTOR_ARGS)
+
+macos-dist-developer-id:
+	bash macos/scripts/dist.sh developer-id $(DISTRIBUTOR_ARGS)
+
+macos-dist-appstore:
+	bash macos/scripts/dist.sh app-store
+
+macos-appstore-upload:
+	bash macos/scripts/dist.sh app-store --upload
+
+# CI builds the Mac App Store version and uploads it to TestFlight for version tags.
+macos-appstore-prepare: macos-prepare
+
+macos-appstore-release:
+	bash macos/scripts/dist.sh app-store $(MACOS_APPSTORE_ARGS)
+
 build-ios-libs: 
 	rm -rf $(IOS_OUT)/HiddifyCore.xcframework 
 	make -C hiddify-core -f Makefile ios  

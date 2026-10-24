@@ -5,18 +5,24 @@ task_root="$(cd "$(dirname "$0")/../.." && pwd)"
 task_build="$task_root/build/macos/tunnel-core"
 task_framework="$task_root/macos/Frameworks/HiddifyTunnelCore.xcframework"
 task_source="$task_root/macos/NetworkExtensionCore"
-task_core_source="$task_build/source"
+task_core_source="$task_root/hiddify-core"
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-# Psiphon's TLS adapter depends on the standard-library struct layout. Match
-# the core release's toolchain; a newer Go can compile and then panic at startup.
-export GOTOOLCHAIN=go1.25.6
+# Psiphon's TLS adapter depends on the standard-library struct layout. Match the
+# core's toolchain (hiddify-core/go.mod); another Go can compile and then panic at startup.
+export GOTOOLCHAIN=go1.26.3
 mkdir -p "$task_build/tools" "$task_root/macos/Frameworks"
 
 if ! command -v go >/dev/null; then
   echo 'error: Go is required to build the macOS packet tunnel core.' >&2
   exit 1
 fi
-bash "$task_root/macos/scripts/prepare-tunnel-source.sh"
+# The tunnel runs the app's own core, the hiddify-core submodule with its nested submodules.
+for task_module in hiddify-core hiddify-core/hiddify-sing-box hiddify-core/ray2sing; do
+  if [[ ! -f "$task_root/$task_module/go.mod" ]]; then
+    echo "error: $task_module is missing. Run: git submodule update --init --recursive" >&2
+    exit 1
+  fi
+done
 
 # Cache only matching source/toolchain/tag combinations. Never reuse a framework
 # after changing the wrapper or a core/submodule source file.
@@ -27,8 +33,8 @@ task_hash=$({
   xcodebuild -version
   echo "$task_tags"
   cat "$task_root/macos/scripts/build-tunnel-core.sh"
-  cat "$task_core_source/.revision"
-  find "$task_source" "$task_core_source" -type f \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' -o -name '*.h' -o -name '*.c' \) -print0 | sort -z | xargs -0 shasum -a 256
+  find "$task_source" "$task_core_source" \( -name .git -o -path "$task_source/build" \) -prune -o -type f \
+    \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' -o -name '*.h' -o -name '*.c' \) -print0 | sort -z | xargs -0 shasum -a 256
 } | shasum -a 256 | cut -d ' ' -f 1)
 if [[ -d "$task_framework" && -f "$task_stamp" && "$(cat "$task_stamp")" == "$task_hash" ]]; then
   exit 0

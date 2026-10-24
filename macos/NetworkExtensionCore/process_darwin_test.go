@@ -68,8 +68,8 @@ func TestFindConnectionOwner(t *testing.T) {
 			if owner.ProcessPath != executable {
 				t.Fatalf("process path = %q, want %q", owner.ProcessPath, executable)
 			}
-			if owner.UserId != -1 {
-				t.Fatalf("user ID = %d, want -1 for Darwin's path-only lookup", owner.UserId)
+			if owner.UserId != int32(os.Getuid()) {
+				t.Fatalf("user ID = %d, want %d", owner.UserId, os.Getuid())
 			}
 		})
 	}
