@@ -113,10 +113,10 @@ jobs:
           #   aarch: arm64
           #   targets: deb,gz
             
-          - platform: macos
-            os: macos-15
-            aarch: universal
-            targets: dmg,pkg
+          # - platform: macos
+          #   os: macos-15
+          #   aarch: universal
+          #   targets: dmg,pkg
 
           # Built and uploaded to TestFlight only for version tags; never a release asset.
           - platform: macos-appstore
@@ -134,33 +134,32 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
 
+      # Explicit keychain password (not a repo secret): v6's auto-generated
+      # keychain-password output is often empty in the next step, which makes
+      # `security unlock-keychain` fail with "passphrase is not correct".
       - name: Import Apple Codesign Certificates
         id: apple-certs
         if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
         uses: apple-actions/import-codesign-certs@v6
         with:
-            p12-file-base64: "${{ secrets.APPLE_CERTIFICATE_P12 }}"
-            p12-password: "${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}"
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}
+          keychain-password: hiddify-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Import Apple Mobile Provisioning Profile
         if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
         env:
-          KEYCHAIN_PASSWORD: ${{ steps.apple-certs.outputs.keychain-password }}
+          KEYCHAIN_PASSWORD: hiddify-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
-           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-           echo "${{secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64}}"|base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
-           ls ~/Library/MobileDevice/Provisioning\ Profiles
-           # Xcode 16 and later read profiles from this folder instead.
-           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
-           cp ~/Library/MobileDevice/Provisioning\ Profiles/* ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/
-           # v6 auto-generates the signing_temp password; empty -p "" fails unlock.
-           security unlock-keychain -p "$KEYCHAIN_PASSWORD" signing_temp.keychain
-           security find-identity -v -p codesigning
-        #   ls ~/Library/MobileDevice/Provisioning\ Profiles
-        #   echo "${{secrets.NEW_APPLE_MOBILE_PROVISIONING_PROFILES_TARXZ_BASE64}}"|base64 --decode | tar xJ -C ~/Library/MobileDevice/Provisioning\ Profiles
-        #   # echo "${{secrets.NEW_APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64_2}}"|base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
-          
-
+          set -euo pipefail
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64 }}" | base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
+          ls ~/Library/MobileDevice/Provisioning\ Profiles
+          # Xcode 16+ also reads this folder.
+          mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
+          cp ~/Library/MobileDevice/Provisioning\ Profiles/* ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" signing_temp.keychain
+          security find-identity -v -p codesigning
 
       # - name: Setup Flutter for arm64
       #   if: ${{ startsWith(matrix.platform,'linux-arm64') }}
@@ -473,12 +472,12 @@ jobs:
           path: ./out
           retention-days: 1
 
-      - name: Clean up keychain and provisioning profile
-        if: ${{ always() && startsWith(matrix.os,'macos')}}
+      # Profiles only — leave signing_temp.keychain for import-codesign-certs post cleanup.
+      - name: Clean up provisioning profiles
+        if: ${{ always() && startsWith(matrix.os,'macos') }}
         run: |
-          security delete-keychain signing_temp.keychain || security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || echo ok
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision ||echo ok
-          rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles ||echo ok
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision || true
+          rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles || true
   update-draft:
     if: ${{ inputs.upload-artifact }}
     needs: [build]
