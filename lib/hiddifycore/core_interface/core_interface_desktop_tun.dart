@@ -15,9 +15,12 @@ import 'package:hiddify/singbox/model/singbox_config_option.dart';
 import 'package:path/path.dart' as p;
 import 'package:rxdart/rxdart.dart';
 
-/// Windows and Linux VPN: the full core runs in HiddifyTunnelService (elevated once at install).
-/// The app talks to it over authenticated gRPC — same model as the unsigned macOS path, without a
-/// separate helper EXE or a TUN-to-SOCKS bridge (both raise antivirus false positives).
+/// Windows and Linux VPN: the full core usually runs in HiddifyTunnelService (elevated once at
+/// install). The app talks to it over authenticated gRPC — same model as the unsigned macOS path.
+///
+/// Exceptions that keep TUN in this process (no service):
+/// - the app is already root / Administrator (e.g. `sudo ./Hiddify.AppImage`);
+/// - Linux AppImage cannot host a service (FUSE mount is invisible to `pkexec` as root).
 class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   CoreInterfaceDesktopTun() : super(port: 17078);
 
@@ -28,7 +31,11 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   Directory? _workingDirectory;
   SingboxConfigOption? _options;
   bool _usingVPN = false;
+  bool? _privileged;
   String? _secret;
+
+  /// AppImage payload lives under a user FUSE mount; root/`pkexec` cannot exec that path.
+  bool get _isAppImage => Platform.isLinux && (Platform.environment['APPIMAGE'] ?? '').isNotEmpty;
 
   @override
   bool get managesLifecycle => true;
@@ -66,9 +73,12 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   @override
   Future<void> setOptions(SingboxConfigOption options) async {
     _options = options;
-    final foreground = options.copyWith(enableTun: false);
+    // Strip TUN only when the elevated service will own it; in-process TUN keeps enableTun.
+    final apply = (options.enableTun && !await _isPrivileged())
+        ? options.copyWith(enableTun: false)
+        : options;
     final response = await fgClient.changeHiddifySettings(
-      ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(foreground.toJson())),
+      ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(apply.toJson())),
     );
     _checkResponse(response);
   }
@@ -87,6 +97,38 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
       );
       _status.add(const CoreStatus.started());
       return;
+    }
+
+    // Already elevated: run TUN in this process. AppImage also cannot install a service
+    // (pkexec cannot see the FUSE mount), so root AppImage uses the same path.
+    if (await _isPrivileged()) {
+      _status.add(const CoreStatus.starting());
+      try {
+        _usingVPN = false;
+        bgClient = fgClient;
+        _clientChanges.add(null);
+        _checkResponse(
+          await fgClient.changeHiddifySettings(
+            ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(options.toJson())),
+          ),
+        );
+        _checkResponse(
+          await fgClient.start(
+            StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit),
+          ),
+        );
+        _status.add(const CoreStatus.started());
+      } catch (error) {
+        _status.add(CoreStatus.stopped(message: error.toString()));
+        rethrow;
+      }
+      return;
+    }
+
+    if (_isAppImage) {
+      throw StateError(
+        'VPN mode in the AppImage needs root. Quit and run: sudo ${Platform.environment['APPIMAGE']}',
+      );
     }
 
     _status.add(const CoreStatus.starting());
@@ -125,6 +167,25 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
       _status.add(CoreStatus.stopped(message: error.toString()));
       rethrow;
     }
+  }
+
+  Future<bool> _isPrivileged() async {
+    final cached = _privileged;
+    if (cached != null) return cached;
+    if (Platform.isLinux || Platform.isMacOS) {
+      final result = await Process.run('id', ['-u']);
+      _privileged = result.exitCode == 0 && result.stdout.toString().trim() == '0';
+    } else if (Platform.isWindows) {
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        '([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)',
+      ]);
+      _privileged = result.stdout.toString().trim().toLowerCase() == 'true';
+    } else {
+      _privileged = false;
+    }
+    return _privileged!;
   }
 
   Future<File> _writeConnectRequest({

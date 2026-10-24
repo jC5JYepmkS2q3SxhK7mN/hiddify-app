@@ -75,23 +75,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: android-apk
-            os: ubuntu-latest
-            targets: apk
+          # - platform: android-apk
+          #   os: ubuntu-latest
+          #   targets: apk
 
           # - platform: android-aab
           #   os: ubuntu-latest
           #   targets: aab
 
-          - platform: windows
-            os: windows-latest
-            aarch: amd64
-            targets: exe,msix,zip
+          # - platform: windows
+          #   os: windows-latest
+          #   aarch: amd64
+          #   targets: exe,msix,zip
 
-          - platform: linux
-            os: ubuntu-22.04
-            aarch: amd64
-            targets: deb,gz,AppImage
+          # - platform: linux
+          #   os: ubuntu-22.04
+          #   aarch: amd64
+          #   targets: deb,gz,AppImage
 
           # - platform: linux-amd64
           #   os: ubuntu-22.04
@@ -135,14 +135,17 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Import Apple Codesign Certificates
+        id: apple-certs
         if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
         uses: apple-actions/import-codesign-certs@v6
-        with: 
+        with:
             p12-file-base64: "${{ secrets.APPLE_CERTIFICATE_P12 }}"
             p12-password: "${{ secrets.APPLE_CERTIFICATE_P12_PASSWORD }}"
 
       - name: Import Apple Mobile Provisioning Profile
         if: ${{ inputs.upload-artifact && startsWith(matrix.os,'macos') }}
+        env:
+          KEYCHAIN_PASSWORD: ${{ steps.apple-certs.outputs.keychain-password }}
         run: |
            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
            echo "${{secrets.APPLE_MOBILE_PROVISIONING_PROFILES_TARGZ_BASE64}}"|base64 --decode | tar xz -C ~/Library/MobileDevice/Provisioning\ Profiles
@@ -150,7 +153,8 @@ jobs:
            # Xcode 16 and later read profiles from this folder instead.
            mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
            cp ~/Library/MobileDevice/Provisioning\ Profiles/* ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/
-           security unlock-keychain -p "" signing_temp.keychain
+           # v6 auto-generates the signing_temp password; empty -p "" fails unlock.
+           security unlock-keychain -p "$KEYCHAIN_PASSWORD" signing_temp.keychain
            security find-identity -v -p codesigning
         #   ls ~/Library/MobileDevice/Provisioning\ Profiles
         #   echo "${{secrets.NEW_APPLE_MOBILE_PROVISIONING_PROFILES_TARXZ_BASE64}}"|base64 --decode | tar xJ -C ~/Library/MobileDevice/Provisioning\ Profiles
@@ -173,18 +177,8 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Check out the core the macOS tunnel runs
-        if: startsWith(matrix.platform, 'macos')
-        run: |
-          git config --global url."https://github.com/".insteadOf git@github.com:
-          git submodule update --init --recursive hiddify-core
-
-      - name: Set up packet tunnel Go toolchain
-        if: startsWith(matrix.platform, 'macos')
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.26.3'
-          cache-dependency-path: hiddify-core/go.sum
+      # macOS tunnel xcframework comes from hiddify-lib-macos.tar.gz via `make macos-libs`
+      # (built in hiddify-core CI); no submodule / Go bind on the app runner.
 
       - name: Configure macOS signing
         if: matrix.platform == 'macos'
@@ -482,7 +476,7 @@ jobs:
       - name: Clean up keychain and provisioning profile
         if: ${{ always() && startsWith(matrix.os,'macos')}}
         run: |
-          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db ||echo ok
+          security delete-keychain signing_temp.keychain || security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || echo ok
           rm ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision ||echo ok
           rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles ||echo ok
   update-draft:

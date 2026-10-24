@@ -509,9 +509,13 @@ linux-arm64-musl-libs:
 
 
 macos-libs:
-	mkdir -p  $(DESKTOP_OUT) 
+	mkdir -p $(DESKTOP_OUT) macos/Frameworks
 	curl -L $(CORE_URL)/$(CORE_NAME)-macos.tar.gz | tar xz -C $(DESKTOP_OUT)
-	bash macos/scripts/build-tunnel-core.sh
+	# Tunnel bind ships in the same tarball (built by hiddify-core `make macos`).
+	test -d $(DESKTOP_OUT)/HiddifyTunnelCore.xcframework
+	rm -rf macos/Frameworks/HiddifyTunnelCore.xcframework
+	mv $(DESKTOP_OUT)/HiddifyTunnelCore.xcframework macos/Frameworks/
+	touch macos/Frameworks/HiddifyTunnelCore.xcframework/.downloaded
 
 ios-libs: #not tested
 	mkdir -p $(IOS_OUT)
@@ -538,7 +542,10 @@ build-linux-libs:
 
 build-macos-libs:
 	make -C hiddify-core -f Makefile macos
-	bash macos/scripts/build-tunnel-core.sh
+	test -d hiddify-core/bin/HiddifyTunnelCore.xcframework
+	mkdir -p macos/Frameworks
+	rm -rf macos/Frameworks/HiddifyTunnelCore.xcframework
+	cp -R hiddify-core/bin/HiddifyTunnelCore.xcframework macos/Frameworks/
 
 # Runs Debug from /Applications, where macOS allows the VPN system extension.
 macos-run-dev:
