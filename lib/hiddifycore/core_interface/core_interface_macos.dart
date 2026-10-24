@@ -6,14 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:grpc/grpc.dart';
 import 'package:hiddify/core/model/directories.dart';
 import 'package:hiddify/hiddifycore/core_interface/core_interface_desktop.dart';
+import 'package:hiddify/hiddifycore/core_interface/vpn_config_snapshot.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcommon/common.pb.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore_service.pbgrpc.dart';
 import 'package:hiddify/singbox/model/core_status.dart';
 import 'package:hiddify/singbox/model/singbox_config_option.dart';
-import 'package:hiddify/utils/custom_loggers.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
 import 'package:rxdart/rxdart.dart';
 
 class CoreInterfaceMacOS extends CoreInterfaceDesktop {
@@ -215,50 +214,7 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
   Future<(String, Map<String, Uint8List>)> snapshotConfiguration(String path) async {
     final workingDirectory = _workingDirectory;
     if (workingDirectory == null) throw StateError('Set up the core before snapshotting a VPN configuration.');
-    final content = await File(path).readAsString();
-    final resources = <String, Uint8List>{};
-    final document = jsonDecode(content);
-    var totalBytes = 0;
-    Future<void> collect(dynamic value, String? parent) async {
-      if (value is List) {
-        for (final item in value) {
-          await collect(item, parent);
-        }
-      } else if (value is Map<String, dynamic>) {
-        for (final key in value.keys.toList()) {
-          final item = value[key];
-          final isFile =
-              const {
-                'certificate_path',
-                'key_path',
-                'client_certificate_path',
-                'client_key_path',
-                'private_key_path',
-              }.contains(key) ||
-              (key == 'path' && (value['type'] == 'local' || parent == 'geoip' || parent == 'geosite'));
-          if (isFile && item is String && item.isNotEmpty) {
-            // Match the core's setup working directory, even when the profile
-            // lives in configs/ or elsewhere. Absolute resource paths stay intact.
-            final source = File(p.isAbsolute(item) ? item : p.join(workingDirectory.path, item));
-            final bytes = await source.readAsBytes();
-            totalBytes += bytes.length;
-            if (totalBytes > 32 * 1024 * 1024) {
-              throw StateError(
-                'Local VPN resources exceed the 32 MB snapshot limit. Use remote rule sets for large files.',
-              );
-            }
-            final name = '${resources.length}-${p.basename(item).replaceAll(RegExp('[^a-zA-Z0-9._-]'), '_')}';
-            resources[name] = bytes;
-            value[key] = 'resources/$name';
-          } else {
-            await collect(item, key);
-          }
-        }
-      }
-    }
-
-    await collect(document, null);
-    return (jsonEncode(document), resources);
+    return snapshotVpnConfiguration(path, workingDirectory);
   }
 
   @override

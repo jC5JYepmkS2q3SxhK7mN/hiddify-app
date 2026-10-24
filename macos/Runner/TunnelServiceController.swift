@@ -1,4 +1,3 @@
-import CryptoKit
 import FlutterMacOS
 import Foundation
 
@@ -7,17 +6,14 @@ import Foundation
 // with administrator rights. This controller mirrors MacOSVPNController's method-channel contract
 // (initialize/start/stop returning available, port, secret, status) so Dart can reuse the useTunnel path.
 final class TunnelServiceController {
-    private static let installedApp = "/Library/Application Support/Hiddify/TunnelService/Hiddify.app"
     private static let servicePort: UInt16 = 18020
     private static let secretPath =
         "/Library/Application Support/Hiddify/TunnelService/data/control.secret"
+    private static let buildStampPath =
+        "/Library/Application Support/Hiddify/TunnelService/data/build.id"
     private let queue = DispatchQueue(label: "app.hiddify.tunnel-service")
     private var connected = false
     private var lastMessage: String?
-
-    private var coreLibrary: URL? {
-        Bundle.main.privateFrameworksURL?.appendingPathComponent("hiddify-core.dylib")
-    }
 
     private var installScript: URL? {
         Bundle.main.resourceURL?.appendingPathComponent("TunnelService/install-tunnel-service.sh")
@@ -160,27 +156,48 @@ final class TunnelServiceController {
     }
 
     private func ensureInstalledSync() -> String? {
-        if installedServiceIsCurrent() { return nil }
+        // The build id lives only in hiddify-core (Go). Ask this app's core for it and compare
+        // to the running service stamp — Dart never embeds the value.
+        if serviceReady() { return nil }
         if let error = install() { return error }
-        for _ in 0..<50 where !Self.serviceListening() {
+        for _ in 0..<50 where !serviceReady() {
             Thread.sleep(forTimeInterval: 0.1)
         }
-        if !Self.serviceListening() {
-            return "The VPN service was installed but did not start."
-        }
-        if (try? Self.readSecret()) == nil {
-            return "The VPN service secret is missing. Reinstall the VPN service."
+        if !serviceReady() {
+            if (try? Self.readSecret()) == nil {
+                return "The VPN service secret is missing. Reinstall the VPN service."
+            }
+            if !Self.serviceListening() {
+                return "The VPN service was installed but did not start."
+            }
+            return "The VPN service is still running a different Hiddify core. Try connecting again."
         }
         return nil
     }
 
-    private func installedServiceIsCurrent() -> Bool {
-        guard let library = coreLibrary, Self.serviceListening(),
-              (try? Self.readSecret()) != nil,
-              let installedHash = Self.sha256(URL(fileURLWithPath: Self.installedApp)
-                  .appendingPathComponent("Contents/Frameworks/hiddify-core.dylib")),
-              let bundledHash = Self.sha256(library) else { return false }
-        return installedHash == bundledHash
+    private func serviceReady() -> Bool {
+        guard (try? Self.readSecret()) != nil, Self.serviceListening(),
+              let bundled = bundledCoreBuildId(),
+              let stamped = try? Self.readBuildStamp() else { return false }
+        return bundled == stamped
+    }
+
+    // Prints the build id embedded in this app's hiddify-core (via Hiddify --tunnel build-id).
+    private func bundledCoreBuildId() -> String? {
+        guard let executable = Bundle.main.executableURL?.path else { return nil }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = ["--tunnel", "build-id"]
+        let stdout = Pipe()
+        process.standardOutput = stdout
+        process.standardError = Pipe()
+        do { try process.run() } catch { return nil }
+        process.waitUntilExit()
+        guard process.terminationStatus == 0 else { return nil }
+        let id = String(data: stdout.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !id.isEmpty, id != "unset" else { return nil }
+        return id
     }
 
     private static func readSecret() throws -> String {
@@ -190,9 +207,9 @@ final class TunnelServiceController {
         return secret
     }
 
-    private static func sha256(_ url: URL) -> SHA256.Digest? {
-        guard let data = try? Data(contentsOf: url, options: .alwaysMapped) else { return nil }
-        return SHA256.hash(data: data)
+    private static func readBuildStamp() throws -> String {
+        try String(contentsOfFile: buildStampPath, encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func serviceListening() -> Bool {

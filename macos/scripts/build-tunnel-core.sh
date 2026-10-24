@@ -48,6 +48,7 @@ if [[ ! -x "$GOBIN/gomobile" || ! -x "$GOBIN/gobind" ]]; then
 fi
 cd "$task_core_source"
 # Bind libbox plus the shared tunnel package used by the system extension and the root service.
+# Build id for the unsigned tunnel service comes from the downloaded hiddify-core dylib/CLI, not here.
 gomobile bind -target macos -macosversion 12.0 -libname HiddifyTunnelCore -tags "$task_tags" \
   -trimpath -ldflags '-w -s -checklinkname=0' \
   -o "$task_build/HiddifyTunnelCore.xcframework" \
