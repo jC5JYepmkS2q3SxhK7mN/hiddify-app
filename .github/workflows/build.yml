@@ -30,6 +30,7 @@ env:
   TARGET_NAME_zip: "Hiddify-Windows-Portable-x64"
   TARGET_NAME_dmg: "Hiddify-MacOS"
   TARGET_NAME_pkg: "Hiddify-MacOS-Installer"
+  TARGET_NAME_macos_appstore_pkg: "Hiddify-MacOS-AppStore"
   TARGET_NAME_ipa: "Hiddify-iOS"
   
 
@@ -118,8 +119,8 @@ jobs:
           #   aarch: universal
           #   targets: dmg,pkg
 
-          # Built on CI when upload-artifact is set. Uploaded to TestFlight only for
-          # version tags (not draft). Never a GitHub release asset.
+          # Built on CI when upload-artifact is set. Artifact is the App Store pkg;
+          # altool --upload (TestFlight) only for version tags, not draft.
           - platform: macos-appstore
             os: macos-26
             aarch: universal
@@ -427,6 +428,19 @@ jobs:
           ls -R ./build/app/outputs
           cp ./build/app/outputs/bundle/release/app-release.aab out/hiddify-android-market.aab || echo "no aab"
 
+      - name: Copy to out macOS App Store
+        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
+        run: |
+          ls -R dist/
+          mkdir -p out
+          pkg="$(find dist -name '*-macos-appstore.pkg' -type f | head -1)"
+          if [[ -z "$pkg" ]]; then
+            echo '::error::macos-appstore pkg not found under dist/'
+            exit 1
+          fi
+          cp "$pkg" "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
+          ls -la out/
+
       - name: Copy to out unix
         if: startsWith(matrix.platform,'linux') || matrix.platform == 'macos' || (matrix.platform == 'ios' && inputs.upload-artifact)
         run: |
@@ -474,8 +488,7 @@ jobs:
         run: python3 .github/scripts/verify_signed_ipa.py out/Hiddify-iOS.ipa
 
       - name: Upload Artifact
-        # macos-appstore goes to TestFlight only; it never populates ./out.
-        if: env.UPLOAD_ARTIFACT == 'true' && matrix.platform != 'macos-appstore'
+        if: env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: ${{matrix.platform}}
