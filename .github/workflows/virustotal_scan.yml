@@ -1,4 +1,6 @@
-# Upload release assets to VirusTotal and append status badges to the release notes.
+# Upload release assets to VirusTotal so the VirusTotal column badges show results.
+# Badge links already point at https://www.virustotal.com/gui/file/<sha256>/detection
+# (SHA filled in by .github/scripts/fill_vt_sha256.py when the release notes are built).
 # Pattern based on https://github.com/yuliskov/SmartTube/.github/workflows/virustotal_scan.yml
 # API: https://docs.virustotal.com/reference/overview
 name: VirusTotal Scan
@@ -28,10 +30,6 @@ jobs:
     steps:
       - name: Set tag variable
         run: echo "TAG_NAME=${{ inputs.release_tag }}" >> $GITHUB_ENV
-
-      - name: Set report marker variable
-        run: |
-          echo -e "MARKER=\t\t\t" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v6
@@ -64,50 +62,38 @@ jobs:
             release_assets/*
           request_rate: 4
 
-      - name: Generate Custom Badge Report
+      - name: Refresh VirusTotal badge cache
         if: steps.vt.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Waiting 150s for VirusTotal engines to report..."
           sleep 150
 
-          echo -e "$MARKER\n## 🛡️ VirusTotal Analysis" > vt_report.txt
-          echo "" >> vt_report.txt
-
-          echo "| Build Variant | VirusTotal Status | Detailed Report |" >> vt_report.txt
-          echo "| :--- | :--- | :--- |" >> vt_report.txt
+          gh release view "$TAG_NAME" --json body -q .body > release_notes.md || echo "" > release_notes.md
+          stamp=$(date +%s)
 
           for file in release_assets/*; do
             [ -f "$file" ] || continue
             filename=$(basename "$file")
             sha256=$(sha256sum "$file" | awk '{print $1}')
+            badge="https://badges.cssnr.com/vt/id/${sha256}?start=green&end=red&n=8"
+            echo "Purging badge cache for $filename ($sha256)"
+            curl -s -X POST "$badge" || true
 
-            vt_link="https://www.virustotal.com/gui/file/$sha256/detection"
-            badge_url="https://badges.cssnr.com/vt/id/$sha256?start=green&end=red&n=8"
-
-            echo "Purging badge cache for $filename..."
-            curl -s -X POST "$badge_url" || true
-
-            asset_link="https://github.com/${{ github.repository }}/releases/download/${{ env.TAG_NAME }}/$filename"
-
-            echo "| [$filename]($asset_link) | [![]($badge_url&v=$(date +%s))]($vt_link) | [View Report]($vt_link) |" >> vt_report.txt
+            python3 - "$sha256" "$stamp" <<'PY'
+          import pathlib, re, sys
+          sha256, stamp = sys.argv[1:3]
+          path = pathlib.Path("release_notes.md")
+          text = path.read_text()
+          # Bust badge cache after engines finish (href already points at VirusTotal)
+          text = re.sub(
+              rf'src="https://badges\.cssnr\.com/vt/id/{re.escape(sha256)}\?[^"]*"',
+              f'src="https://badges.cssnr.com/vt/id/{sha256}?start=green&end=red&n=8&v={stamp}"',
+              text,
+          )
+          path.write_text(text)
+          PY
           done
 
-      - name: Update Release Notes
-        if: steps.vt.outcome == 'success'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release view "$TAG_NAME" --json body -q .body > current_notes.txt || echo "" > current_notes.txt
-
-          # If the header exists, delete from that line to the end
-          if grep -q "$MARKER" current_notes.txt; then
-            echo "Previous report found. Cleaning up..."
-            sed -i "/$MARKER/,\$d" current_notes.txt
-          fi
-
-          {
-            cat current_notes.txt
-            cat vt_report.txt
-          } > final_notes.txt
-
-          gh release edit "$TAG_NAME" --notes-file final_notes.txt
+          gh release edit "$TAG_NAME" --notes-file release_notes.md
