@@ -538,16 +538,21 @@ jobs:
           deleteOnlyFromDrafts: false
           
       - name: prepare_release_message
-        continue-on-error: true
         run: |
-          set +e 
+          set -euo pipefail
           sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
           python3 ./.github/scripts/fill_vt_sha256.py release.md ./out
           pip install gitchangelog pystache mustache markdown
-          prelease=$(curl --silent "${{ github.api_url }}/repos/${{ github.repository }}/releases/latest" | grep -Po '"tag_name": "\K([^"]*)')
-          echo -e "\n\n<details markdown=1><summary>All changes from $current to the latest commit:</summary>\n\n">>release.md
-          gitchangelog "${prelease}.." >> release.md  2>&1 || echo "Error in gitchangelog"
-          echo -e "\n\n</details>">>release.md
+          prelease=$(curl --silent "${{ github.api_url }}/repos/${{ github.repository }}/releases/latest" | grep -Po '"tag_name": "\K([^"]*)' || true)
+          {
+            echo
+            echo
+            echo "<details markdown=1><summary>All changes from ${prelease:-unknown} to the latest commit:</summary>"
+            echo
+            gitchangelog "${prelease}.." 2>&1 || echo "Error in gitchangelog"
+            echo
+            echo "</details>"
+          } >> release.md
       - name: Create or Update Draft Release
         uses: softprops/action-gh-release@v2
         env:
@@ -610,7 +615,8 @@ jobs:
 
       - name: prepare_release_message
         run: |
-          sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md >> release.md
+          set -euo pipefail
+          sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
           python3 ./.github/scripts/fill_vt_sha256.py release.md ./out
 
       - name: Upload Release

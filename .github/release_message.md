@@ -63,7 +63,7 @@
             <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-Windows-Portable-x64.zip/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-Windows-Portable-x64.zip?start=green&end=red&n=8" alt="VirusTotal"></a></td>
         </tr>
         <tr>
-            <td rowspan="2">macOS (v10.15+)</td>
+            <td rowspan="4">macOS (v10.15+)</td>
             <td><a href="https://github.com/hiddify/hiddify-app/releases/download/RELEASE_TAG/Hiddify-MacOS.dmg"><img src="https://img.shields.io/badge/DMG-Universal-ea005e.svg?logo=apple"></a></td>
             <td><img src="https://img.shields.io/github/downloads/hiddify/hiddify-app/RELEASE_TAG/Hiddify-MacOS.dmg?style=flat-square&label=%20" alt="downloads"></td>
             <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-MacOS.dmg/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-MacOS.dmg?start=green&end=red&n=8" alt="VirusTotal"></a></td>
@@ -72,6 +72,22 @@
             <td><a href="https://github.com/hiddify/hiddify-app/releases/download/RELEASE_TAG/Hiddify-MacOS-Installer.pkg"><img src="https://img.shields.io/badge/PKG-Universal-bc544b.svg?logo=apple"></a></td>
             <td><img src="https://img.shields.io/github/downloads/hiddify/hiddify-app/RELEASE_TAG/Hiddify-MacOS-Installer.pkg?style=flat-square&label=%20" alt="downloads"></td>
             <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-MacOS-Installer.pkg/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-MacOS-Installer.pkg?start=green&end=red&n=8" alt="VirusTotal"></a></td>
+        </tr>
+        <tr>
+            <td><a href="https://github.com/hiddify/hiddify-app/releases/download/RELEASE_TAG/Hiddify-MacOS-AppStore.dmg"><img src="https://img.shields.io/badge/App%20Store%20DMG-Universal-ea005e.svg?logo=apple"></a></td>
+            <td><img src="https://img.shields.io/github/downloads/hiddify/hiddify-app/RELEASE_TAG/Hiddify-MacOS-AppStore.dmg?style=flat-square&label=%20" alt="downloads"></td>
+            <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-MacOS-AppStore.dmg/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-MacOS-AppStore.dmg?start=green&end=red&n=8" alt="VirusTotal"></a></td>
+        </tr>
+        <tr>
+            <td><a href="https://github.com/hiddify/hiddify-app/releases/download/RELEASE_TAG/Hiddify-MacOS-AppStore.pkg"><img src="https://img.shields.io/badge/App%20Store%20PKG-Universal-bc544b.svg?logo=apple"></a></td>
+            <td><img src="https://img.shields.io/github/downloads/hiddify/hiddify-app/RELEASE_TAG/Hiddify-MacOS-AppStore.pkg?style=flat-square&label=%20" alt="downloads"></td>
+            <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-MacOS-AppStore.pkg/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-MacOS-AppStore.pkg?start=green&end=red&n=8" alt="VirusTotal"></a></td>
+        </tr>
+        <tr>
+            <td>iOS</td>
+            <td><a href="https://github.com/hiddify/hiddify-app/releases/download/RELEASE_TAG/Hiddify-iOS.ipa"><img src="https://img.shields.io/badge/IPA-iOS-000000.svg?logo=apple"></a></td>
+            <td><img src="https://img.shields.io/github/downloads/hiddify/hiddify-app/RELEASE_TAG/Hiddify-iOS.ipa?style=flat-square&label=%20" alt="downloads"></td>
+            <td><a href="https://www.virustotal.com/gui/file/VT_SHA256_Hiddify-iOS.ipa/detection"><img src="https://badges.cssnr.com/vt/id/VT_SHA256_Hiddify-iOS.ipa?start=green&end=red&n=8" alt="VirusTotal"></a></td>
         </tr>
         <tr>
             <td rowspan="3">Linux</td>

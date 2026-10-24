@@ -47,6 +47,7 @@ jobs:
             --pattern "Hiddify-*.zip" \
             --pattern "Hiddify-*.dmg" \
             --pattern "Hiddify-*.pkg" \
+            --pattern "Hiddify-*.ipa" \
             --pattern "Hiddify-*.AppImage" \
             --pattern "Hiddify-*.deb" \
             --pattern "Hiddify-*.rpm"
