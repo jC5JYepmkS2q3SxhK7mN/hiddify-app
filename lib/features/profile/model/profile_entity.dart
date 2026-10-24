@@ -24,6 +24,7 @@ sealed class ProfileEntity with _$ProfileEntity {
     SubscriptionInfo? subInfo,
     // `profile-web-page-url` / `support-url` headers; independent of subInfo,
     // which only exists when the `subscription-userinfo` header is present.
+    // Custom IP lookup uses `ipinfo-url` in [populatedHeaders] only.
     String? webPageUrl,
     String? supportUrl,
     Map<String, dynamic>? populatedHeaders,
