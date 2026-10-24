@@ -207,6 +207,10 @@ class ConnectionNotifier extends _$ConnectionNotifier with AppLogger {
   }
 
   Future<void> _disconnect() async {
+    // The core often goes Started → Stopped with no Stopping in between, and the
+    // button would hold green "connected" until then. Mirror connect: show
+    // disconnecting from the tap.
+    state = const AsyncData(Disconnecting());
     await _connectionRepo.disconnect().mapLeft((err) {
       loggy.warning("error disconnecting", err);
       ref
