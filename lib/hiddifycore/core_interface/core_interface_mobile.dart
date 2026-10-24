@@ -137,7 +137,11 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
 
   @override
   Future<CoreStatus> setupBackground(String path, String name) async {
-    if (!await stop()) return const CoreStatus.stopped(alert: CoreAlert.createService);
+    // Stop any previous VPN gRPC server. A stuck port is logged but start is
+    // still attempted — Android waits out Stopping before Mobile.setup.
+    if (!await stop()) {
+      loggy.warning('previous background core still closing; starting anyway');
+    }
     _status.clean();
     await methodChannel.invokeMethod('start', {
       'path': path,
@@ -192,8 +196,15 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
 
   @override
   Future<bool> stop() async {
+    if (!await isPortOpen('127.0.0.1', portBack)) {
+      _isBgClientAvailable = false;
+      return true;
+    }
     await stopMethodChannel();
-    if (!await waitUntilPort(portBack, false, null)) {
+    // Port should drop once Mobile.close uses the same setup mode as start
+    // (mTLS background is mode 2; insecure is 4).
+    if (!await waitUntilPort(portBack, false, null, maxTry: 50)) {
+      loggy.warning('background port $portBack still open after stop');
       return false;
     }
 

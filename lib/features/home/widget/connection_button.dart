@@ -275,9 +275,11 @@ class _ConnectionButton extends HookWidget {
     target.value = EclipseTraffic(down: EclipseTraffic.level(download), up: EclipseTraffic.level(upload));
     final traffic = useRef(const EclipseTraffic());
 
-    // repaints about 30 times a second, and only while something moves
+    // Timer (not useSingleTickerProvider): that hook only allows one createTicker
+    // for the State's life, so look/still changes crashed after disconnect→connect.
     final time = useValueNotifier(0.0);
     useEffect(() {
+      if (still) return null;
       var last = now();
       final timer = Timer.periodic(const Duration(milliseconds: 33), (_) {
         final at = now();
@@ -292,7 +294,7 @@ class _ConnectionButton extends HookWidget {
         if (!settled) time.value = at;
       });
       return timer.cancel;
-    }, const []);
+    }, [still]);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -314,28 +316,32 @@ class _ConnectionButton extends HookWidget {
                   right: -_glow,
                   bottom: -_glow,
                   child: IgnorePointer(
-                    child: ValueListenableBuilder(
-                      valueListenable: time,
-                      builder: (context, t, _) {
-                        final c = change.value;
-                        return CustomPaint(
-                          painter: EclipseButtonPainter(
-                            frame: EclipseFrame(
-                              look: c.look,
-                              previous: c.previous,
-                              since: still ? 10 : now() - c.at,
-                              time: still ? 0 : now(),
-                              color: c.color,
-                              previousColor: c.previousColor,
+                    child: RepaintBoundary(
+                      child: ValueListenableBuilder(
+                        valueListenable: time,
+                        builder: (context, t, _) {
+                          final c = change.value;
+                          return CustomPaint(
+                            isComplex: true,
+                            willChange: true,
+                            painter: EclipseButtonPainter(
+                              frame: EclipseFrame(
+                                look: c.look,
+                                previous: c.previous,
+                                since: still ? 10 : now() - c.at,
+                                time: still ? 0 : now(),
+                                color: c.color,
+                                previousColor: c.previousColor,
+                              ),
+                              radius: _size / 2,
+                              traffic: traffic.value,
+                              dark: theme.brightness == Brightness.dark,
+                              drawLogo: !useImage,
+                              logoOpacity: look == _Look.loading ? .38 : 1,
                             ),
-                            radius: _size / 2,
-                            traffic: traffic.value,
-                            dark: theme.brightness == Brightness.dark,
-                            drawLogo: !useImage,
-                            logoOpacity: look == _Look.loading ? .38 : 1,
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),

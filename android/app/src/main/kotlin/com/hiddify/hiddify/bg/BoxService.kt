@@ -142,6 +142,10 @@ class BoxService(
 
 
     private var activeProfileName = ""
+
+    /// Mode last passed to Mobile.setup for the VPN gRPC server (2 mTLS / 4 insecure).
+    private var grpcSetupMode: Long = 4L
+
     private suspend fun startService() {
         try {
             status.postValue(Status.Starting)
@@ -168,6 +172,8 @@ class BoxService(
             DefaultNetworkMonitor.start()
             Libbox.setMemoryLimit(!Settings.disableMemoryLimit)
             activePlatformInterface = platformInterface
+            // 2 = GRPC_BACKGROUND (mTLS), 4 = GRPC_BACKGROUND_INSECURE. Must match Mobile.close.
+            grpcSetupMode = if (Settings.grpcFlutterPublicKey.isNotEmpty()) 2L else 4L
             try {
                 Mobile.setup(
                     SetupOptions().also {
@@ -175,8 +181,7 @@ class BoxService(
                         it.workingDir = Settings.workingDir
                         it.tempDir = Settings.tempDir
                         it.fixAndroidStack = com.hiddify.hiddify.bg.Bugs.fixAndroidStack
-                        // Match Flutter setup: mTLS (2) when a client cert was registered, else insecure (4).
-                        it.mode = if (Settings.grpcFlutterPublicKey.isNotEmpty()) 2L else 4L
+                        it.mode = grpcSetupMode
                         it.listen = "127.0.0.1:${Settings.grpcServiceModePort}"
                         it.secret = ""
                         it.debug = Settings.debugMode
@@ -187,7 +192,8 @@ class BoxService(
                     Mobile.addGrpcClientPublicKey(Settings.grpcFlutterPublicKey)
                 }
             } catch (e: Exception) {
-                stopAndAlert(Alert.CreateService, e.message)
+                Log.e(TAG, "Mobile.setup failed", e)
+                stopAndAlert(Alert.CreateService, e.message ?: e.toString())
                 return
             }
             status.postValue(Status.Started)
@@ -305,6 +311,11 @@ class BoxService(
             Settings.startedByUser = false
             withContext(Dispatchers.Main) {
                 if (activePlatformInterface === platformInterface) activePlatformInterface = null
+                // Close the mode we actually started. Old code always closed 4 (insecure), so
+                // mTLS background (mode 2) left :17079 listening and reconnect failed with
+                // "background service did not stop".
+                Mobile.close(grpcSetupMode)
+                Mobile.close(2L)
                 Mobile.close(4L)
                 status.value = Status.Stopped
                 service.stopSelf()
@@ -331,7 +342,28 @@ class BoxService(
     @OptIn(DelicateCoroutinesApi::class)
     @Suppress("SameReturnValue")
     internal fun onStartCommand(): Int {
-        if (status.value != Status.Stopped) return Service.START_NOT_STICKY
+        // Already up or starting: ignore duplicate start intents.
+        if (status.value == Status.Started || status.value == Status.Starting) {
+            return Service.START_NOT_STICKY
+        }
+        // A stop is still tearing down Mobile/VPN; wait then start so reconnect
+        // after disconnect does not hit CreateService from a raced Mobile.setup.
+        if (status.value == Status.Stopping) {
+            GlobalScope.launch(Dispatchers.IO) {
+                var i = 0
+                while (status.value == Status.Stopping && i < 50) {
+                    delay(200)
+                    i++
+                }
+                if (status.value == Status.Stopped) {
+                    ContextCompat.startForegroundService(
+                        Application.application,
+                        Intent(Application.application, Settings.serviceClass()),
+                    )
+                }
+            }
+            return Service.START_NOT_STICKY
+        }
         status.value = Status.Starting
 
         if (!receiverRegistered) {
