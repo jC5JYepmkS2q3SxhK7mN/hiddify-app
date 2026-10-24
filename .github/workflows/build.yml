@@ -118,7 +118,8 @@ jobs:
           #   aarch: universal
           #   targets: dmg,pkg
 
-          # Built and uploaded to TestFlight only for version tags; never a release asset.
+          # Built on CI when upload-artifact is set. Uploaded to TestFlight only for
+          # version tags (not draft). Never a GitHub release asset.
           - platform: macos-appstore
             os: macos-26
             aarch: universal
@@ -159,7 +160,14 @@ jobs:
           mkdir -p ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
           cp ~/Library/MobileDevice/Provisioning\ Profiles/* ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" signing_temp.keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" signing_temp.keychain
           security find-identity -v -p codesigning
+          # Fail early: a broken APPLE_CERTIFICATE_P12 imports certs but no private keys.
+          identities="$(security find-identity -v -p codesigning | grep -c 'Apple Distribution' || true)"
+          if [[ "$identities" -lt 1 ]]; then
+            echo '::error::No Apple Distribution identity after importing APPLE_CERTIFICATE_P12. Re-export the .p12 from Keychain Access → My Certificates (must include the private key), base64 it, and update the secret.'
+            exit 1
+          fi
 
       # - name: Setup Flutter for arm64
       #   if: ${{ startsWith(matrix.platform,'linux-arm64') }}
@@ -300,7 +308,7 @@ jobs:
 
 
       - name: Prepare for ${{ matrix.platform }}
-        if: matrix.platform != 'macos-appstore' || (inputs.upload-artifact && inputs.tag-name != 'draft')
+        if: matrix.platform != 'macos-appstore' || inputs.upload-artifact
         run: |
           make ${{ matrix.platform }}-prepare
 
@@ -312,14 +320,15 @@ jobs:
         run: |
           make ${{ matrix.platform }}-release
 
-      - name: Build the Mac App Store version and upload it to TestFlight
-        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact && inputs.tag-name != 'draft'
+      - name: Build the Mac App Store version
+        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          MACOS_APPSTORE_ARGS: --upload
+          # TestFlight only on version tags; draft CI builds the pkg without uploading.
+          MACOS_APPSTORE_ARGS: ${{ inputs.tag-name != 'draft' && '--upload' || '' }}
         run: make macos-appstore-release
 
       - name: Validate iOS without code signing
@@ -465,7 +474,8 @@ jobs:
         run: python3 .github/scripts/verify_signed_ipa.py out/Hiddify-iOS.ipa
 
       - name: Upload Artifact
-        if: env.UPLOAD_ARTIFACT == 'true'
+        # macos-appstore goes to TestFlight only; it never populates ./out.
+        if: env.UPLOAD_ARTIFACT == 'true' && matrix.platform != 'macos-appstore'
         uses: actions/upload-artifact@v6
         with:
           name: ${{matrix.platform}}
