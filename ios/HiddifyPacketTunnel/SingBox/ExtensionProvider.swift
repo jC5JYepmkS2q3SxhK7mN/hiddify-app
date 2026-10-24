@@ -65,6 +65,8 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         }
 
         // hiddify-core with its gRPC server: the app starts the core through it
+        let clientPublicKey = options?["GrpcClientPublicKey"] as? Data ?? Data()
+        let useMtls = !clientPublicKey.isEmpty
         let setupOptions = MobileSetupOptions()
         setupOptions.basePath = FilePath.sharedDirectory.relativePath
         setupOptions.workingDir = FilePath.workingDirectory.relativePath
@@ -72,12 +74,19 @@ open class ExtensionProvider: NEPacketTunnelProvider {
         setupOptions.listen = "127.0.0.1:\(grpcServiceModePort)"
         setupOptions.secret = ""
         setupOptions.debug = false
-        setupOptions.mode = 4 // GRPC_BACKGROUND_INSECURE
+        setupOptions.mode = useMtls ? 2 : 4 // GRPC_BACKGROUND or GRPC_BACKGROUND_INSECURE
         setupOptions.fixAndroidStack = false
         var setupError: NSError?
         MobileSetup(setupOptions, platformInterface, &setupError)
         if let setupError {
             throw startupError("(packet-tunnel) error: setup service: \(setupError.localizedDescription)")
+        }
+        if useMtls {
+            var addError: NSError?
+            MobileAddGrpcClientPublicKey(clientPublicKey, &addError)
+            if let addError {
+                throw startupError("(packet-tunnel) error: add client cert: \(addError.localizedDescription)")
+            }
         }
         LibboxSetMemoryLimit(!disableMemoryLimit)
 
@@ -128,7 +137,8 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     func stopService() {
-        MobileClose(4)
+        MobileClose(2) // GRPC_BACKGROUND (mTLS)
+        MobileClose(4) // GRPC_BACKGROUND_INSECURE
         platformInterface?.reset()
     }
 

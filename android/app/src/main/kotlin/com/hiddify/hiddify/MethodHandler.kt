@@ -57,10 +57,9 @@ class MethodHandler(private val scope: CoroutineScope) : FlutterPlugin,
                     result.runCatching {
                         val args = call.arguments as Map<*, *>
                         val clientPub = args["clientPublicKey"] as ByteArray
-//                        Mobile.addGrpcClientPublicKey(clientPub)
                         Settings.grpcFlutterPublicKey = clientPub
+                        Mobile.addGrpcClientPublicKey(clientPub)
                         success("")
-
                     }
                 }
             }

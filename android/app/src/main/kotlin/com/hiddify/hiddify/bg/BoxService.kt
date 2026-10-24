@@ -168,22 +168,24 @@ class BoxService(
             DefaultNetworkMonitor.start()
             Libbox.setMemoryLimit(!Settings.disableMemoryLimit)
             activePlatformInterface = platformInterface
-            val newService = try {
+            try {
                 Mobile.setup(
                     SetupOptions().also {
                         it.basePath = Settings.baseDir
                         it.workingDir = Settings.workingDir
                         it.tempDir = Settings.tempDir
                         it.fixAndroidStack = com.hiddify.hiddify.bg.Bugs.fixAndroidStack
-                        it.mode=4L//mode.toLong()
-                        it.listen= "127.0.0.1:${Settings.grpcServiceModePort}"
-                        it.secret=""
+                        // Match Flutter setup: mTLS (2) when a client cert was registered, else insecure (4).
+                        it.mode = if (Settings.grpcFlutterPublicKey.isNotEmpty()) 2L else 4L
+                        it.listen = "127.0.0.1:${Settings.grpcServiceModePort}"
+                        it.secret = ""
                         it.debug = Settings.debugMode
-                    },platformInterface)
-
-
-//                Libbox.newService(content,platformInterface)
-
+                    },
+                    platformInterface,
+                )
+                if (Settings.grpcFlutterPublicKey.isNotEmpty()) {
+                    Mobile.addGrpcClientPublicKey(Settings.grpcFlutterPublicKey)
+                }
             } catch (e: Exception) {
                 stopAndAlert(Alert.CreateService, e.message)
                 return

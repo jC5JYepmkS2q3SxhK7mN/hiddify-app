@@ -95,7 +95,8 @@ class HiddifyCoreService with InfraLogger {
       try {
         final directories = ref.read(appDirectoriesProvider).requireValue;
         final debug = kDebugMode || ref.read(ConfigOptions.logLevel).isVerbose;
-        final setupResponse = await core.setup(directories, debug, 3);
+        // 1 = GRPC_NORMAL (mTLS); 3 = GRPC_NORMAL_INSECURE
+        final setupResponse = await core.setup(directories, debug, 1);
 
         if (setupResponse.isNotEmpty) {
           return left(setupResponse);
