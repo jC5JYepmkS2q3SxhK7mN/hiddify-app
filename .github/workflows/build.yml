@@ -31,6 +31,7 @@ env:
   TARGET_NAME_dmg: "Hiddify-MacOS"
   TARGET_NAME_pkg: "Hiddify-MacOS-Installer"
   TARGET_NAME_macos_appstore_pkg: "Hiddify-MacOS-AppStore"
+  TARGET_NAME_macos_appstore_dmg: "Hiddify-MacOS-AppStore"
   TARGET_NAME_ipa: "Hiddify-iOS"
   
 
@@ -119,12 +120,12 @@ jobs:
           #   aarch: universal
           #   targets: dmg,pkg
 
-          # Built on CI when upload-artifact is set. Artifact is the App Store pkg;
-          # altool --upload (TestFlight) only for version tags, not draft.
+          # App Store pkg (+ companion dmg) uploaded to TestFlight when upload-artifact is set
+          # (including draft CI).
           - platform: macos-appstore
             os: macos-26
             aarch: universal
-            targets: pkg
+            targets: pkg,dmg
             
           - platform: ios
             os: macos-26
@@ -328,8 +329,7 @@ jobs:
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
           APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-          # TestFlight only on version tags; draft CI builds the pkg without uploading.
-          MACOS_APPSTORE_ARGS: ${{ inputs.tag-name != 'draft' && '--upload' || '' }}
+          MACOS_APPSTORE_ARGS: --upload
         run: make macos-appstore-release
 
       - name: Validate iOS without code signing
@@ -434,11 +434,17 @@ jobs:
           ls -R dist/
           mkdir -p out
           pkg="$(find dist -name '*-macos-appstore.pkg' -type f | head -1)"
+          dmg="$(find dist -name '*-macos-appstore.dmg' -type f | head -1)"
           if [[ -z "$pkg" ]]; then
             echo '::error::macos-appstore pkg not found under dist/'
             exit 1
           fi
+          if [[ -z "$dmg" ]]; then
+            echo '::error::macos-appstore dmg not found under dist/'
+            exit 1
+          fi
           cp "$pkg" "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
+          cp "$dmg" "out/${TARGET_NAME_macos_appstore_dmg}.dmg"
           ls -la out/
 
       - name: Copy to out unix
@@ -646,8 +652,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-    if: ${{ inputs.upload-artifact &&  inputs.tag-name != 'draft' }}
-    #if: ${{ inputs.upload-artifact }}
+    if: ${{ inputs.upload-artifact }}
     runs-on: macos-26
     timeout-minutes: 30
     steps:
@@ -660,7 +665,7 @@ jobs:
 
       - uses: Apple-Actions/upload-testflight-build@v4
         with:
-          app-path: 'out/Hiddify-iOS.ipa' 
+          app-path: 'out/Hiddify-iOS.ipa'
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
