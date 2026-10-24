@@ -146,6 +146,7 @@ macos-install-deps:
 	brew install create-dmg tree 
 	npm install -g appdmg
 	dart pub global activate fastforge
+macos-appstore-install-deps: macos-install-deps
 
 ios-install-deps: 
 	if [ "$(flutter)" = "true" ]; then \
