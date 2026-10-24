@@ -9,8 +9,6 @@ import 'package:hiddify/hiddifycore/core_interface/core_interface_desktop.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcommon/common.pb.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore_service.pbgrpc.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/tunnelservice/tunnel.pb.dart';
-import 'package:hiddify/hiddifycore/generated/v2/hcore/tunnelservice/tunnel_service.pbgrpc.dart';
 import 'package:hiddify/singbox/model/core_status.dart';
 import 'package:hiddify/singbox/model/singbox_config_option.dart';
 import 'package:hiddify/utils/custom_loggers.dart';
@@ -49,18 +47,17 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
   bool _vpnAvailable = false;
   // The Mac App Store build is sandboxed: its tunnel also sets the system proxy, which the app cannot.
   bool _proxyThroughTunnel = false;
-  // Builds without a Developer ID have no Network Extension. Their VPN runs in hiddify-core's tunnel
-  // service, run with administrator rights from the app's own executable: it takes the traffic into
-  // a TUN and hands it to this app's core, which runs the configuration as in proxy mode.
+  // Builds without a Developer ID have no Network Extension. Their VPN runs the full core in
+  // hiddify-core's tunnel service (root launchd). Dart still uses the useTunnel method-channel path;
+  // the service exposes the same port/secret status fields as the extension.
   bool _tunnelServiceAvailable = false;
-  bool _usingTunnelService = false;
-  static const _tunnelServicePort = 18020;
   String _nativeStatus = 'disconnected';
 
   @override
   bool get managesLifecycle => true;
   @override
-  bool get persistsAfterAppExit => _usingVPN;
+  // The unsigned tunnel service stops when this app exits; only the Network Extension can outlive it.
+  bool get persistsAfterAppExit => _usingVPN && !_tunnelServiceAvailable;
   @override
   Stream<CoreStatus> get managedStatus => _status.stream;
   @override
@@ -165,8 +162,7 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     final options = _options;
     if (options == null) throw StateError('Apply connection options before starting the core.');
     final proxyOnly = !options.enableTun && options.setSystemProxy && _proxyThroughTunnel;
-    final useTunnelService = options.enableTun && !_vpnAvailable && _tunnelServiceAvailable;
-    final useTunnel = (options.enableTun || proxyOnly) && !useTunnelService;
+    final useTunnel = options.enableTun || proxyOnly;
     if (useTunnel && !_vpnAvailable) {
       throw StateError('VPN is unavailable in this build. Proxy modes are available.');
     }
@@ -176,8 +172,8 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
       if (useTunnel) {
         _usingVPN = true;
         _startingVPN = true;
-        // Save content rather than the app's profile path. The extension must be
-        // able to connect with the app closed and in its own sandbox/container.
+        // Save content rather than the app's profile path. The extension or root service must be
+        // able to apply it without reading the app's working directory.
         final snapshot = await snapshotConfiguration(path);
         final state = await _methods.invokeMapMethod<String, dynamic>('start', {
           'configContent': snapshot.$1,
@@ -194,32 +190,10 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
         _usingVPN = false;
         bgClient = fgClient;
         _clientChanges.add(null);
-        // Installs the service, or updates it to this app's core, with an administrator password.
-        if (useTunnelService) await _methods.invokeMethod<void>('installTunnelService');
         final response = await fgClient.start(
           StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit),
         );
         _checkResponse(response);
-        if (useTunnelService) {
-          _usingTunnelService = true;
-          try {
-            await _withTunnelService(
-              (service) => service.start(
-                TunnelStartRequest(
-                  ipv6: true,
-                  serverPort: options.mixedPort,
-                  strictRoute: options.strictRoute,
-                  stack: options.tunImplementation.name,
-                ),
-              ),
-            );
-          } catch (_) {
-            // Without the tunnel the core would run as a proxy no one asked for.
-            _usingTunnelService = false;
-            await fgClient.stop(Empty());
-            rethrow;
-          }
-        }
       }
       _status.add(const CoreStatus.started());
     } catch (error) {
@@ -287,34 +261,13 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     return (jsonEncode(document), resources);
   }
 
-  Future<void> _withTunnelService(Future<Object?> Function(TunnelServiceClient service) call) async {
-    final channel = ClientChannel(
-      '127.0.0.1',
-      port: _tunnelServicePort,
-      options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
-    );
-    try {
-      await call(TunnelServiceClient(channel));
-    } finally {
-      await channel.shutdown();
-    }
-  }
-
   @override
   Future<bool> stop() async {
     _startingVPN = false;
-    if (_usingTunnelService) {
-      _usingTunnelService = false;
-      // The service also stops by itself once this app's core stops answering.
-      try {
-        await _withTunnelService((service) => service.stop(Empty()));
-      } catch (error) {
-        loggy.warning('stopping the VPN service failed: $error');
-      }
-    }
     // A saved on-demand VPN can be disconnected when the app reopens. Stop its
     // native configuration even when this app instance has never used the VPN.
-    if (_vpnAvailable) {
+    // The unsigned tunnel service uses the same stop channel.
+    if (_vpnAvailable || _tunnelServiceAvailable) {
       final state = await _methods.invokeMapMethod<String, dynamic>('stop');
       if (state != null) _receiveState(state);
     }
@@ -335,7 +288,7 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
   @override
   Future<bool> resetTunnel() async {
     await stop();
-    if (_vpnAvailable) await _methods.invokeMethod<void>('reset');
+    if (_vpnAvailable || _tunnelServiceAvailable) await _methods.invokeMethod<void>('reset');
     return true;
   }
 

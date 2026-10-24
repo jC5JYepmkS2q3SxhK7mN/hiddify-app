@@ -2,14 +2,18 @@ import CryptoKit
 import FlutterMacOS
 import Foundation
 
-// Builds without a Developer ID cannot use a Network Extension. Their VPN runs in hiddify-core's
-// tunnel service instead: the app's own executable, run as `Hiddify --tunnel run` by launchd with
-// administrator rights, which takes the traffic into a TUN and hands it to the core in the app. Dart
-// drives the service over gRPC; this only installs it, once, with an administrator password.
+// Builds without a Developer ID cannot use a Network Extension. Their VPN runs the full core in
+// hiddify-core's tunnel service: the app's own executable, run as `Hiddify --tunnel run` by launchd
+// with administrator rights. This controller mirrors MacOSVPNController's method-channel contract
+// (initialize/start/stop returning available, port, secret, status) so Dart can reuse the useTunnel path.
 final class TunnelServiceController {
     private static let installedApp = "/Library/Application Support/Hiddify/TunnelService/Hiddify.app"
     private static let servicePort: UInt16 = 18020
+    private static let secretPath =
+        "/Library/Application Support/Hiddify/TunnelService/data/control.secret"
     private let queue = DispatchQueue(label: "app.hiddify.tunnel-service")
+    private var connected = false
+    private var lastMessage: String?
 
     private var coreLibrary: URL? {
         Bundle.main.privateFrameworksURL?.appendingPathComponent("hiddify-core.dylib")
@@ -25,7 +29,16 @@ final class TunnelServiceController {
     }
 
     func state() -> [String: Any] {
-        ["available": false, "tunnelService": available, "status": "disconnected", "activation": "idle"]
+        var result: [String: Any] = [
+            "available": available,
+            "tunnelService": available,
+            "status": connected ? "connected" : "disconnected",
+            "activation": "idle",
+            "port": Int(Self.servicePort),
+        ]
+        if let secret = try? Self.readSecret() { result["secret"] = secret }
+        if let message = lastMessage { result["message"] = message }
+        return result
     }
 
     func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -38,40 +51,143 @@ final class TunnelServiceController {
             ensureInstalled { error in
                 if let error = error { result(Self.flutterError(error)) } else { result(nil) }
             }
-        case "initialize", "status", "stop", "reset":
+        case "initialize", "status":
             result(state())
+        case "start":
+            guard available else {
+                result(Self.flutterError("The VPN service is missing from this build. Proxy modes are available."))
+                return
+            }
+            guard let arguments = call.arguments as? [String: Any] else {
+                result(Self.flutterError("Missing VPN configuration."))
+                return
+            }
+            queue.async {
+                let error = self.start(arguments: arguments)
+                DispatchQueue.main.async {
+                    if let error = error {
+                        self.connected = false
+                        self.lastMessage = error
+                        result(Self.flutterError(error))
+                    } else {
+                        self.connected = true
+                        self.lastMessage = nil
+                        result(self.state())
+                    }
+                }
+            }
+        case "stop", "reset":
+            queue.async {
+                let error = self.stopTunnel()
+                DispatchQueue.main.async {
+                    self.connected = false
+                    self.lastMessage = error
+                    if call.method == "reset", let error = error {
+                        result(Self.flutterError(error))
+                    } else {
+                        result(self.state())
+                    }
+                }
+            }
         default:
             result(FlutterMethodNotImplemented)
         }
     }
 
+    private func start(arguments: [String: Any]) -> String? {
+        if let error = ensureInstalledSync() { return error }
+        guard let configContent = arguments["configContent"] as? String, !configContent.isEmpty,
+              let settingsJSON = arguments["settingsJSON"] as? String else {
+            return "The VPN configuration is incomplete."
+        }
+        var resources: [String: String] = [:]
+        for (name, value) in arguments["resources"] as? [String: FlutterStandardTypedData] ?? [:] {
+            resources[name] = value.data.base64EncodedString()
+        }
+        let request: [String: Any] = [
+            "configContent": configContent,
+            "configName": arguments["configName"] as? String ?? "Hiddify",
+            "settingsJSON": settingsJSON,
+            "resources": resources,
+            "disableMemoryLimit": arguments["disableMemoryLimit"] as? Bool ?? false,
+            "ownerPid": ProcessInfo.processInfo.processIdentifier,
+        ]
+        let requestURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("hiddify-tunnel-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: requestURL) }
+        do {
+            let data = try JSONSerialization.data(withJSONObject: request)
+            try data.write(to: requestURL, options: .atomic)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: requestURL.path)
+        } catch {
+            return "Couldn't prepare the VPN configuration."
+        }
+        if let error = runTunnelCommand(["connect", requestURL.path]) { return error }
+        return nil
+    }
+
+    private func stopTunnel() -> String? {
+        runTunnelCommand(["disconnect"])
+    }
+
+    private func runTunnelCommand(_ arguments: [String]) -> String? {
+        guard let executable = Bundle.main.executableURL?.path else {
+            return "The app executable is missing."
+        }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = ["--tunnel"] + arguments
+        let stderr = Pipe()
+        process.standardError = stderr
+        process.standardOutput = Pipe()
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return "Couldn't talk to the VPN service."
+        }
+        if process.terminationStatus == 0 { return nil }
+        let message = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return message?.isEmpty == false ? message : "The VPN service command failed."
+    }
+
     private func ensureInstalled(_ completion: @escaping (String?) -> Void) {
         queue.async {
-            let current = self.installedServiceIsCurrent()
-            DispatchQueue.main.async {
-                if current { completion(nil); return }
-                if let error = self.install() { completion(error); return }
-                self.queue.async {
-                    // launchd starts the service right away; wait for it to listen.
-                    for _ in 0..<50 where !Self.serviceListening() {
-                        Thread.sleep(forTimeInterval: 0.1)
-                    }
-                    let ready = Self.serviceListening()
-                    DispatchQueue.main.async {
-                        completion(ready ? nil : "The VPN service was installed but did not start.")
-                    }
-                }
-            }
+            let error = self.ensureInstalledSync()
+            DispatchQueue.main.async { completion(error) }
         }
     }
 
-    // The service is current when it answers and runs this app's core library.
+    private func ensureInstalledSync() -> String? {
+        if installedServiceIsCurrent() { return nil }
+        if let error = install() { return error }
+        for _ in 0..<50 where !Self.serviceListening() {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        if !Self.serviceListening() {
+            return "The VPN service was installed but did not start."
+        }
+        if (try? Self.readSecret()) == nil {
+            return "The VPN service secret is missing. Reinstall the VPN service."
+        }
+        return nil
+    }
+
     private func installedServiceIsCurrent() -> Bool {
         guard let library = coreLibrary, Self.serviceListening(),
+              (try? Self.readSecret()) != nil,
               let installedHash = Self.sha256(URL(fileURLWithPath: Self.installedApp)
                   .appendingPathComponent("Contents/Frameworks/hiddify-core.dylib")),
               let bundledHash = Self.sha256(library) else { return false }
         return installedHash == bundledHash
+    }
+
+    private static func readSecret() throws -> String {
+        let secret = try String(contentsOfFile: secretPath, encoding: .utf8)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard secret.count >= 32 else { throw CocoaError(.fileReadCorruptFile) }
+        return secret
     }
 
     private static func sha256(_ url: URL) -> SHA256.Digest? {
@@ -95,14 +211,15 @@ final class TunnelServiceController {
         }
     }
 
-    // Runs the bundled install script as root after macOS asks for an administrator password.
     private func install() -> String? {
         guard let script = installScript?.path else { return "The VPN service is missing from this build." }
         let quote = { (text: String) in
             "\"" + text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
         }
+        let owner = NSUserName()
         let source = "do shell script \"/bin/bash \" & quoted form of \(quote(script)) & \" \" & quoted form of "
-            + "\(quote(Bundle.main.bundlePath)) with prompt \"VPN mode sends all of this Mac's traffic through Hiddify, "
+            + "\(quote(Bundle.main.bundlePath)) & \" \" & quoted form of \(quote(owner)) with prompt "
+            + "\"VPN mode sends all of this Mac's traffic through Hiddify, "
             + "which needs administrator permission. Hiddify asks for it once.\" "
             + "with administrator privileges"
         var error: NSDictionary?

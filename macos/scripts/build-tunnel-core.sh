@@ -4,7 +4,7 @@ set -euo pipefail
 task_root="$(cd "$(dirname "$0")/../.." && pwd)"
 task_build="$task_root/build/macos/tunnel-core"
 task_framework="$task_root/macos/Frameworks/HiddifyTunnelCore.xcframework"
-task_source="$task_root/macos/NetworkExtensionCore"
+task_source="$task_root/hiddify-core/v2/hcore/tunnel"
 task_core_source="$task_root/hiddify-core"
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 # Psiphon's TLS adapter depends on the standard-library struct layout. Match the
@@ -33,7 +33,7 @@ task_hash=$({
   xcodebuild -version
   echo "$task_tags"
   cat "$task_root/macos/scripts/build-tunnel-core.sh"
-  find "$task_source" "$task_core_source" \( -name .git -o -path "$task_source/build" \) -prune -o -type f \
+  find "$task_source" "$task_core_source" \( -name .git -o -path "$task_core_source/build" \) -prune -o -type f \
     \( -name '*.go' -o -name 'go.mod' -o -name 'go.sum' -o -name '*.h' -o -name '*.c' \) -print0 | sort -z | xargs -0 shasum -a 256
 } | shasum -a 256 | cut -d ' ' -f 1)
 if [[ -d "$task_framework" && -f "$task_stamp" && "$(cat "$task_stamp")" == "$task_hash" ]]; then
@@ -46,12 +46,12 @@ if [[ ! -x "$GOBIN/gomobile" || ! -x "$GOBIN/gobind" ]]; then
   go install github.com/sagernet/gomobile/cmd/gomobile@v0.1.12
   go install github.com/sagernet/gomobile/cmd/gobind@v0.1.12
 fi
-cd "$task_source"
-# The core imports cronet-go/all, which links the matching static macOS archives.
+cd "$task_core_source"
+# Bind libbox plus the shared tunnel package used by the system extension and the root service.
 gomobile bind -target macos -macosversion 12.0 -libname HiddifyTunnelCore -tags "$task_tags" \
   -trimpath -ldflags '-w -s -checklinkname=0' \
   -o "$task_build/HiddifyTunnelCore.xcframework" \
-  github.com/sagernet/sing-box/experimental/libbox .
+  github.com/sagernet/sing-box/experimental/libbox github.com/hiddify/hiddify-core/v2/hcore/tunnel
 if [[ -d "$task_framework" ]]; then
   mv "$task_framework" "$task_build/previous-framework-$(date +%s)"
 fi

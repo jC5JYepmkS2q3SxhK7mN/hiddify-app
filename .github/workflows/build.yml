@@ -184,7 +184,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.26.3'
-          cache-dependency-path: macos/NetworkExtensionCore/go.sum
+          cache-dependency-path: hiddify-core/go.sum
 
       - name: Configure macOS signing
         if: matrix.platform == 'macos'

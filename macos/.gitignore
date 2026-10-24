@@ -8,4 +8,3 @@
 Runner/Configs/NetworkExtension.local.xcconfig
 Runner/Configs/*.local.env
 /build/
-/NetworkExtensionCore/build/

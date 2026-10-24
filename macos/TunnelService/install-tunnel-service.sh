@@ -2,11 +2,13 @@
 set -euo pipefail
 
 # Installs the VPN service of builds without a Developer ID: the app's own executable, run as
-# `Hiddify --tunnel run` by launchd with administrator rights, which takes the traffic into a TUN and
-# hands it to the core in the app. Hiddify runs this with an administrator password; by hand:
-#   sudo "/Applications/Hiddify.app/Contents/Resources/TunnelService/install-tunnel-service.sh" /Applications/Hiddify.app
+# `Hiddify --tunnel run` by launchd with administrator rights, which runs the full core. Hiddify runs
+# this with an administrator password; by hand:
+#   sudo "/Applications/Hiddify.app/Contents/Resources/TunnelService/install-tunnel-service.sh" \
+#     /Applications/Hiddify.app "$USER"
 
 task_source="${1:-}"
+task_owner="${2:-${SUDO_USER:-}}"
 task_destination="/Library/Application Support/Hiddify/TunnelService/Hiddify.app"
 
 if [[ "$(id -u)" != 0 ]]; then
@@ -34,5 +36,7 @@ ditto "$task_source" "$task_destination"
 xattr -cr "$task_destination"
 chown -R root:wheel "$task_destination"
 chmod -R go-w "$task_destination"
+# Create the control secret for the installing user before the daemon starts listening.
+export HIDDIFY_TUNNEL_OWNER="$task_owner"
 "$task_destination/Contents/MacOS/Hiddify" --tunnel install
 echo 'Hiddify VPN service installed.'
