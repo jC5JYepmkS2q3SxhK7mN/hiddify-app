@@ -462,78 +462,63 @@ jobs:
           rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision || true
           rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles || true
   update-draft:
+    # Always refresh the moving `draft` tag/release to this build's commit and assets.
     if: ${{ inputs.upload-artifact }}
     needs: [build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: checkout
         uses: actions/checkout@v6
         with:
-          # by default, it uses a depth of 1
-          # this fetches all history so that we can read each commit
           fetch-depth: 0
+
       - name: Download Artifact
         uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           pattern: "*"
           path: ./out/
-          
 
       - name: Display Files Structure
         run: ls -R
         working-directory: ./out
 
-      - name: Delete Current Release Assets
-        uses: 8Mi-Tech/delete-release-assets-action@71a740cf4364bc69448e0294b8abadffadfb3288
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'draft'
-          deleteOnlyFromDrafts: false
-          
+      - name: Remove old draft release and tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Drop the previous draft release + tag so the new upload can retag
+          # github.sha as `draft` (softprops alone will not move an existing tag).
+          if gh release view draft >/dev/null 2>&1; then
+            gh release delete draft --yes --cleanup-tag
+          elif git ls-remote --tags origin refs/tags/draft | grep -q .; then
+            git push origin :refs/tags/draft
+          fi
+
       - name: prepare_release_message
         run: |
           set -euo pipefail
-          sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
-          python3 ./.github/scripts/fill_vt_sha256.py release.md ./out
-          pip install gitchangelog pystache mustache markdown
-          prelease=$(curl --silent "${{ github.api_url }}/repos/${{ github.repository }}/releases/latest" | grep -Po '"tag_name": "\K([^"]*)' || true)
-          {
-            echo
-            echo
-            echo "<details markdown=1><summary>All changes from ${prelease:-unknown} to the latest commit:</summary>"
-            echo
-            gitchangelog "${prelease}.." 2>&1 || echo "Error in gitchangelog"
-            echo
-            echo "</details>"
-          } >> release.md
-      - name: Create or Update Draft Release
+          # Draft release download URLs always use the `draft` tag, even when this
+          # workflow was also invoked for a versioned tag-name.
+          cp ./.github/release_message.md release.md
+          python3 ./.github/scripts/prepare_release_notes.py release.md ./out draft
+
+      - name: Create draft release on current commit
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
-          prerelease: true
-
-      - name: Create or Update Draft Release
-        uses: softprops/action-gh-release@v3
-        # env:
-          #GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_HIDDIFY_APP_REPO }}
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#          GITHUB_REPOSITORY: hiddify/hiddify-app
-        with:
-          files: ./out/*
-          name: 'draft'
-          tag_name: 'draft'
-          body_path: './release.md'
+          name: draft
+          tag_name: draft
           target_commitish: ${{ github.sha }}
-          # target_commitish: '530bf77839a74d4f13847ba244a20734ac7ab119'
+          body_path: ./release.md
           prerelease: true
-          # repository: hiddify/hiddify-app
+          make_latest: false
+          fail_on_unmatched_files: false
 
   virustotal-draft:
     if: ${{ inputs.upload-artifact }}
@@ -570,8 +555,8 @@ jobs:
       - name: prepare_release_message
         run: |
           set -euo pipefail
-          sed 's|RELEASE_TAG|${{ env.TAG_NAME }}|g' ./.github/release_message.md > release.md
-          python3 ./.github/scripts/fill_vt_sha256.py release.md ./out
+          cp ./.github/release_message.md release.md
+          python3 ./.github/scripts/prepare_release_notes.py release.md ./out "${{ env.TAG_NAME }}"
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2

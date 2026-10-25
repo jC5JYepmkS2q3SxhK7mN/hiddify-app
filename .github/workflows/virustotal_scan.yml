@@ -1,6 +1,5 @@
-# Upload release assets to VirusTotal so the VirusTotal column badges show results.
-# Badge links already point at https://www.virustotal.com/gui/file/<sha256>/detection
-# (SHA filled in by .github/scripts/fill_vt_sha256.py when the release notes are built).
+# Upload release assets to VirusTotal for scanning, then bust badge image cache
+# in the release notes (&v=random) so GitHub does not keep a stale Error 404.
 # Pattern based on https://github.com/yuliskov/SmartTube/.github/workflows/virustotal_scan.yml
 # API: https://docs.virustotal.com/reference/overview
 name: VirusTotal Scan
@@ -72,29 +71,34 @@ jobs:
           sleep 150
 
           gh release view "$TAG_NAME" --json body -q .body > release_notes.md || echo "" > release_notes.md
-          stamp=$(date +%s)
+          bust=$(date +%s)$RANDOM
 
           for file in release_assets/*; do
             [ -f "$file" ] || continue
             filename=$(basename "$file")
             sha256=$(sha256sum "$file" | awk '{print $1}')
             badge="https://badges.cssnr.com/vt/id/${sha256}?start=green&end=red&n=8"
-            echo "Purging badge cache for $filename ($sha256)"
-            curl -s -X POST "$badge" || true
+            echo "Purging badge cache for $filename ($sha256) bust=$bust"
+            curl -s -X POST "${badge}&v=${bust}" || true
 
-            python3 - "$sha256" "$stamp" <<'PY'
+            python3 - "$sha256" "$bust" <<'PY'
           import pathlib, re, sys
-          sha256, stamp = sys.argv[1:3]
+          sha256, bust = sys.argv[1:3]
           path = pathlib.Path("release_notes.md")
           text = path.read_text()
-          # Bust badge cache after engines finish (href already points at VirusTotal)
+          # Replace any existing vt badge src for this hash with a fresh &v= random.
           text = re.sub(
               rf'src="https://badges\.cssnr\.com/vt/id/{re.escape(sha256)}\?[^"]*"',
-              f'src="https://badges.cssnr.com/vt/id/{sha256}?start=green&end=red&n=8&v={stamp}"',
+              f'src="https://badges.cssnr.com/vt/id/{sha256}?start=green&end=red&n=8&v={bust}"',
               text,
           )
           path.write_text(text)
           PY
           done
 
+          # Keep the body short (download + VT only); never re-append changelogs.
+          if [ "$(wc -c < release_notes.md)" -gt 120000 ]; then
+            echo "Release notes still too long; skipping notes edit" >&2
+            exit 0
+          fi
           gh release edit "$TAG_NAME" --notes-file release_notes.md
