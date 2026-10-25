@@ -7,6 +7,7 @@ import 'package:hiddify/features/connection/model/connection_status.dart';
 import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_notifier.dart';
 import 'package:hiddify/features/settings/data/config_option_repository.dart';
+import 'package:hiddify/features/system_tray/desktop_status_badge.dart';
 import 'package:hiddify/features/window/notifier/window_notifier.dart';
 import 'package:hiddify/gen/assets.gen.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
@@ -45,13 +46,20 @@ class SystemTrayNotifier extends _$SystemTrayNotifier with TrayListener, AppLogg
         .catchError((e) {
           loggy.warning("error getting connection status", e);
           return const ConnectionStatus.disconnected();
-        })
-        .then((connection) => _modifyConnectionStatus(connection, urlTestDelay));
+        });
+    // Menu/tooltip can keep the delay-gated status; the tray icon must show green as
+    // soon as we are Connected (do not wait for the first url-test).
+    final menuStatus = _modifyConnectionStatus(connection, urlTestDelay);
     final serviceMode = ref.watch(ConfigOptions.serviceMode);
 
-    await trayManager.setIcon(_trayIconPath(connection), isTemplate: PlatformUtils.isMacOS);
+    await trayManager.setIcon(
+      _trayIconPath(connection),
+      // Template mode on macOS forces monochrome menu-bar tint and strips the
+      // green connected mark. Only use it for the idle (theme-adaptive) icon.
+      isTemplate: PlatformUtils.isMacOS && connection is Disconnected,
+    );
     if (!PlatformUtils.isLinux) await trayManager.setToolTip(_trayTooltip(connection, urlTestDelay, t));
-    await trayManager.setContextMenu(_trayMenu(connection, serviceMode, t));
+    await trayManager.setContextMenu(_trayMenu(menuStatus, serviceMode, t));
   }
 
   Menu _trayMenu(ConnectionStatus connection, ServiceMode serviceMode, Translations t) => Menu(
@@ -83,36 +91,49 @@ class SystemTrayNotifier extends _$SystemTrayNotifier with TrayListener, AppLogg
     ],
   );
 
+  /// Status-bar / system-tray icon for all desktops (macOS, Windows, Linux).
+  ///
+  /// Connected → theme-matched Hi glyph + high-contrast green badge
+  /// (readable on light, dark, and translucent/colored menu bars).
+  /// Idle disconnected → theme-adaptive icon.
+  /// Connecting / disconnecting → red transitional icon.
   String _trayIconPath(ConnectionStatus status) {
     final isDarkMode = WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
     const images = Assets.images;
     final isWindows = PlatformUtils.isWindows;
     switch (status) {
       case Connected():
+        // Green Hi with white border — readable on light/dark/translucent bars.
         return isWindows ? images.trayIconConnectedIco : images.trayIconConnectedPng.path;
       case Connecting():
       case Disconnecting():
         return isWindows ? images.trayIconDisconnectedIco : images.trayIconDisconnectedPng.path;
       case Disconnected():
+        // Light bar → darker glyph; dark bar → lighter glyph.
         return isWindows
             ? isDarkMode
                   ? images.trayIconIco
                   : images.trayIconDarkIco
             : isDarkMode
-            ? images.trayIconDarkPng.path
-            : images.trayIconPng.path;
+            ? images.trayIconPng.path
+            : images.trayIconDarkPng.path;
     }
   }
 
   String _trayTooltip(ConnectionStatus connection, int urlTestDelay, Translations t) {
     final r = "${Constants.appName} - ${connection.present(t)}";
-    if (connection is Connected) {
-      if (Platform.isMacOS) windowManager.setBadgeLabel("${urlTestDelay}ms");
-      return '$r : ${urlTestDelay}ms"';
-    } else {
-      if (Platform.isMacOS) windowManager.setBadgeLabel("-ms");
-      return r;
+    // Dock/taskbar: never show a text badge when disconnected (avoids leftover "-ms").
+    // When connected, use a green status mark instead of the red system badge text.
+    final connected = connection is Connected;
+    if (Platform.isMacOS) {
+      // Clear the system Dock badge label; green mark is drawn via DesktopStatusBadge.
+      windowManager.setBadgeLabel('');
     }
+    DesktopStatusBadge.setConnected(connected);
+    if (connected && ConnectionConst.isValidDelay(urlTestDelay)) {
+      return '$r : ${urlTestDelay}ms';
+    }
+    return r;
   }
 
   ConnectionStatus _modifyConnectionStatus(ConnectionStatus connection, int urlTestDelay) {
