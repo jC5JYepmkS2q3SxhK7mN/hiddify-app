@@ -6,14 +6,15 @@
 
 #include <cmath>
 #include <optional>
+#include <string>
 #include <shobjidl.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
 namespace {
 
-// 16x16 green status overlay for the Windows taskbar button.
-HICON CreateGreenOverlayIcon() {
+// 16x16 status overlay for the Windows taskbar button (white ring + fill).
+HICON CreateStatusOverlayIcon(UINT32 fill_argb) {
   const int size = 16;
   BITMAPINFO bmi = {};
   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -43,11 +44,11 @@ HICON CreateGreenOverlayIcon() {
       const float d = sqrtf(dx * dx + dy * dy);
       UINT32 px = 0x00000000;
       if (d <= outer_r) {
-        // White ring, green fill — readable on light and dark taskbars.
+        // White ring + fill — readable on light and dark taskbars.
         if (d >= inner_r) {
           px = 0xFFFFFFFFu;
         } else {
-          px = 0xFF34C759u;  // system-like green
+          px = fill_argb;
         }
       }
       pixels[y * size + x] = px;
@@ -70,9 +71,13 @@ FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
 FlutterWindow::~FlutterWindow() {
-  if (overlay_icon_) {
-    DestroyIcon(overlay_icon_);
-    overlay_icon_ = nullptr;
+  if (overlay_icon_ok_) {
+    DestroyIcon(overlay_icon_ok_);
+    overlay_icon_ok_ = nullptr;
+  }
+  if (overlay_icon_error_) {
+    DestroyIcon(overlay_icon_error_);
+    overlay_icon_error_ = nullptr;
   }
 }
 
@@ -116,18 +121,28 @@ void FlutterWindow::RegisterDesktopStatusChannel() {
   channel->SetMethodCallHandler(
       [this](const flutter::MethodCall<flutter::EncodableValue>& call,
              std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-        if (call.method_name() == "setConnected") {
-          bool connected = false;
+        if (call.method_name() == "setStatus" ||
+            call.method_name() == "setConnected") {
+          std::string status = "none";
           if (const auto* args =
                   std::get_if<flutter::EncodableMap>(call.arguments())) {
-            auto it = args->find(flutter::EncodableValue("connected"));
-            if (it != args->end()) {
-              if (const auto* flag = std::get_if<bool>(&it->second)) {
-                connected = *flag;
+            if (call.method_name() == "setStatus") {
+              auto it = args->find(flutter::EncodableValue("status"));
+              if (it != args->end()) {
+                if (const auto* s = std::get_if<std::string>(&it->second)) {
+                  status = *s;
+                }
+              }
+            } else {
+              auto it = args->find(flutter::EncodableValue("connected"));
+              if (it != args->end()) {
+                if (const auto* flag = std::get_if<bool>(&it->second)) {
+                  status = *flag ? "ok" : "none";
+                }
               }
             }
           }
-          SetTaskbarConnectedOverlay(connected);
+          SetTaskbarStatusOverlay(status);
           result->Success();
           return;
         }
@@ -139,11 +154,20 @@ void FlutterWindow::RegisterDesktopStatusChannel() {
   channel.release();
 }
 
-void FlutterWindow::SetTaskbarConnectedOverlay(bool connected) {
+void FlutterWindow::SetTaskbarStatusOverlay(const std::string& status) {
   HWND hwnd = GetHandle();
   if (!hwnd) {
     return;
   }
+
+  std::string normalized = status;
+  if (normalized != "ok" && normalized != "error") {
+    normalized = "none";
+  }
+  if (normalized == overlay_status_) {
+    return;
+  }
+  overlay_status_ = normalized;
 
   ITaskbarList3* taskbar = nullptr;
   if (FAILED(CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER,
@@ -153,12 +177,19 @@ void FlutterWindow::SetTaskbarConnectedOverlay(bool connected) {
   }
   taskbar->HrInit();
 
-  if (connected) {
-    if (!overlay_icon_) {
-      overlay_icon_ = CreateGreenOverlayIcon();
+  if (normalized == "ok") {
+    if (!overlay_icon_ok_) {
+      overlay_icon_ok_ = CreateStatusOverlayIcon(0xFF34C759u);  // green
     }
-    if (overlay_icon_) {
-      taskbar->SetOverlayIcon(hwnd, overlay_icon_, L"Connected");
+    if (overlay_icon_ok_) {
+      taskbar->SetOverlayIcon(hwnd, overlay_icon_ok_, L"Connected");
+    }
+  } else if (normalized == "error") {
+    if (!overlay_icon_error_) {
+      overlay_icon_error_ = CreateStatusOverlayIcon(0xFFE53935u);  // red
+    }
+    if (overlay_icon_error_) {
+      taskbar->SetOverlayIcon(hwnd, overlay_icon_error_, L"No ping");
     }
   } else {
     taskbar->SetOverlayIcon(hwnd, nullptr, L"");
@@ -167,7 +198,7 @@ void FlutterWindow::SetTaskbarConnectedOverlay(bool connected) {
 }
 
 void FlutterWindow::OnDestroy() {
-  SetTaskbarConnectedOverlay(false);
+  SetTaskbarStatusOverlay("none");
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

@@ -36,7 +36,12 @@ class MainFlutterWindow: NSWindow {
       binaryMessenger: flutterViewController.engine.binaryMessenger
     ).setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
       switch call.method {
+      case "setStatus":
+        let status = (call.arguments as? [String: Any])?["status"] as? String ?? "none"
+        DesktopStatusBadge.setStatus(status)
+        result(nil)
       case "setConnected":
+        // Older Dart builds; prefer setStatus.
         let connected = (call.arguments as? [String: Any])?["connected"] as? Bool ?? false
         DesktopStatusBadge.setConnected(connected)
         result(nil)

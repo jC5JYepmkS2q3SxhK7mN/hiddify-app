@@ -106,7 +106,10 @@ class ActiveProxyNotifier extends _$ActiveProxyNotifier with AppLogger {
       _resubscribeDelay = _minResubscribeDelay;
     }
     if (!serviceRunning) {
-      return Stream.error(const ServiceNotRunning());
+      // Emit an empty outbound (delay 0) so disconnect clears the last ping.
+      // Stream.error alone kept the previous AsyncData via copyWithPrevious, so
+      // the tray/dock stayed green and the UI still showed the old ms value.
+      return Stream.value(OutboundInfo());
     }
     Timer? resubscribe;
     ref.onDispose(() => resubscribe?.cancel());

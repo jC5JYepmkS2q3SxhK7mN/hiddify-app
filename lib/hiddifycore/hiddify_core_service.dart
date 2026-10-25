@@ -113,7 +113,12 @@ class HiddifyCoreService with InfraLogger {
         if (!core.isSingleChannel()) {
           await startListeningLogs("bg", core.bgClient);
         }
-        statusController.add(currentState);
+        // Prefer managedStatus (already seeded from native VPN sync on mobile) over
+        // replaying a stale currentState; publishing Stopped here made the home
+        // connect button jump on resume from Recent Apps.
+        if (core.managedStatus == null) {
+          statusController.add(currentState);
+        }
         await startListeningStatus("bg", core.bgClient);
         // ref.read(coreRestartSignalProvider.notifier).restart();
         return right(unit);

@@ -7,6 +7,7 @@
 #include <flutter/standard_method_codec.h>
 
 #include <memory>
+#include <string>
 
 #include "win32_window.h"
 
@@ -26,7 +27,8 @@ class FlutterWindow : public Win32Window {
 
  private:
   void RegisterDesktopStatusChannel();
-  void SetTaskbarConnectedOverlay(bool connected);
+  // status: "none" | "ok" | "error"
+  void SetTaskbarStatusOverlay(const std::string& status);
 
   // The project to run.
   flutter::DartProject project_;
@@ -34,7 +36,9 @@ class FlutterWindow : public Win32Window {
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
-  HICON overlay_icon_ = nullptr;
+  HICON overlay_icon_ok_ = nullptr;
+  HICON overlay_icon_error_ = nullptr;
+  std::string overlay_status_ = "none";
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_
