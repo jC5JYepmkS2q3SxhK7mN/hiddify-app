@@ -44,6 +44,19 @@ public class MethodHandler: NSObject, FlutterPlugin {
                 return
             }
             VPNConfig.shared.grpcFlutterPublicKey = clientKey.data
+            let toExtension = (args["toExtension"] as? Bool) ?? false
+            if toExtension {
+                // Running packet tunnel has its own process; register via IPC.
+                Task {
+                    do {
+                        try await VPNManager.shared.addGrpcClientPublicKeyToExtension(clientKey.data)
+                        await mainResult("")
+                    } catch {
+                        await mainResult(FlutterError(code: "EXTENSION_MTLS", message: error.localizedDescription, details: nil))
+                    }
+                }
+                return
+            }
             var addError: NSError?
             MobileAddGrpcClientPublicKey(clientKey.data, &addError)
             if let addError {
@@ -116,8 +129,18 @@ public class MethodHandler: NSObject, FlutterPlugin {
                         result(FlutterError(code: "SETUP", message: error.localizedDescription, details: nil))
                         return
                     }
-                    result(true)
+                    await mainResult(VPNManager.shared.statusPayload())
                 }
+        case "setup_vpn":
+            // Reload NE preferences and publish the live tunnel status (app relaunch / resume).
+            Task {
+                do {
+                    try await VPNManager.shared.setup()
+                    await mainResult(VPNManager.shared.statusPayload())
+                } catch {
+                    await mainResult(FlutterError(code: "SETUP", message: error.localizedDescription, details: nil))
+                }
+            }
         case "start":
             Task {
                 guard

@@ -37,10 +37,16 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
   MTLSChannelCredentials? _mtls;
 
   late LastStream<CoreStatus> _status;
+  StreamSubscription<CoreStatus>? _nativeStatusSubscription;
+  final _managedStatus = BehaviorSubject<CoreStatus>.seeded(const CoreStatus.stopped());
   ClientChannel? _fgChannel;
   ClientChannel? _bgChannel;
 
   bool _isMtlsMode(int mode) => mode == 1 || mode == 2;
+
+  @override
+  // Platform VPN/service status is the source of truth on mobile (survives app relaunch).
+  Stream<CoreStatus>? get managedStatus => _managedStatus.stream;
 
   @override
   Future<String> setup(Directories directories, bool debug, int mode) async {
@@ -49,11 +55,14 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
 
     final status = statusChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
     final alerts = alertsChannel.receiveBroadcastStream().map(CoreStatus.fromEvent);
-    _status = LastStream(ValueConnectableStream(Rx.merge([status, alerts])).autoConnect());
+    final merged = ValueConnectableStream(Rx.merge([status, alerts])).autoConnect();
+    _status = LastStream(merged);
+    await _nativeStatusSubscription?.cancel();
+    _nativeStatusSubscription = merged.listen(_managedStatus.add);
 
     // Start the core first — the server certificate only exists after setup.
     if (!await isPortOpen('127.0.0.1', portFront)) {
-      await methodChannel.invokeMethod('setup', {
+      final setupResult = await methodChannel.invokeMethod<dynamic>('setup', {
         'baseDir': directories.baseDir.path,
         'workingDir': directories.workingDir.path,
         'tempDir': directories.tempDir.path,
@@ -61,9 +70,14 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
         'mode': mode,
         'debug': debug,
       });
+      _applyNativeStatusPayload(setupResult);
       if (!await waitUntilPort(portFront, true, null)) {
         return 'failed to start foreground gRPC';
       }
+    } else if (Platform.isIOS) {
+      // Fg core already up (e.g. resume); still reload NE status so a live tunnel is mirrored.
+      final syncResult = await methodChannel.invokeMethod<dynamic>('setup_vpn');
+      _applyNativeStatusPayload(syncResult);
     }
 
     try {
@@ -110,7 +124,35 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
     for (final channel in previousChannels) {
       unawaited(channel?.shutdown());
     }
+
+    // Tunnel can outlive the Flutter process; treat a live bg port as available.
+    if (await isPortOpen('127.0.0.1', portBack)) {
+      _isBgClientAvailable = true;
+      await _registerClientCertWithExtension();
+    }
     return '';
+  }
+
+  /// Best-effort: trust this session's client cert in a tunnel that was started earlier.
+  Future<void> _registerClientCertWithExtension() async {
+    if (_mtls == null) return;
+    try {
+      await methodChannel.invokeMethod('add_grpc_client_public_key', {
+        'clientPublicKey': Uint8List.fromList(utf8.encode(_mtls!.clientCertificatePem)),
+        'toExtension': true,
+      });
+    } catch (e) {
+      loggy.warning('extension mTLS client cert registration: $e');
+    }
+  }
+
+  void _applyNativeStatusPayload(dynamic payload) {
+    if (payload is! Map) return;
+    try {
+      _managedStatus.add(CoreStatus.fromEvent(Map<String, dynamic>.from(payload)));
+    } catch (e) {
+      loggy.warning('native status payload: $e');
+    }
   }
 
   Future<ChannelCredentials> _buildCredentials() async {
@@ -181,26 +223,21 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
       return const CoreStatus.stopped(alert: CoreAlert.startService, message: 'starting background core...');
     }
 
-    // Re-register the client cert with the background process (separate address space).
-    if (_mtls != null) {
-      try {
-        await methodChannel.invokeMethod('add_grpc_client_public_key', {
-          'clientPublicKey': Uint8List.fromList(utf8.encode(_mtls!.clientCertificatePem)),
-        });
-      } catch (e) {
-        loggy.warning('background mTLS client cert registration: $e');
-      }
-    }
+    // Re-register the client cert with the extension (separate address space).
+    await _registerClientCertWithExtension();
     return const CoreStarted();
   }
 
   @override
   Future<bool> stop() async {
+    // Always ask the platform to stop: on iOS the tunnel can be up while the
+    // extension gRPC port is unreachable (new app process / mTLS key), and
+    // skipping disconnect left the VPN stuck in Settings.
+    await stopMethodChannel();
     if (!await isPortOpen('127.0.0.1', portBack)) {
       _isBgClientAvailable = false;
       return true;
     }
-    await stopMethodChannel();
     // Port should drop once Mobile.close uses the same setup mode as start
     // (mTLS background is mode 2; insecure is 4).
     if (!await waitUntilPort(portBack, false, null, maxTry: 50)) {

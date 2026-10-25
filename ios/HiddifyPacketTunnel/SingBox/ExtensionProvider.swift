@@ -159,7 +159,19 @@ open class ExtensionProvider: NEPacketTunnelProvider {
     }
 
     override open func handleAppMessage(_ messageData: Data) async -> Data? {
-        messageData
+        let prefix = Data("add_grpc_client_public_key:".utf8)
+        if messageData.starts(with: prefix) {
+            let clientPublicKey = messageData.dropFirst(prefix.count)
+            var addError: NSError?
+            MobileAddGrpcClientPublicKey(Data(clientPublicKey), &addError)
+            if let addError {
+                writeMessage("(packet-tunnel) add client cert failed: \(addError.localizedDescription)")
+                return Data("error:\(addError.localizedDescription)".utf8)
+            }
+            return Data("ok".utf8)
+        }
+        // Legacy echo (e.g. stats probes that the app still sends).
+        return messageData
     }
 
     override open func sleep() async {

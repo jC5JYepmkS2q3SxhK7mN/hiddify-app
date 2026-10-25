@@ -62,8 +62,11 @@ class VPNManager: ObservableObject {
     
     init() {
         observer = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: nil, queue: nil) { [weak self] notification in
+            guard let self else { return }
             guard let connection = notification.object as? NEVPNConnection else { return }
-            self?.state = connection.status
+            // Ignore other apps' VPN sessions; only mirror our loaded manager.
+            guard connection === self.manager.connection else { return }
+            self.state = connection.status
         }
         
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -95,6 +98,8 @@ class VPNManager: ObservableObject {
             let managers = try await NETunnelProviderManager.loadAllFromPreferences()
             if let manager = managers.first {
                 self.manager = manager
+                // After relaunch NEVPNStatusDidChange may not fire; read the live tunnel status.
+                self.state = manager.connection.status
                 return
             }
             let newManager = NETunnelProviderManager()
@@ -106,6 +111,7 @@ class VPNManager: ObservableObject {
             try await newManager.saveToPreferences()
             try await newManager.loadFromPreferences()
             self.manager = newManager
+            self.state = newManager.connection.status
         } catch {
             print(error.localizedDescription)	
         }
@@ -261,5 +267,53 @@ class VPNManager: ObservableObject {
 
 //        guard state == .connected else { return }
         manager.connection.stopVPNTunnel()
+    }
+
+    /// Status map matching StatusEventHandler / Dart `CoreStatus.fromEvent`.
+    func statusPayload() -> [String: String] {
+        switch state {
+        case .reasserting, .connecting:
+            return ["status": "Starting"]
+        case .connected:
+            return ["status": "Started"]
+        case .disconnecting:
+            return ["status": "Stopping"]
+        case .disconnected, .invalid:
+            return ["status": "Stopped"]
+        @unknown default:
+            return ["status": "Stopped"]
+        }
+    }
+
+    /// Registers a Flutter-session client cert with the already-running packet tunnel (IPC).
+    func addGrpcClientPublicKeyToExtension(_ clientPublicKey: Data) async throws {
+        guard state == .connected || state == .reasserting else { return }
+        guard let session = manager.connection as? NETunnelProviderSession else { return }
+        var message = Data("add_grpc_client_public_key:".utf8)
+        message.append(clientPublicKey)
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            do {
+                try session.sendProviderMessage(message) { response in
+                    if let response, let text = String(data: response, encoding: .utf8), text.hasPrefix("ok") {
+                        continuation.resume()
+                    } else if response == nil {
+                        continuation.resume(throwing: NSError(
+                            domain: "VPNManager",
+                            code: 1,
+                            userInfo: [NSLocalizedDescriptionKey: "No response from packet tunnel"]
+                        ))
+                    } else {
+                        let detail = response.flatMap { String(data: $0, encoding: .utf8) } ?? "unknown"
+                        continuation.resume(throwing: NSError(
+                            domain: "VPNManager",
+                            code: 2,
+                            userInfo: [NSLocalizedDescriptionKey: "Packet tunnel rejected client cert: \(detail)"]
+                        ))
+                    }
+                }
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
     }
 }
