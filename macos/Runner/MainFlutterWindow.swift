@@ -30,6 +30,20 @@ class MainFlutterWindow: NSWindow {
         result(FlutterMethodNotImplemented)
       }
     }
+
+    FlutterMethodChannel(
+      name: "com.hiddify.app/desktop_status",
+      binaryMessenger: flutterViewController.engine.binaryMessenger
+    ).setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      switch call.method {
+      case "setConnected":
+        let connected = (call.arguments as? [String: Any])?["connected"] as? Bool ?? false
+        DesktopStatusBadge.setConnected(connected)
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
     //
     RegisterGeneratedPlugins(registry: flutterViewController)
 

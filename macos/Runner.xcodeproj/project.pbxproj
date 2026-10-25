@@ -23,6 +23,7 @@
 /* Begin PBXBuildFile section */
 		1813C842306A12F200536EDE /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1813C841306A12F200536EDE /* NetworkExtension.framework */; };
 		1813C85F306A1B6800536EDE /* SystemExtensionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1813C85E306A1B6800536EDE /* SystemExtensionController.swift */; };
+		1813C860306A1B6800536EDE /* DesktopStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1813C861306A1B6800536EDE /* DesktopStatusBadge.swift */; };
 		27D5969F2A92B6AB00E2BE2B /* hiddify-core.dylib in Bundle Framework */ = {isa = PBXBuildFile; fileRef = 27D5969E2A92B6AB00E2BE2B /* hiddify-core.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		331C80D8294CF71000263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C80D7294CF71000263BE5 /* RunnerTests.swift */; };
 		335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */; };
@@ -96,6 +97,7 @@
 		1813C840306A12F200536EDE /* apple.hiddify.com.HiddifyPacketTunnel.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = apple.hiddify.com.HiddifyPacketTunnel.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		1813C841306A12F200536EDE /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		1813C85E306A1B6800536EDE /* SystemExtensionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemExtensionController.swift; sourceTree = "<group>"; };
+		1813C861306A1B6800536EDE /* DesktopStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopStatusBadge.swift; sourceTree = "<group>"; };
 		1A1027315C9B3E3F83410A09 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C05D6984C93FE0E5C9038D0 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		27D5969E2A92B6AB00E2BE2B /* hiddify-core.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "hiddify-core.dylib"; path = "../hiddify-core/bin/hiddify-core.dylib"; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				1813C85E306A1B6800536EDE /* SystemExtensionController.swift */,
+				1813C861306A1B6800536EDE /* DesktopStatusBadge.swift */,
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
@@ -675,6 +678,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1813C85F306A1B6800536EDE /* SystemExtensionController.swift in Sources */,
+				1813C860306A1B6800536EDE /* DesktopStatusBadge.swift in Sources */,
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
