@@ -8,6 +8,7 @@ import 'package:hiddify/core/model/directories.dart';
 import 'package:hiddify/hiddifycore/core_interface/core_interface_desktop.dart';
 import 'package:hiddify/hiddifycore/core_interface/vpn_config_snapshot.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcommon/common.pb.dart';
+import 'package:hiddify/hiddifycore/generated/v2/hcore/adminbgservice/admin_bg_service.pbgrpc.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore.pb.dart';
 import 'package:hiddify/hiddifycore/generated/v2/hcore/hcore_service.pbgrpc.dart';
 import 'package:hiddify/singbox/model/core_status.dart';
@@ -44,6 +45,9 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
   SingboxConfigOption? _options;
   bool _usingVPN = false;
   bool _startingVPN = false;
+  /// Suppresses native "connected" events while stop() is in flight (app resume
+  /// re-subscribes the EventChannel and would otherwise flash Connected again).
+  bool _stoppingVPN = false;
   bool _vpnAvailable = false;
   // The Mac App Store build is sandboxed: its tunnel also sets the system proxy, which the app cannot.
   bool _proxyThroughTunnel = false;
@@ -51,7 +55,16 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
   // hiddify-core's tunnel service (root launchd). Dart still uses the useTunnel method-channel path;
   // the service exposes the same port/secret status fields as the extension.
   bool _tunnelServiceAvailable = false;
+  bool _tunnelServiceReady = false;
+  /// Suppresses [clientChanges] during stop-before-start so coreRestartSignal does not rebuild UI mid-connect.
+  bool _suppressClientChanges = false;
   String _nativeStatus = 'disconnected';
+
+  /// True when this build uses the root admin_bgservice (no Network Extension).
+  bool get tunnelServiceAvailable => _tunnelServiceAvailable;
+
+  /// True when the root service matches this app build (connect needs no password).
+  bool get tunnelServiceReady => _tunnelServiceReady;
 
   @override
   bool get managesLifecycle => true;
@@ -100,7 +113,14 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     _vpnAvailable = state['available'] == true;
     _proxyThroughTunnel = state['proxyThroughTunnel'] == true;
     _tunnelServiceAvailable = state['tunnelService'] == true;
+    _tunnelServiceReady = state['serviceReady'] == true;
     _nativeStatus = state['status'] as String? ?? 'disconnected';
+    if (_stoppingVPN &&
+        (_nativeStatus == 'connected' || _nativeStatus == 'connecting' || _nativeStatus == 'reasserting')) {
+      _nativeStatus = 'disconnecting';
+      _status.add(const CoreStatus.stopping());
+      return;
+    }
     if (_nativeStatus == 'connected' || _nativeStatus == 'connecting' || _nativeStatus == 'reasserting') {
       _usingVPN = true;
     }
@@ -123,27 +143,52 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
         _status.add(const CoreStatus.stopped(message: 'The saved VPN control credentials are missing.'));
         return;
       }
-      if (_extensionPort != controlPort || _extensionSecret != secret || bgClient == fgClient) {
-        final oldChannel = _extensionChannel;
-        _extensionPort = controlPort;
-        _extensionSecret = secret;
-        _extensionChannel = ClientChannel(
-          '127.0.0.1',
-          port: controlPort,
-          options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
-        );
-        bgClient = CoreClient(_extensionChannel!, options: CallOptions(metadata: {'x-hiddify-secret': secret}));
-        if (oldChannel != null) unawaited(oldChannel.shutdown());
-        _clientChanges.add(null);
-      }
+      _attachExtensionClient(controlPort, secret);
       _status.add(const CoreStatus.started());
     } else if (_nativeStatus == 'connecting' || _nativeStatus == 'reasserting') {
       _status.add(const CoreStatus.starting());
     } else if (_nativeStatus == 'disconnecting') {
       _status.add(const CoreStatus.stopping());
     } else {
-      _status.add(CoreStatus.stopped(message: state['message'] as String?));
+      // Quiet stop-before-start clears _usingVPN first so this path is skipped; still
+      // guard so a late native event cannot flash Disconnected mid-connect.
+      if (!_suppressClientChanges) {
+        _status.add(CoreStatus.stopped(message: state['message'] as String?));
+      }
     }
+  }
+
+  /// Reuses the gRPC channel when port/secret are unchanged (avoids leaking TCP to :18020).
+  void _attachExtensionClient(int controlPort, String secret) {
+    final sameEndpoint = _extensionPort == controlPort && _extensionSecret == secret;
+    if (sameEndpoint && _extensionChannel != null) {
+      if (bgClient == fgClient) {
+        bgClient = CoreClient(
+          _extensionChannel!,
+          options: CallOptions(metadata: {'x-hiddify-secret': secret}),
+        );
+        _notifyClientChange();
+      }
+      return;
+    }
+    final oldChannel = _extensionChannel;
+    _extensionPort = controlPort;
+    _extensionSecret = secret;
+    _extensionChannel = ClientChannel(
+      '127.0.0.1',
+      port: controlPort,
+      options: const ChannelOptions(
+        credentials: ChannelCredentials.insecure(),
+        // Drop idle sockets so a missed shutdown cannot leave ESTABLISHED forever.
+        idleTimeout: Duration(seconds: 10),
+      ),
+    );
+    bgClient = CoreClient(
+      _extensionChannel!,
+      options: CallOptions(metadata: {'x-hiddify-secret': secret}),
+    );
+    if (oldChannel != null) unawaited(oldChannel.shutdown());
+    _notifyClientChange();
   }
 
   @override
@@ -157,6 +202,29 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     _checkResponse(response);
   }
 
+  /// Installs/updates the root admin_bgservice (may show the macOS password prompt).
+  /// Call after Mode B consent; [startManaged] then connects without elevating again.
+  Future<void> installAdminBgService() async {
+    if (!_tunnelServiceAvailable) {
+      throw StateError('VPN is unavailable in this build. Proxy modes are available.');
+    }
+    if (_tunnelServiceReady) return;
+    try {
+      await _methods.invokeMethod<void>('installTunnelService');
+    } on PlatformException catch (error) {
+      throw StateError(error.message ?? error.toString());
+    }
+    final state = await _methods.invokeMapMethod<String, dynamic>('status');
+    if (state != null) _receiveState(state);
+    if (!_tunnelServiceReady) {
+      throw StateError('The VPN service was installed but is not ready yet. Try connecting again.');
+    }
+  }
+
+  void _notifyClientChange() {
+    if (!_suppressClientChanges) _clientChanges.add(null);
+  }
+
   @override
   Future<void> startManaged(String path, String name, bool disableMemoryLimit) async {
     final options = _options;
@@ -166,9 +234,11 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     if (useTunnel && !_vpnAvailable) {
       throw StateError('VPN is unavailable in this build. Proxy modes are available.');
     }
-    await stop();
-    _status.add(const CoreStatus.starting());
+    _suppressClientChanges = true;
     try {
+      // Quiet: do not publish Stopped mid-connect (that flashed "tap to connect" with no error).
+      await stop(quiet: true);
+      _status.add(const CoreStatus.starting());
       if (useTunnel) {
         _usingVPN = true;
         _startingVPN = true;
@@ -186,10 +256,14 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
         _startingVPN = false;
         if (state != null) _receiveState(state);
         if (_nativeStatus != 'connected') throw StateError('macOS did not connect the VPN.');
+        // Control-port Core.Stop is denied; AdminBg.Status is the source of truth for
+        // whether the root engine is actually running (avoids a false Connected UI).
+        if (_tunnelServiceAvailable && !await _adminBgEngineStarted()) {
+          throw StateError('VPN service reported connected but the engine is not running.');
+        }
       } else {
         _usingVPN = false;
         bgClient = fgClient;
-        _clientChanges.add(null);
         final response = await fgClient.start(
           StartRequest(configPath: path, configName: name, disableMemoryLimit: disableMemoryLimit),
         );
@@ -198,8 +272,13 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
       _status.add(const CoreStatus.started());
     } catch (error) {
       _startingVPN = false;
-      _status.add(CoreStatus.stopped(message: error is PlatformException ? error.message : error.toString()));
+      final message = error is PlatformException ? (error.message ?? error.toString()) : error.toString();
+      // startFailed so the status stream carries a ConnectionFailure (not a silent Disconnected).
+      _status.add(CoreStatus.stopped(alert: CoreAlert.startFailed, message: message));
       rethrow;
+    } finally {
+      _suppressClientChanges = false;
+      _notifyClientChange();
     }
   }
 
@@ -218,25 +297,125 @@ class CoreInterfaceMacOS extends CoreInterfaceDesktop {
     return snapshotVpnConfiguration(path, workingDirectory);
   }
 
-  @override
-  Future<bool> stop() async {
-    _startingVPN = false;
-    // A saved on-demand VPN can be disconnected when the app reopens. Stop its
-    // native configuration even when this app instance has never used the VPN.
-    // The unsigned tunnel service uses the same stop channel.
-    if (_vpnAvailable || _tunnelServiceAvailable) {
-      final state = await _methods.invokeMapMethod<String, dynamic>('stop');
-      if (state != null) _receiveState(state);
+  HiddifyAdminBGClient? _adminBgClientOrNull() {
+    final channel = _extensionChannel;
+    final secret = _extensionSecret;
+    if (channel == null || secret == null || secret.isEmpty) return null;
+    return HiddifyAdminBGClient(
+      channel,
+      options: CallOptions(metadata: {'x-hiddify-secret': secret}),
+    );
+  }
+
+  Future<bool> _adminBgEngineStarted() async {
+    final client = _adminBgClientOrNull();
+    if (client == null) return false;
+    try {
+      final res = await client.status(Empty()).timeout(const Duration(seconds: 3));
+      return res.message == 'started';
+    } catch (error) {
+      loggy.warning('admin_bgservice status failed: $error');
+      return false;
     }
-    final oldChannel = _extensionChannel;
-    _extensionChannel = null;
-    if (oldChannel != null) await oldChannel.shutdown();
+  }
+
+  /// Stops the root engine via AdminBg.Stop (Core.Stop is intentionally denied on :18020).
+  /// Returns true when the RPC completed without error.
+  Future<bool> _stopAdminBgEngine() async {
+    final client = _adminBgClientOrNull();
+    if (client == null) return false;
+    final sw = Stopwatch()..start();
+    try {
+      await client.stop(Empty()).timeout(const Duration(seconds: 8));
+      loggy.warning('macOS stop: AdminBg.Stop ok in ${sw.elapsedMilliseconds}ms');
+      return true;
+    } catch (error) {
+      loggy.warning('macOS stop: AdminBg.Stop failed in ${sw.elapsedMilliseconds}ms: $error');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> stop({bool quiet = false}) async {
+    final total = Stopwatch()..start();
+    _startingVPN = false;
+    if (!quiet) {
+      _stoppingVPN = true;
+      _status.add(const CoreStatus.stopping());
+    }
+    // Clear before native stop so _receiveState(disconnected) does not publish Stopped
+    // during quiet stop-before-start (that flashed "tap to connect" and stuck SingleCall).
+    final stopEngine = !quiet && _tunnelServiceAvailable && _extensionChannel != null;
     _usingVPN = false;
     bgClient = fgClient;
-    _clientChanges.add(null);
-    _checkResponse(await fgClient.stop(Empty()), allowStopped: true);
-    _status.add(const CoreStatus.stopped());
-    return true;
+
+    // Stop over AdminBg gRPC first. If that works, tell Swift to skip spawning
+    // another `Hiddify --tunnel disconnect` (the double-stop was the long hang).
+    var engineStopped = false;
+    if (stopEngine) {
+      engineStopped = await _stopAdminBgEngine();
+    } else {
+      loggy.warning(
+        'macOS stop: skip AdminBg.Stop (quiet=$quiet tunnel=$_tunnelServiceAvailable '
+        'channel=${_extensionChannel != null})',
+      );
+    }
+
+    // A saved on-demand VPN can be disconnected when the app reopens. Stop its
+    // native configuration even when this app instance has never used the VPN.
+    // Quiet + already idle: skip the serial Swift queue (stop-before-start after disconnect).
+    final needsNativeStop =
+        (_vpnAvailable || _tunnelServiceAvailable) &&
+        (!quiet || _nativeStatus != 'disconnected' || _extensionChannel != null);
+    if (needsNativeStop) {
+      final nativeSw = Stopwatch()..start();
+      final state = await _methods.invokeMapMethod<String, dynamic>('stop', {
+        if (engineStopped) 'engineStopped': true,
+      });
+      loggy.warning(
+        'macOS stop: native stop in ${nativeSw.elapsedMilliseconds}ms (engineStopped=$engineStopped)',
+      );
+      if (state != null) _receiveState(state);
+    }
+
+    try {
+      if (quiet) {
+        // Keep the channel for the immediate reconnect; detach only (bgClient already fg).
+        final fgSw = Stopwatch()..start();
+        _checkResponse(await fgClient.stop(Empty()), allowStopped: true);
+        loggy.warning(
+          'macOS stop: quiet fg stop in ${fgSw.elapsedMilliseconds}ms; total ${total.elapsedMilliseconds}ms',
+        );
+        return true;
+      }
+
+      // Notify first so log/status streams cancel, then shut the socket down.
+      final oldChannel = _extensionChannel;
+      _extensionChannel = null;
+      _extensionPort = null;
+      _extensionSecret = null;
+      _notifyClientChange();
+      if (oldChannel != null) {
+        final shutSw = Stopwatch()..start();
+        try {
+          await oldChannel.shutdown().timeout(const Duration(seconds: 1));
+          loggy.warning('macOS stop: channel shutdown in ${shutSw.elapsedMilliseconds}ms');
+        } catch (error) {
+          loggy.warning('macOS stop: channel shutdown after ${shutSw.elapsedMilliseconds}ms: $error');
+        }
+      }
+      final fgSw = Stopwatch()..start();
+      _checkResponse(
+        await fgClient.stop(Empty()).timeout(const Duration(seconds: 2)),
+        allowStopped: true,
+      );
+      loggy.warning('macOS stop: fg stop in ${fgSw.elapsedMilliseconds}ms');
+      _status.add(const CoreStatus.stopped());
+      loggy.warning('macOS stop: TOTAL ${total.elapsedMilliseconds}ms');
+      return true;
+    } finally {
+      _stoppingVPN = false;
+    }
   }
 
   @override

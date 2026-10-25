@@ -7,13 +7,21 @@ import Foundation
 // (initialize/start/stop returning available, port, secret, status) so Dart can reuse the useTunnel path.
 final class TunnelServiceController {
     private static let servicePort: UInt16 = 18020
+    // Must match hiddify-core adminbgservice.controlDataDir() on darwin.
     private static let secretPath =
-        "/Library/Application Support/Hiddify/TunnelService/data/control.secret"
+        "/Library/Application Support/Hiddify/AdminBgService/data/control.secret"
     private static let buildStampPath =
-        "/Library/Application Support/Hiddify/TunnelService/data/build.id"
+        "/Library/Application Support/Hiddify/AdminBgService/data/build.id"
     private let queue = DispatchQueue(label: "app.hiddify.tunnel-service")
+    private let processLock = NSLock()
+    private var activeProcess: Process?
     private var connected = false
+    /// True from the moment stop is requested until the disconnect child finishes.
+    /// Keeps status from flipping back to "connected" if Flutter re-subscribes mid-stop.
+    private var disconnecting = false
     private var lastMessage: String?
+    /// Lets MacOSVPNController push EventChannel updates when our flags change.
+    var onStateChanged: (() -> Void)?
 
     private var installScript: URL? {
         Bundle.main.resourceURL?.appendingPathComponent("TunnelService/install-tunnel-service.sh")
@@ -25,10 +33,20 @@ final class TunnelServiceController {
     }
 
     func state() -> [String: Any] {
+        let status: String
+        if disconnecting {
+            status = "disconnecting"
+        } else if connected {
+            status = "connected"
+        } else {
+            status = "disconnected"
+        }
         var result: [String: Any] = [
             "available": available,
             "tunnelService": available,
-            "status": connected ? "connected" : "disconnected",
+            // True when the root service matches this app build (no password needed to connect).
+            "serviceReady": serviceReady(),
+            "status": status,
             "activation": "idle",
             "port": Int(Self.servicePort),
         ]
@@ -67,17 +85,44 @@ final class TunnelServiceController {
                         result(Self.flutterError(error))
                     } else {
                         self.connected = true
+                        self.disconnecting = false
                         self.lastMessage = nil
+                        self.onStateChanged?()
                         result(self.state())
                     }
                 }
             }
         case "stop", "reset":
+            // Mark disconnected before the slow child runs so a mid-stop EventChannel
+            // re-subscribe (app switch) cannot report Connected again.
+            connected = false
+            disconnecting = true
+            lastMessage = nil
+            onStateChanged?()
+            // Dart already stopped the engine over AdminBg gRPC — only clear flags
+            // (spawning `Hiddify --tunnel disconnect` again is what made stop take forever).
+            let args = call.arguments as? [String: Any]
+            let engineAlreadyStopped = args?["engineStopped"] as? Bool == true
+            if engineAlreadyStopped && call.method == "stop" {
+                NSLog("hiddify tunnel-service: stop skipped child (engine already stopped via gRPC)")
+                disconnecting = false
+                onStateChanged?()
+                result(state())
+                return
+            }
+            // Interrupt a hung connect/disconnect child so this stop is not stuck behind it
+            // on the serial queue.
+            interruptActiveProcess()
+            let stopStarted = Date()
             queue.async {
                 let error = self.stopTunnel()
+                let elapsed = Date().timeIntervalSince(stopStarted)
+                NSLog("hiddify tunnel-service: stop child finished in %.2fs error=%@", elapsed, error ?? "nil")
                 DispatchQueue.main.async {
                     self.connected = false
+                    self.disconnecting = false
                     self.lastMessage = error
+                    self.onStateChanged?()
                     if call.method == "reset", let error = error {
                         result(Self.flutterError(error))
                     } else {
@@ -88,6 +133,13 @@ final class TunnelServiceController {
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    private func interruptActiveProcess() {
+        processLock.lock()
+        let process = activeProcess
+        processLock.unlock()
+        process?.terminate()
     }
 
     private func start(arguments: [String: Any]) -> String? {
@@ -136,11 +188,42 @@ final class TunnelServiceController {
         let stderr = Pipe()
         process.standardError = stderr
         process.standardOutput = Pipe()
+        processLock.lock()
+        activeProcess = process
+        processLock.unlock()
+        defer {
+            processLock.lock()
+            if activeProcess === process { activeProcess = nil }
+            processLock.unlock()
+        }
+        // Connect can hang on a wedged admin_bgservice; without a timeout the serial
+        // queue blocks and further connect/stop taps never return (~1 min of "dead" UI).
+        let command = arguments.first ?? "?"
+        let timeoutSeconds: Double = command == "connect" ? 45 : 5
+        let childStarted = Date()
+        NSLog("hiddify tunnel-service: spawning --tunnel %@", arguments.joined(separator: " "))
+        let done = DispatchGroup()
+        done.enter()
+        process.terminationHandler = { _ in done.leave() }
         do {
             try process.run()
-            process.waitUntilExit()
         } catch {
             return "Couldn't talk to the VPN service."
+        }
+        if done.wait(timeout: .now() + timeoutSeconds) == .timedOut {
+            NSLog("hiddify tunnel-service: --tunnel %@ timed out after %.2fs", command, Date().timeIntervalSince(childStarted))
+            process.terminate()
+            _ = done.wait(timeout: .now() + 2)
+            if command == "disconnect" { return nil }
+            return "The VPN service timed out."
+        }
+        NSLog("hiddify tunnel-service: --tunnel %@ finished in %.2fs status=%d",
+              command, Date().timeIntervalSince(childStarted), process.terminationStatus)
+        // Interrupted by stop/reset. Disconnect may be cancelled safely; a cancelled connect
+        // must not report success (that left the UI as Connected then silently Disconnected).
+        if process.terminationReason == .uncaughtSignal {
+            if arguments.first == "disconnect" { return nil }
+            return "The VPN connection was cancelled."
         }
         if process.terminationStatus == 0 { return nil }
         let message = String(data: stderr.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8)?

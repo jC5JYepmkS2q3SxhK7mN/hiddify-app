@@ -35,7 +35,7 @@ task_version="$(grep '^version:' pubspec.yaml | sed -E 's/version: *//')"
 task_out="$task_root/dist/$task_version"
 task_app="build/macos/Build/Products/Release/Hiddify.app"
 
-bash macos/scripts/build-tunnel-core.sh
+bash macos/scripts/build-admin-bgservice-core.sh
 case "$task_mode" in
   unsigned)
     export XCODE_XCCONFIG_FILE="$task_root/macos/Runner/Configs/Unsigned.xcconfig"

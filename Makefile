@@ -548,6 +548,10 @@ build-macos-libs:
 	rm -rf macos/Frameworks/HiddifyTunnelCore.xcframework
 	cp -R hiddify-core/bin/HiddifyTunnelCore.xcframework macos/Frameworks/
 
+# Native arch only (no lipo, no HiddifyTunnelCore.xcframework).
+build-lite-macos-libs:
+	make -C hiddify-core -f Makefile macos-lite
+
 # Runs Debug from /Applications, where macOS allows the VPN system extension.
 macos-run-dev:
 	bash macos/scripts/run-dev.sh

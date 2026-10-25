@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:grpc/grpc.dart';
 import 'package:hiddify/core/model/directories.dart';
 import 'package:hiddify/hiddifycore/core_interface/core_interface_desktop.dart';
@@ -15,12 +13,9 @@ import 'package:hiddify/singbox/model/singbox_config_option.dart';
 import 'package:path/path.dart' as p;
 import 'package:rxdart/rxdart.dart';
 
-/// Windows and Linux VPN: the full core usually runs in HiddifyTunnelService (elevated once at
-/// install). The app talks to it over authenticated gRPC — same model as the unsigned macOS path.
-///
-/// Exceptions that keep TUN in this process (no service):
-/// - the app is already root / Administrator (e.g. `sudo ./Hiddify.AppImage`);
-/// - Linux AppImage cannot host a service (FUSE mount is invisible to `pkexec` as root).
+/// Windows and Linux: full core usually runs in elevated admin_bgservice
+/// (`HiddifyAdminBG`). Flutter never elevates; [NeedAdminBgService] /
+/// [EnsureAdminBgService] live in hiddify-core.
 class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   CoreInterfaceDesktopTun() : super(port: 17078);
 
@@ -30,9 +25,15 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   ClientChannel? _serviceChannel;
   Directory? _workingDirectory;
   SingboxConfigOption? _options;
-  bool _usingVPN = false;
+  bool _usingAdminBg = false;
   bool? _privileged;
   String? _secret;
+
+  /// When true, start via admin_bgservice even in proxy mode (Mode C prefer-admin).
+  bool useAdminBgService = false;
+
+  /// Optional UI wrapper around elevation (waiting dialog). Returns false if the user stops.
+  Future<bool> Function(Future<void> work)? wrapAdminElevation;
 
   /// AppImage payload lives under a user FUSE mount; root/`pkexec` cannot exec that path.
   bool get _isAppImage => Platform.isLinux && (Platform.environment['APPIMAGE'] ?? '').isNotEmpty;
@@ -54,13 +55,15 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   String get _dataDir {
     if (Platform.isWindows) {
       final base = Platform.environment['PROGRAMDATA'] ?? r'C:\ProgramData';
-      return p.join(base, 'Hiddify', 'TunnelService');
+      return p.join(base, 'Hiddify', 'AdminBgService');
     }
-    return '/var/lib/hiddify-tunnel';
+    return '/var/lib/hiddify-admin-bgservice';
   }
 
   String get _secretPath => p.join(_dataDir, 'control.secret');
-  String get _buildStampPath => p.join(_dataDir, 'build.id');
+
+  String get _ownerUser =>
+      Platform.isWindows ? (Platform.environment['USERNAME'] ?? '') : (Platform.environment['USER'] ?? '');
 
   @override
   Future<String> setup(Directories directories, bool debug, int mode) async {
@@ -73,14 +76,29 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
   @override
   Future<void> setOptions(SingboxConfigOption options) async {
     _options = options;
-    // Strip TUN only when the elevated service will own it; in-process TUN keeps enableTun.
-    final apply = (options.enableTun && !await _isPrivileged())
-        ? options.copyWith(enableTun: false)
-        : options;
+    // When admin_bgservice will own TUN, fg must not enable TUN; full settings go in Ensure.
+    final adminOwnsTun = useAdminBgService || (options.enableTun && !await _isPrivileged());
+    final forFg = adminOwnsTun ? options.copyWith(enableTun: false) : options;
     final response = await fgClient.changeHiddifySettings(
-      ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(apply.toJson())),
+      ChangeHiddifySettingsRequest(hiddifySettingsJson: jsonEncode(forFg.toJson())),
     );
     _checkResponse(response);
+  }
+
+  Future<NeedAdminBgServiceResponse> needAdminBgService({
+    required String serviceMode,
+    required String settingsJson,
+    required AdminPreference adminPreference,
+    bool privilegeErrorRemembered = false,
+  }) {
+    return fgClient.needAdminBgService(
+      NeedAdminBgServiceRequest(
+        serviceMode: serviceMode,
+        hiddifySettingsJson: settingsJson,
+        adminPreference: adminPreference,
+        privilegeErrorRemembered: privilegeErrorRemembered,
+      ),
+    );
   }
 
   @override
@@ -88,8 +106,10 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
     final options = _options;
     if (options == null) throw StateError('Apply connection options before starting the core.');
     await stop();
-    if (!options.enableTun) {
-      _usingVPN = false;
+
+    final wantAdminBg = useAdminBgService || options.enableTun;
+    if (!wantAdminBg) {
+      _usingAdminBg = false;
       bgClient = fgClient;
       _clientChanges.add(null);
       _checkResponse(
@@ -99,12 +119,11 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
       return;
     }
 
-    // Already elevated: run TUN in this process. AppImage also cannot install a service
-    // (pkexec cannot see the FUSE mount), so root AppImage uses the same path.
+    // Already elevated: run TUN in this process. AppImage also cannot install a service.
     if (await _isPrivileged()) {
       _status.add(const CoreStatus.starting());
       try {
-        _usingVPN = false;
+        _usingAdminBg = false;
         bgClient = fgClient;
         _clientChanges.add(null);
         _checkResponse(
@@ -133,40 +152,113 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
 
     _status.add(const CoreStatus.starting());
     try {
-      await _ensureService();
-      final workingDirectory = _workingDirectory;
-      if (workingDirectory == null) throw StateError('Set up the core before starting VPN mode.');
-      final snapshot = await snapshotVpnConfiguration(path, workingDirectory);
-      final requestFile = await _writeConnectRequest(
-        configContent: snapshot.$1,
-        resources: snapshot.$2,
-        configName: name,
-        settingsJSON: jsonEncode(options.toJson()),
+      final ensure = _ensureAdminBgAndAttach(
+        path: path,
+        name: name,
+        options: options,
         disableMemoryLimit: disableMemoryLimit,
       );
-      try {
-        await _runCli(['tunnel', 'connect', requestFile.path]);
-      } finally {
-        await requestFile.delete().catchError((_) => requestFile);
+      final wrap = wrapAdminElevation;
+      if (wrap != null) {
+        final ok = await wrap(ensure);
+        wrapAdminElevation = null;
+        if (!ok) {
+          throw StateError('Administrator permission was not given, so VPN mode could not connect.');
+        }
+      } else {
+        await ensure;
       }
-      _secret = await File(_secretPath).readAsString();
-      _secret = _secret!.trim();
-      if (_secret!.length < 32) throw StateError('The VPN service secret is missing. Reinstall the VPN service.');
-      final old = _serviceChannel;
-      _serviceChannel = ClientChannel(
-        '127.0.0.1',
-        port: _servicePort,
-        options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
-      );
-      bgClient = CoreClient(_serviceChannel!, options: CallOptions(metadata: {'x-hiddify-secret': _secret!}));
-      if (old != null) unawaited(old.shutdown());
-      _usingVPN = true;
-      _clientChanges.add(null);
       _status.add(const CoreStatus.started());
     } catch (error) {
-      _status.add(CoreStatus.stopped(message: error.toString()));
+      wrapAdminElevation = null;
+      await _abandonVpnStart(error);
       rethrow;
     }
+  }
+
+  Future<void> _ensureAdminBgAndAttach({
+    required String path,
+    required String name,
+    required SingboxConfigOption options,
+    required bool disableMemoryLimit,
+  }) async {
+    final workingDirectory = _workingDirectory;
+    if (workingDirectory == null) throw StateError('Set up the core before starting VPN mode.');
+    final snapshot = await snapshotVpnConfiguration(path, workingDirectory);
+    final resources = <String, List<int>>{};
+    for (final entry in snapshot.$2.entries) {
+      resources[entry.key] = entry.value;
+    }
+
+    EnsureAdminBgServiceProgress? last;
+    String? lastMessage;
+    await for (final event in fgClient.ensureAdminBgService(
+      EnsureAdminBgServiceRequest(
+        configContent: snapshot.$1,
+        configName: name,
+        settingsJson: jsonEncode(options.toJson()),
+        resources: resources,
+        disableMemoryLimit: disableMemoryLimit,
+        ownerPid: pid,
+        cliPath: _cliPath,
+        ownerUser: _ownerUser,
+      ),
+    )) {
+      last = event.progress;
+      lastMessage = event.message;
+      if (event.progress == EnsureAdminBgServiceProgress.ENSURE_ADMIN_BG_FAILED_PERMISSION_DENIED ||
+          event.progress == EnsureAdminBgServiceProgress.ENSURE_ADMIN_BG_FAILED_OTHER) {
+        throw StateError(
+          (event.message.isNotEmpty)
+              ? event.message
+              : 'Could not start the VPN service. Allow the administrator prompt and try again.',
+        );
+      }
+    }
+    if (last != EnsureAdminBgServiceProgress.ENSURE_ADMIN_BG_SERVICE_CONNECTED) {
+      throw StateError(
+        (lastMessage != null && lastMessage.isNotEmpty)
+            ? lastMessage
+            : 'The VPN service did not become ready.',
+      );
+    }
+
+    _secret = (await File(_secretPath).readAsString()).trim();
+    if (_secret!.length < 32) {
+      throw StateError('The VPN service secret is missing. Reinstall the VPN service.');
+    }
+    final old = _serviceChannel;
+    _serviceChannel = ClientChannel(
+      '127.0.0.1',
+      port: _servicePort,
+      options: const ChannelOptions(credentials: ChannelCredentials.insecure()),
+    );
+    bgClient = CoreClient(_serviceChannel!, options: CallOptions(metadata: {'x-hiddify-secret': _secret!}));
+    if (old != null) unawaited(old.shutdown());
+    _usingAdminBg = true;
+    _clientChanges.add(null);
+  }
+
+  /// Tears down a partial VPN connect so the UI never stays Connected/Starting.
+  Future<void> _abandonVpnStart(Object error) async {
+    final failedChannel = _serviceChannel;
+    _serviceChannel = null;
+    _usingAdminBg = false;
+    bgClient = fgClient;
+    _clientChanges.add(null);
+    if (failedChannel != null) {
+      unawaited(() async {
+        try {
+          await failedChannel.shutdown();
+        } catch (_) {}
+      }());
+    }
+    try {
+      await _runCli(['admin_bgservice', 'disconnect']);
+    } catch (_) {}
+    final message = error.toString();
+    _status.add(CoreStatus.stopped(alert: CoreAlert.startFailed, message: message));
+    loggy.warning('VPN start failed: $message');
   }
 
   Future<bool> _isPrivileged() async {
@@ -188,103 +280,6 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
     return _privileged!;
   }
 
-  Future<File> _writeConnectRequest({
-    required String configContent,
-    required Map<String, Uint8List> resources,
-    required String configName,
-    required String settingsJSON,
-    required bool disableMemoryLimit,
-  }) async {
-    final encoded = <String, String>{};
-    for (final entry in resources.entries) {
-      encoded[entry.key] = base64Encode(entry.value);
-    }
-    final body = jsonEncode({
-      'configContent': configContent,
-      'configName': configName,
-      'settingsJSON': settingsJSON,
-      'resources': encoded,
-      'disableMemoryLimit': disableMemoryLimit,
-      'ownerPid': pid,
-    });
-    final file = File(p.join(Directory.systemTemp.path, 'hiddify-tunnel-$pid.json'));
-    await file.writeAsString(body);
-    return file;
-  }
-
-  Future<void> _ensureService() async {
-    // Ready only when the running service binary matches this app's HiddifyCli exactly.
-    // Matching builds connect with no prompt; a rebuild/upgrade reinstalls once.
-    if (await _serviceReady()) return;
-    final sameBinary = await _binariesMatch();
-    if (File(_secretPath).existsSync() && sameBinary) {
-      try {
-        await _runCli(['tunnel', 'start']);
-      } catch (_) {
-        await _elevateInstall();
-      }
-    } else {
-      await _elevateInstall();
-    }
-    for (var i = 0; i < 50; i++) {
-      if (await _serviceReady()) return;
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    }
-    throw StateError('The VPN service was installed but did not start with this app build.');
-  }
-
-  Future<void> _elevateInstall() async {
-    final owner = Platform.isWindows
-        ? (Platform.environment['USERNAME'] ?? '')
-        : (Platform.environment['USER'] ?? '');
-    if (Platform.isWindows) {
-      final cli = _cliPath.replaceAll("'", "''");
-      final ownerArg = owner.replaceAll("'", "''");
-      final result = await Process.run('powershell', [
-        '-NoProfile',
-        '-Command',
-        "Start-Process -FilePath '$cli' -ArgumentList 'tunnel','install','$ownerArg' -Verb RunAs -Wait",
-      ]);
-      if (result.exitCode != 0) {
-        throw StateError(result.stderr.toString().trim().isEmpty
-            ? 'Could not install the VPN service. Allow the administrator prompt and try again.'
-            : result.stderr.toString().trim());
-      }
-    } else {
-      // pkexec clears the environment; pass the owner as a CLI argument.
-      final result = await Process.run('pkexec', [_cliPath, 'tunnel', 'install', owner]);
-      if (result.exitCode != 0) {
-        throw StateError(result.stderr.toString().trim().isEmpty
-            ? 'Could not install the VPN service. Allow the administrator prompt and try again.'
-            : result.stderr.toString().trim());
-      }
-    }
-  }
-
-  Future<bool> _serviceReady() async {
-    if (!File(_secretPath).existsSync()) return false;
-    if (!await _binariesMatch()) return false;
-    try {
-      final socket = await Socket.connect('127.0.0.1', _servicePort, timeout: const Duration(milliseconds: 200));
-      socket.destroy();
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<bool> _binariesMatch() async {
-    final stampFile = File(_buildStampPath);
-    if (!stampFile.existsSync()) return false;
-    final stamped = (await stampFile.readAsString()).trim();
-    if (stamped.isEmpty || stamped == 'unset') return false;
-    // Build id lives only in Go; ask the bundled HiddifyCli (same core the service should run).
-    final result = await Process.run(_cliPath, ['tunnel', 'build-id']);
-    if (result.exitCode != 0) return false;
-    final bundled = result.stdout.toString().trim();
-    return bundled.isNotEmpty && bundled != 'unset' && bundled == stamped;
-  }
-
   Future<void> _runCli(List<String> args) async {
     final result = await Process.run(_cliPath, args);
     if (result.exitCode != 0) {
@@ -303,26 +298,51 @@ class CoreInterfaceDesktopTun extends CoreInterfaceDesktop {
 
   @override
   Future<bool> stop() async {
-    if (_usingVPN) {
+    _status.add(const CoreStatus.stopping());
+    final wasAdminBg = _usingAdminBg;
+    final old = _serviceChannel;
+    _serviceChannel = null;
+    _usingAdminBg = false;
+    useAdminBgService = false;
+    wrapAdminElevation = null;
+    bgClient = fgClient;
+    _clientChanges.add(null);
+    if (old != null) {
+      unawaited(() async {
+        try {
+          await old.shutdown();
+        } catch (error) {
+          loggy.warning('service channel shutdown failed: $error');
+        }
+      }());
+    }
+    if (wasAdminBg) {
       try {
-        await _runCli(['tunnel', 'disconnect']);
+        await _runCli(['admin_bgservice', 'disconnect']);
       } catch (error) {
         loggy.warning('stopping the VPN service failed: $error');
       }
     }
-    final old = _serviceChannel;
-    _serviceChannel = null;
-    if (old != null) await old.shutdown();
-    _usingVPN = false;
-    bgClient = fgClient;
-    _clientChanges.add(null);
-    _checkResponse(await fgClient.stop(Empty()), allowStopped: true);
+    try {
+      _checkResponse(await fgClient.stop(Empty()), allowStopped: true);
+    } catch (error) {
+      loggy.warning('stopping the in-process core failed: $error');
+    }
     _status.add(const CoreStatus.stopped());
     return true;
   }
 
   @override
-  Future<bool> isBgClientAvailable() async => !_usingVPN || await _serviceReady();
+  Future<bool> isBgClientAvailable() async {
+    if (!_usingAdminBg) return true;
+    try {
+      final socket = await Socket.connect('127.0.0.1', _servicePort, timeout: const Duration(milliseconds: 200));
+      socket.destroy();
+      return File(_secretPath).existsSync();
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Future<bool> resetTunnel() async {

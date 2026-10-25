@@ -140,6 +140,7 @@ final class MacOSVPNController: NSObject, FlutterStreamHandler {
         methods.setMethodCallHandler { [weak self] call, result in self?.handle(call, result: result) }
         FlutterEventChannel(name: "com.hiddify.app/macos-vpn-status", binaryMessenger: messenger).setStreamHandler(self)
         activation.onStateChanged = { [weak self] in self?.emitStatus() }
+        tunnelService.onStateChanged = { [weak self] in self?.emitStatus() }
     }
 
     deinit { if let observer = observer { NotificationCenter.default.removeObserver(observer) } }

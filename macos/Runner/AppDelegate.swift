@@ -4,13 +4,20 @@ import UserNotifications
 
 @main
 class AppDelegate: FlutterAppDelegate {
-  // `Hiddify --tunnel <command>`, and `Hiddify tunnel <command>` as the service manager starts it, run
-  // the core's command line from the bundled hiddify-core library instead of the app: builds without
-  // a Developer ID run their VPN through it with administrator rights.
+  // Launchd and the install script must never open the Flutter UI. Intercept every CLI form the
+  // root service uses and run parseCli from the bundled hiddify-core instead:
+  //   Hiddify --tunnel … | Hiddify tunnel … | Hiddify admin_bgservice …
   static func main() {
     let arguments = CommandLine.arguments
-    if arguments.count >= 2 && (arguments[1] == "--tunnel" || arguments[1] == "tunnel") {
-      exit(runCoreCommand(["tunnel"] + arguments.dropFirst(2)))
+    if arguments.count >= 2 {
+      switch arguments[1] {
+      case "--tunnel", "tunnel":
+        exit(runCoreCommand(["tunnel"] + Array(arguments.dropFirst(2))))
+      case "admin_bgservice":
+        exit(runCoreCommand(["admin_bgservice"] + Array(arguments.dropFirst(2))))
+      default:
+        break
+      }
     }
     exit(NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv))
   }

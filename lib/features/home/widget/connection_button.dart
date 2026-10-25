@@ -53,21 +53,22 @@ class ConnectionButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(translationsProvider).requireValue;
     final status = ref.watch(connectionNotifierProvider);
-    // After a disconnect Riverpod keeps the last ping as the previous value,
-    // which would show the next connection as up before its own ping answers.
-    final measured = ref.watch(activeProxyNotifierProvider).unwrapPrevious().valueOrNull?.urlTestDelay ?? 0;
-    // The proxy list also reloads whenever the app comes back to the front (the
-    // core gets a new channel), and while it does it has no ping. The tunnel
-    // never went down, so the last ping of this connection holds until then:
-    // otherwise the button would go back to waiting and blink on every focus.
+    // Only use a ping while Connected. After disconnect Riverpod can keep the
+    // previous OutboundInfo on the proxy provider; feeding that into the next
+    // reconnect showed green Connected before the new tunnel's own ping (Windows VPN).
+    // lastDelay still covers focus/channel reloads that briefly have no ping
+    // while the tunnel stays up.
     final connected = status.valueOrNull is Connected;
+    final rawDelay = connected
+        ? (ref.watch(activeProxyNotifierProvider).valueOrNull?.urlTestDelay ?? 0)
+        : 0;
     final lastDelay = useRef(0);
     if (!connected) {
       lastDelay.value = 0;
-    } else if (measured != 0) {
-      lastDelay.value = measured;
+    } else if (rawDelay != 0) {
+      lastDelay.value = rawDelay;
     }
-    final delay = connected && measured == 0 ? lastDelay.value : measured;
+    final delay = connected && rawDelay == 0 ? lastDelay.value : rawDelay;
     final hotReloading = ref.watch(hotReloadingProvider).valueOrNull ?? false;
     final look = _held(_lookOf(status, delay, hotReloading));
 

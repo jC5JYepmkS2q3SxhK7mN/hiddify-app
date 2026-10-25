@@ -77,61 +77,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - platform: android-apk
-          #   os: ubuntu-latest
-          #   targets: apk
-
-          # - platform: android-aab
-          #   os: ubuntu-latest
-          #   targets: aab
-
-          # - platform: windows
-          #   os: windows-latest
-          #   aarch: amd64
-          #   targets: exe,msix,zip
-
-          # - platform: linux
-          #   os: ubuntu-22.04
-          #   aarch: amd64
-          #   targets: deb,gz,AppImage
-
-          # - platform: linux-amd64
-          #   os: ubuntu-22.04
-          #   aarch: amd64
-          #   targets: deb,gz
-
-          # - platform: linux-arm64
-          #   os: ubuntu-24.04-arm
-          #   aarch: arm64
-          #   targets: deb,gz
-
-          # - platform: linux-amd64-musl
-          #   os: ubuntu-22.04
-          #   aarch: amd64
-          #   targets: deb,gz
-
-          # - platform: linux-arm64-musl
-          #   os: ubuntu-24.04-arm
-          #   aarch: arm64
-          #   targets: deb,gz
-            
-          # - platform: macos
-          #   os: macos-15
-          #   aarch: universal
-          #   targets: dmg,pkg
-
-          # App Store pkg (+ companion dmg) uploaded to TestFlight when upload-artifact is set
-          # (including draft CI).
-          - platform: macos-appstore
-            os: macos-26
-            aarch: universal
-            targets: pkg,dmg
-            
-          - platform: ios
-            os: macos-26
-            aarch: universal
-            filename: hiddify-ios
-            targets: ipa
+          - { platform: android-apk,       os: ubuntu-latest,  targets: apk }
+          # - { platform: android-aab,       os: ubuntu-latest,  targets: aab }
+          - { platform: windows,          os: windows-latest, aarch: amd64,     targets: exe,msix,zip }
+          - { platform: linux,            os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz,AppImage }
+          # - { platform: linux-amd64,      os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz }
+          # - { platform: linux-arm64,      os: ubuntu-24.04-arm, aarch: arm64,   targets: deb,gz }
+          # - { platform: linux-amd64-musl, os: ubuntu-22.04,   aarch: amd64,     targets: deb,gz }
+          # - { platform: linux-arm64-musl, os: ubuntu-24.04-arm, aarch: arm64,   targets: deb,gz }
+          - { platform: macos,            os: macos-15,       aarch: universal, targets: dmg,pkg }
+          # - { platform: macos-appstore,   os: macos-26,       aarch: universal, targets: pkg,dmg }
+          # - { platform: ios,              os: macos-26,       aarch: universal, filename: hiddify-ios, targets: ipa }
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
@@ -443,16 +399,7 @@ jobs:
           fi
           cp "$pkg" "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
           cp "$dmg" "out/${TARGET_NAME_macos_appstore_dmg}.dmg"
-          echo "pkg=out/${TARGET_NAME_macos_appstore_pkg}.pkg" >> "$GITHUB_OUTPUT"
           ls -la out/
-
-      - name: Upload macOS App Store build to TestFlight
-        if: matrix.platform == 'macos-appstore' && inputs.upload-artifact
-        env:
-          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
-          APPSTORE_API_PRIVATE_KEY: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
-        run: bash macos/scripts/upload-appstore.sh "out/${TARGET_NAME_macos_appstore_pkg}.pkg"
 
       - name: Copy to out unix
         if: startsWith(matrix.platform,'linux') || matrix.platform == 'macos' || (matrix.platform == 'ios' && inputs.upload-artifact)
@@ -660,25 +607,71 @@ jobs:
     with:
       release_tag: ${{ inputs.tag-name }}
 
+  # After the draft release is published: same App Store Connect API key for iOS + macOS.
   upload-to-testflight:
-    needs: [build]
+    needs: [update-draft]
     permissions:
       actions: read
       contents: read
     if: ${{ inputs.upload-artifact }}
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
-      - name: Download Artifact
+      - name: Download iOS artifact
+        continue-on-error: true
+        id: dl-ios
         uses: actions/download-artifact@v7
         with:
-          merge-multiple: true
-          pattern: "*ios*"
+          name: ios
           path: ./out/
 
-      - uses: Apple-Actions/upload-testflight-build@v4
+      - name: Check iOS IPA
+        id: ios
+        run: |
+          if [[ -f out/Hiddify-iOS.ipa ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            ls -la out/Hiddify-iOS.ipa
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No iOS IPA artifact; skipping TestFlight upload."
+          fi
+
+      - name: Upload iOS IPA to TestFlight
+        if: steps.ios.outputs.present == 'true'
+        uses: Apple-Actions/upload-testflight-build@v5
         with:
-          app-path: 'out/Hiddify-iOS.ipa'
+          app-path: out/Hiddify-iOS.ipa
+          app-type: ios
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+      - name: Download macOS App Store artifact
+        continue-on-error: true
+        id: dl-macos
+        uses: actions/download-artifact@v7
+        with:
+          name: macos-appstore
+          path: ./out/
+
+      - name: Check macOS App Store pkg
+        id: macos
+        run: |
+          if [[ -f out/Hiddify-MacOS-AppStore.pkg ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            ls -la out/Hiddify-MacOS-AppStore.pkg
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No macOS App Store pkg artifact; skipping TestFlight upload."
+          fi
+
+      - name: Upload macOS App Store pkg to TestFlight
+        if: steps.macos.outputs.present == 'true'
+        uses: Apple-Actions/upload-testflight-build@v5
+        with:
+          app-path: out/Hiddify-MacOS-AppStore.pkg
+          app-type: macos
+          backend: altool
           issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
           api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
