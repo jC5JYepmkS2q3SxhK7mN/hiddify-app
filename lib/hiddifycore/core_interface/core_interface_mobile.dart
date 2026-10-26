@@ -235,7 +235,7 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
       _isBgClientAvailable = false;
       return true;
     }
-    if (!await waitUntilPort(portBack, false, null, maxTry: 10)) {
+    if (!await waitUntilPort(portBack, false, null)) {
       loggy.warning('background port $portBack still open after stop');
       // Platform stop finished; do not leave Disconnecting forever (#2395).
       _isBgClientAvailable = false;
