@@ -47,6 +47,12 @@ class CoreInterfaceMobile extends CoreInterface with InfraLogger {
   Stream<CoreStatus>? get managedStatus => _managedStatus.stream;
 
   @override
+  Future<void> dispose() async {
+    await _nativeStatusSubscription?.cancel();
+    _nativeStatusSubscription = null;
+  }
+
+  @override
   Future<String> setup(Directories directories, bool debug, int mode) async {
     _debug = debug;
     _useMtls = _isMtlsMode(mode);
