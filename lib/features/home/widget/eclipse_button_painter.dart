@@ -183,7 +183,7 @@ void _barsWave(_Ctx x, {bool backwards = false}) {
   x.logo(parts: _each((i) => _Part(opacity: .4 + .6 * _bump(p * 1.6 - rank(i) * .3))));
 }
 
-/// A soft sweep turning inside the button, over two faint guide circles.
+/// A soft sweep turning inside the button, over two faint guide circles, kept out of the logo.
 void _radar(_Ctx x) {
   final c = x.c;
   c.save();
@@ -208,6 +208,8 @@ void _radar(_Ctx x) {
     );
   }
   c.restore();
+  // the logo keeps the button's white under it, so a faded bar doesn't show the radar through it
+  if (x.p.drawLogo) x.logoSpace((c) => c.drawPaint(Paint()..color = Colors.white));
 }
 
 /// The signal steps down to weak, then keeps searching, and the error badge breathes, sending out a
