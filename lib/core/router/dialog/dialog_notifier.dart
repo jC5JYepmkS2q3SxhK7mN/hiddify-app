@@ -79,6 +79,10 @@ class DialogNotifier extends _$DialogNotifier {
     );
   }
 
+  Future<void> showLanSharingQr() async {
+    return await _show<void>(const LanSharingQrDialog());
+  }
+
   Future<void> showOk(String title, String description) async {
     return await _show<void>(OkDialog(title: title, description: description));
   }
