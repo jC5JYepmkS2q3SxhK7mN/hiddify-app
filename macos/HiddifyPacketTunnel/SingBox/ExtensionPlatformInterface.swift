@@ -118,7 +118,6 @@ final class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoco
     func localDNSTransport() -> LibboxLocalDNSTransportProtocol? { nil }
     func usePlatformAutoDetectControl() -> Bool { false }
     func autoDetectControl(_ fd: Int32) throws {}
-    func useProcFS() -> Bool { false }
     func underNetworkExtension() -> Bool { true }
     func includeAllNetworks() -> Bool { false }
     func readWIFIState() -> LibboxWIFIState? { nil }
@@ -162,8 +161,8 @@ final class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoco
                           term: String?, rows: Int32, cols: Int32) throws -> any LibboxShellSessionProtocol {
         throw notSupported("Shell session")
     }
-    func lookupSFTPServer() throws -> LibboxStringBox { throw notSupported("SFTP server") }
-    func readSystemSSHHostKey() throws -> LibboxStringBox { throw notSupported("System SSH host key") }
+    func lookupSFTPServer(_: UnsafeMutablePointer<NSString?>?) throws { throw notSupported("SFTP server") }
+    func readSystemSSHHostKey(_: UnsafeMutablePointer<NSString?>?) throws { throw notSupported("System SSH host key") }
     func usePlatformBridge() -> Bool { false }
     func createBridge(_ options: LibboxBridgeOptions?) throws -> any LibboxBridgeSessionProtocol {
         throw notSupported("Platform bridge")
