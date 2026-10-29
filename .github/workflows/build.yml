@@ -305,8 +305,14 @@ jobs:
       # files during install are signed (reduces Sysmon/AV "unsigned dropper" noise).
       - name: Build Windows portable zip
         if: matrix.platform == 'windows' && inputs.upload-artifact
+        # fastforge runs the sign_release_tree.sh hook here, so the signing
+        # credentials must be in this step's environment too.
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          WINDOWS_SIGNING_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
         run: make windows-zip-release
 
       - name: Build Windows Setup/MSIX binaries
