@@ -388,13 +388,18 @@ const OutboundGroupList$json = {
   '1': 'OutboundGroupList',
   '2': [
     {'1': 'items', '3': 1, '4': 3, '5': 11, '6': '.hcore.OutboundGroup', '10': 'items'},
+    {'1': 'chain_hop', '3': 2, '4': 1, '5': 11, '6': '.hcore.OutboundInfo', '9': 0, '10': 'chainHop', '17': true},
+  ],
+  '8': [
+    {'1': '_chain_hop'},
   ],
 };
 
 /// Descriptor for `OutboundGroupList`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List outboundGroupListDescriptor = $convert.base64Decode(
     'ChFPdXRib3VuZEdyb3VwTGlzdBIqCgVpdGVtcxgBIAMoCzIULmhjb3JlLk91dGJvdW5kR3JvdX'
-    'BSBWl0ZW1z');
+    'BSBWl0ZW1zEjUKCWNoYWluX2hvcBgCIAEoCzITLmhjb3JlLk91dGJvdW5kSW5mb0gAUghjaGFp'
+    'bkhvcIgBAUIMCgpfY2hhaW5faG9w');
 
 @$core.Deprecated('Use warpAccountDescriptor instead')
 const WarpAccount$json = {
