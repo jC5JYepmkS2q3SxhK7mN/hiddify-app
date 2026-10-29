@@ -277,6 +277,7 @@ VirusTotal results of that build (2026-10-29, still self-signed):
 | Portable zip / MSIX with the Go stub | 1 | Bkav (it is the `HiddifyCli.exe` inside) |
 | `HiddifyAdmin.exe` (C, requireAdministrator, unsigned) | **0 / 71** | – |
 | Final build, all three assets (Setup.exe, portable zip, MSIX) | **0 / 70, 0 / 67, 0 / 65** | – |
+| Same after the `Core.IsAdmin` change and the XMP strip (Setup `3c5eb770…`, zip `3c70aae7…`, MSIX `3c2ec74d…`) | **0 / 70, 0 / 66, 0 / 67**, no crowdsourced YARA match | – |
 
 Take-aways:
 
