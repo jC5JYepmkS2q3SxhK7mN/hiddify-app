@@ -98,6 +98,12 @@ void main() {
     );
   });
 
+  test("a proxy's own detour shows in its name, the app's hidden ones do not", () {
+    expect(OutboundInfo(tagDisplay: 'Via P', detour: 'P socks § 0').nameWithDetour, 'Via P → P socks');
+    expect(OutboundInfo(tagDisplay: 'M-NL', detour: '🔓 Unblocker · Psiphon §hide§').nameWithDetour, 'M-NL');
+    expect(OutboundInfo(tagDisplay: 'M-NL').nameWithDetour, 'M-NL');
+  });
+
   test('a good ping without an IP means the IP lookup failed', () {
     expect(_info('M-NL', delay: 150).ipLookupFailed, isTrue);
     expect(_info('M-NL').ipLookupFailed, isFalse);

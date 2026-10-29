@@ -88,6 +88,11 @@ extension OutboundInfoCard on OutboundInfo {
   /// The name, without the core's hidden suffix.
   String get name => _sanitizedTag(tag);
 
+  /// The name, and the user's own proxy it dials through ("A → B"). The app's own hidden ones,
+  /// such as the chain hop, are left out.
+  String get nameWithDetour =>
+      detour.isEmpty || detour.contains('§hide§') ? tagDisplay : '$tagDisplay → ${_sanitizedTag(detour)}';
+
   bool get hasIp => ipinfo.ip.isNotEmpty;
 
   /// The core looks the IP up right after a good ping and sends both together, so a good ping
