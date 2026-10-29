@@ -159,6 +159,8 @@ class HiddifyCoreService with InfraLogger {
   TaskEither<ConnectionFailure, Unit> start(String path, String name, bool disableMemoryLimit) {
     return TaskEither(() async {
       final stops = _stopRequests.value;
+      // the last connection's list, or a new one would first show its proxies and flags
+      latest = [];
       statusController.add(currentState = const CoreStatus.starting());
       loggy.debug("starting");
       if (core.managesLifecycle) {
