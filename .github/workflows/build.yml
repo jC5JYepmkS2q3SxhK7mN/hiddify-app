@@ -92,8 +92,8 @@ jobs:
           # - { platform: linux-amd64-musl, os: ubuntu-22.04,   aarch: amd64,     targets: "deb,gz" }
           # - { platform: linux-arm64-musl, os: ubuntu-24.04-arm, aarch: arm64,   targets: "deb,gz" }
           - { platform: macos,            os: macos-15,       aarch: universal, targets: "dmg,pkg" }
-          # - { platform: macos-appstore,   os: macos-26,       aarch: universal, targets: "pkg,dmg" }
-          # - { platform: ios,              os: macos-26,       aarch: universal, filename: hiddify-ios, targets: ipa }
+          - { platform: macos-appstore,   os: macos-26,       aarch: universal, targets: "pkg,dmg" }
+          - { platform: ios,              os: macos-26,       aarch: universal, filename: hiddify-ios, targets: ipa }
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout
