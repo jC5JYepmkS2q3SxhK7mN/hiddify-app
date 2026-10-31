@@ -1,7 +1,22 @@
 # Changelog
 
 
-## 5.2.0 (2026-10-30)
+## 5.2.1 (2026-10-31)
+
+#### Other
+
+* Fix(release): grant the release workflow the same token permissions as CI. 
+  _The narrowed permissions block made softprops/action-gh-release fail with
+403 'Resource not accessible by integration' on the v5.2.0 tag run, which
+also skipped the TestFlight and VirusTotal jobs. CI calls build.yml with
+write-all and creates the draft release fine; the jobs in build.yml keep
+their own narrower scopes._
+
+* Fix(build): enable android-aab target in build workflow. 
+
+
+
+## v5.2.0 (2026-10-30)
 
 #### New
 
@@ -97,6 +112,8 @@ recommended for future maintenance to address this natively._
 * Set getApplicationDocumentsDirectory as a fallback for getExternalStorageDirectory in Android. 
 
 #### Other
+
+* Fix(build): enable android-aab target in build workflow. 
 
 * Fix(dependencies): upgrade core version to 5.2.0. 
 
